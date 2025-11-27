@@ -20,11 +20,21 @@ class AdminAuthenticationController extends Controller
         return view('admin.auth.login');
     }
 
-    public function handleLogin(HandleLoginRequest $request)
+    public function handleLogin(HandleLoginRequest $request): RedirectResponse
     {
         $request->authenticate();
 
-        return redirect()->intended(route('admin.dashboard'));
+        // Logout any existing user session to prevent session conflicts
+        // This ensures admin and user sessions don't interfere with each other
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        }
+
+        // Regenerate session to prevent session fixation attacks
+        // This also regenerates the CSRF token automatically
+        $request->session()->regenerate(true);
+
+        return redirect()->route('admin.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse

@@ -180,6 +180,14 @@ class DatabaseSeeder extends Seeder
             'activity log view',
             'activity log restore',
             'activity log export',
+            'image gallery index',
+            'image gallery create',
+            'image gallery update',
+            'image gallery delete',
+            'video gallery index',
+            'video gallery create',
+            'video gallery update',
+            'video gallery delete',
         ];
 
         foreach ($permissions as $permission) {

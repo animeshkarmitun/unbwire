@@ -278,14 +278,21 @@ $(document).ready(function() {
             url: '/admin/media-library/' + id,
             method: 'GET',
             success: function(response) {
-                if (selectionMode === 'featured') {
+                // Check if gallery selection mode is active
+                if (typeof window.selectMediaForGallery === 'function') {
+                    // Gallery selection mode
+                    window.selectMediaForGallery(response);
+                } else if (selectionMode === 'featured') {
                     // Set featured image
                     setFeaturedImage(response);
                 } else {
                     // Insert into editor
                     insertMediaToEditor(response);
                 }
-                $('#mediaLibraryModal').modal('hide');
+                // Don't hide modal in gallery mode (let the handler decide)
+                if (typeof window.selectMediaForGallery !== 'function') {
+                    $('#mediaLibraryModal').modal('hide');
+                }
             }
         });
     }

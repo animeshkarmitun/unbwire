@@ -27,7 +27,13 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        // Logout any existing admin session to prevent session conflicts
+        // This ensures admin and user sessions don't interfere with each other
+        if (Auth::guard('admin')->check()) {
+            Auth::guard('admin')->logout();
+        }
+
+        $request->session()->regenerate(true);
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

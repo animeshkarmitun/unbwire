@@ -51,6 +51,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/subscription/subscribe/{packageId}', [\App\Http\Controllers\Frontend\SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
     Route::get('/subscription/my-subscription', [\App\Http\Controllers\Frontend\SubscriptionController::class, 'mySubscription'])->name('subscription.my-subscription');
     Route::post('/subscription/cancel', [\App\Http\Controllers\Frontend\SubscriptionController::class, 'cancel'])->name('subscription.cancel');
+    
+    // User Profile Routes
+    Route::get('/profile', [\App\Http\Controllers\Frontend\UserProfileController::class, 'index'])->name('user.profile');
+    Route::post('/profile/password/update', [\App\Http\Controllers\Frontend\UserProfileController::class, 'updatePassword'])->name('user.profile.password.update');
+    Route::post('/profile/package/change', [\App\Http\Controllers\Frontend\UserProfileController::class, 'changePackage'])->name('user.profile.package.change');
 });
 
 require __DIR__.'/auth.php';

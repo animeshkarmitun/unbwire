@@ -36,6 +36,104 @@
         :root {
             --colorPrimary: {{ $settings['site_color'] }};
         }
+        
+        /* Modern User Dropdown Styling */
+        .user-dropdown .user-dropdown-toggle {
+            color: #fff !important;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .user-dropdown .user-dropdown-toggle:hover,
+        .user-dropdown .user-dropdown-toggle:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff !important;
+            text-decoration: none;
+            outline: none;
+        }
+        
+        .user-dropdown .user-dropdown-toggle i {
+            font-size: 16px;
+            vertical-align: middle;
+        }
+        
+        .user-dropdown .user-dropdown-toggle .user-name {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        /* Hide default Bootstrap caret and add custom one */
+        .user-dropdown .user-dropdown-toggle::after {
+            content: "\f107";
+            font-family: "FontAwesome";
+            font-weight: 900;
+            border: none;
+            margin-left: 8px;
+            vertical-align: middle;
+            font-size: 12px;
+        }
+        
+        .user-dropdown.show .user-dropdown-toggle::after {
+            content: "\f106";
+        }
+        
+        .user-dropdown-menu {
+            min-width: 200px;
+            background-color: #fff;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            margin-top: 8px !important;
+            margin-right: 0 !important;
+        }
+        
+        .user-dropdown-menu .dropdown-item {
+            color: #333 !important;
+            padding: 10px 20px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            border: none;
+        }
+        
+        .user-dropdown-menu .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: var(--colorPrimary) !important;
+            padding-left: 24px;
+        }
+        
+        .user-dropdown-menu .dropdown-item i {
+            color: #666;
+            transition: color 0.2s ease;
+            width: 16px;
+            text-align: center;
+        }
+        
+        .user-dropdown-menu .dropdown-item:hover i {
+            color: var(--colorPrimary);
+        }
+        
+        .user-dropdown-menu .divider {
+            height: 1px;
+            margin: 8px 0;
+            overflow: hidden;
+            background-color: #e9ecef;
+            border: none;
+        }
+        
+        @media (max-width: 768px) {
+            .user-dropdown-menu {
+                margin-right: 10px !important;
+            }
+        }
     </style>
 </head>
 

@@ -127,6 +127,23 @@
                         <span>{{ __('admin.Media Library') }}</span></a></li>
             @endif
 
+            @if (canAccess(['image gallery index', 'video gallery index']))
+                <li class="dropdown {{ setSidebarActive(['admin.image-gallery.*', 'admin.video-gallery.*']) }}">
+                    <a href="javascript:void(0)" class="nav-link has-dropdown"><i class="fas fa-photo-video"></i>
+                        <span>Gallery</span></a>
+                    <ul class="dropdown-menu">
+                        @if (canAccess(['image gallery index']))
+                            <li class="{{ setSidebarActive(['admin.image-gallery.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.image-gallery.index') }}"><i class="fas fa-image"></i> Images</a></li>
+                        @endif
+                        @if (canAccess(['video gallery index']))
+                            <li class="{{ setSidebarActive(['admin.video-gallery.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.video-gallery.index') }}"><i class="fas fa-video"></i> Videos</a></li>
+                        @endif
+                    </ul>
+                </li>
+            @endif
+
 
             @if (canAccess(['subscription package index']))
                 <li class="dropdown {{ setSidebarActive(['admin.subscription-package.*', 'admin.user-subscription.*']) }}">

@@ -25,6 +25,8 @@ use App\Http\Controllers\Admin\SocialLinkController;
 use App\Http\Controllers\Admin\SubscriptionPackageController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\ImageGalleryController;
+use App\Http\Controllers\Admin\VideoGalleryController;
 use App\Models\FooterGridOne;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
@@ -89,6 +91,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::put('/{id}', [\App\Http\Controllers\Admin\MediaController::class, 'update'])->name('update');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('destroy');
     });
+
+    /** Gallery Routes */
+    Route::resource('image-gallery', ImageGalleryController::class);
+    Route::resource('video-gallery', VideoGalleryController::class);
 
     /** Subscription Package Route */
     Route::resource('subscription-package', SubscriptionPackageController::class);

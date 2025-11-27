@@ -48,8 +48,6 @@ class HandleLoginRequest extends FormRequest
                 'email' => __('auth.failed'),
             ]);
         }
-
-        $this->session()->regenerate();
     }
 }
 

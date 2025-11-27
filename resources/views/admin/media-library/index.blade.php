@@ -21,7 +21,7 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>{{ __('admin.Search') }}</label>
+                            <label>{{ __('Search') }}</label>
                             <input type="text" id="searchInput" class="form-control" placeholder="{{ __('admin.Search media...') }}">
                         </div>
                     </div>

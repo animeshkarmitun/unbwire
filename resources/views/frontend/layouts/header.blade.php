@@ -49,13 +49,27 @@
                             <li><a href="{{ route('login') }}">{{ __('frontend.Login') }}</a></li>
                             <li><a href="{{ route('register') }}">{{ __('frontend.Register') }}</a></li>
                             @else
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-
-                            <li><a  onclick="event.preventDefault();
-                                this.closest('form').submit();" href="{{ route('register') }}">{{ __('frontend.Logout') }}</a></li>
-
-                            </form>
+                            <li class="dropdown user-dropdown">
+                                <a href="javascript:void(0)" class="dropdown-toggle user-dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-user-circle"></i> <span class="user-name">{{ auth()->user()->name }}</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-right user-dropdown-menu">
+                                    <li>
+                                        <a href="{{ route('user.profile') }}" class="dropdown-item">
+                                            <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Profile') }}
+                                        </a>
+                                    </li>
+                                    <li role="separator" class="divider"></li>
+                                    <li>
+                                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                                            @csrf
+                                            <a href="javascript:void(0)" onclick="event.preventDefault(); this.closest('form').submit();" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Logout') }}
+                                            </a>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
                             @endif
                         </ul>
                     </div>

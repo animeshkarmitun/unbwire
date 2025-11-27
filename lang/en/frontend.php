@@ -26,6 +26,7 @@ return array (
   'Login' => 'Login',
   'Register' => 'Register',
   'Logout' => 'Logout',
+  'Profile' => 'Profile',
   'More' => 'More',
   'About Us' => 'About Us',
   'contact' => 'contact',
