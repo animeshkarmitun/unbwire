@@ -88,17 +88,35 @@ class MediaController extends Controller
      */
     public function store(Request $request)
     {
+        $isAjax = $request->ajax() || $request->wantsJson() || $request->expectsJson();
+        
         // Validate file
-        $request->validate([
-            'file' => ['required', 'file', 'max:10240'], // 10MB max
-            'title' => ['nullable', 'string', 'max:255'],
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'caption' => ['nullable', 'string', 'max:500'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
+        try {
+            $request->validate([
+                'file' => ['required', 'file', 'max:10240'], // 10MB max
+                'title' => ['nullable', 'string', 'max:255'],
+                'alt_text' => ['nullable', 'string', 'max:255'],
+                'caption' => ['nullable', 'string', 'max:500'],
+                'description' => ['nullable', 'string', 'max:1000'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         try {
             $file = $request->file('file');
+            
+            if (!$file || !$file->isValid()) {
+                throw new \Exception('Invalid file uploaded');
+            }
+            
             $mimeType = $file->getMimeType();
             $originalFilename = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
@@ -147,7 +165,7 @@ class MediaController extends Controller
             ]);
 
             // Return response
-            if ($request->wantsJson() || $request->ajax()) {
+            if ($isAjax) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Media uploaded successfully',
@@ -158,7 +176,11 @@ class MediaController extends Controller
             return redirect()->route('admin.media-library.index')
                 ->with('success', 'Media uploaded successfully');
         } catch (\Exception $e) {
-            if ($request->wantsJson() || $request->ajax()) {
+            \Log::error('Media upload error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Error uploading media: ' . $e->getMessage()

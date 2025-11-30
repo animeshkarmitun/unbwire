@@ -23,6 +23,7 @@ class News extends Model
         'is_breaking_news',
         'show_at_slider',
         'show_at_popular',
+        'is_exclusive',
         'is_approved',
         'status',
         'views',
@@ -38,6 +39,7 @@ class News extends Model
         'is_breaking_news' => 'integer',
         'show_at_slider' => 'integer',
         'show_at_popular' => 'integer',
+        'is_exclusive' => 'integer',
         'is_approved' => 'integer',
         'status' => 'integer',
     ];

@@ -30,7 +30,12 @@
                 <div class="tab-content tab-bordered" id="myTab3Content">
                     @foreach ($languages as $language)
                         @php
-                            $categories = \App\Models\Category::where('language', $language->lang)->orderBy('order', 'asc')->orderBy('id', 'desc')->get();
+                            $categories = \App\Models\Category::where('language', $language->lang)
+                                ->with('parent', 'children')
+                                ->orderByRaw('COALESCE(`parent_id`, 0) ASC')
+                                ->orderBy('order', 'asc')
+                                ->orderBy('id', 'desc')
+                                ->get();
                         @endphp
                         <div class="tab-pane fade show {{ $loop->index === 0 ? 'active' : '' }}"
                             id="home-{{ $language->lang }}" role="tabpanel" aria-labelledby="home-tab2">
@@ -43,6 +48,7 @@
                                                     #
                                                 </th>
                                                 <th>{{ __('admin.Name') }}</th>
+                                                <th>{{ __('Parent Category') }}</th>
                                                 <th>{{ __('admin.Language Code') }}</th>
                                                 <th>Menu Order</th>
                                                 <th>{{ __('admin.In Nav') }}</th>
@@ -54,7 +60,22 @@
                                             @foreach ($categories as $category)
                                                 <tr>
                                                     <td>{{ $category->id }}</td>
-                                                    <td>{{ $category->name }}</td>
+                                                    <td>
+                                                        @if($category->parent_id)
+                                                            <i class="fas fa-level-up-alt text-muted mr-1" style="transform: rotate(90deg);"></i>
+                                                        @endif
+                                                        {{ $category->name }}
+                                                        @if($category->hasChildren())
+                                                            <span class="badge badge-info ml-1">{{ $category->children->count() }} {{ __('subcategories') }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($category->parent)
+                                                            <span class="badge badge-secondary">{{ $category->parent->name }}</span>
+                                                        @else
+                                                            <span class="text-muted">-</span>
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $category->language }}</td>
                                                     <td>
                                                         <span class="badge badge-info">{{ $category->order ?? 0 }}</span>

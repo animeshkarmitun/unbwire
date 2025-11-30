@@ -40,7 +40,7 @@
 
                     <div class="form-group">
                         <label>{{ __('admin.Description') }} <small class="text-muted">({{ __('admin.Optional') }})</small></label>
-                        <textarea class="form-control" name="description" id="uploadDescription" rows="3" placeholder="{{ __('admin.Enter description') }}"></textarea>
+                        <textarea class="form-control" name="description" id="uploadDescription" rows="3" placeholder="{{ __('Enter description') }}"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -55,66 +55,101 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // File input preview
-    $('#mediaFile').on('change', function() {
-        const file = this.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#previewImage').attr('src', e.target.result);
-                $('#filePreview').show();
-            };
-            reader.readAsDataURL(file);
-        } else {
-            $('#filePreview').hide();
+(function waitForjQuery(callback) {
+    if (window.jQuery) {
+        callback(window.jQuery);
+    } else {
+        setTimeout(function() {
+            waitForjQuery(callback);
+        }, 100);
+    }
+})(function($) {
+    $(document).ready(function() {
+        // Prevent multiple event handler attachments
+        if ($('#uploadMediaForm').data('handler-attached')) {
+            return;
         }
-        
-        // Update label
-        $(this).next('.custom-file-label').text(file ? file.name : '{{ __('admin.Choose file') }}');
-    });
+        $('#uploadMediaForm').data('handler-attached', true);
 
-    // Upload form submission
-    $('#uploadMediaForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const $submitBtn = $(this).find('button[type="submit"]');
-        const originalText = $submitBtn.html();
-        
-        $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> {{ __('admin.Uploading') }}...');
-
-        $.ajax({
-            url: '{{ route('admin.media-library.store') }}',
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                $('#uploadMediaModal').modal('hide');
-                $('#uploadMediaForm')[0].reset();
+        // File input preview
+        $('#mediaFile').on('change', function() {
+            const file = this.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#previewImage').attr('src', e.target.result);
+                    $('#filePreview').show();
+                };
+                reader.readAsDataURL(file);
+            } else {
                 $('#filePreview').hide();
-                $submitBtn.prop('disabled', false).html(originalText);
-                
-                Swal.fire('{{ __('admin.Success') }}', '{{ __('admin.Media uploaded successfully') }}', 'success')
-                    .then(() => {
-                        location.reload();
-                    });
-            },
-            error: function(xhr) {
-                let errorMessage = '{{ __('admin.Error uploading media') }}';
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMessage = xhr.responseJSON.error;
-                } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                
-                Swal.fire('{{ __('admin.Error') }}', errorMessage, 'error');
-                $submitBtn.prop('disabled', false).html(originalText);
             }
+            
+            // Update label
+            $(this).next('.custom-file-label').text(file ? file.name : '{{ __('admin.Choose file') }}');
+        });
+
+        // Upload form submission
+        $('#uploadMediaForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const $submitBtn = $(this).find('button[type="submit"]');
+            const originalText = $submitBtn.html();
+            
+            $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> {{ __('admin.Uploading') }}...');
+
+            $.ajax({
+                url: '{{ route('admin.media-library.store') }}',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    $('#uploadMediaModal').modal('hide');
+                    $('#uploadMediaForm')[0].reset();
+                    $('#filePreview').hide();
+                    $submitBtn.prop('disabled', false).html(originalText);
+                    
+                    Swal.fire('{{ __('admin.Success') }}', '{{ __('admin.Media uploaded successfully') }}', 'success')
+                        .then(() => {
+                            location.reload();
+                        });
+                },
+                error: function(xhr) {
+                    let errorMessage = '{{ __('admin.Error uploading media') }}';
+                    
+                    // Handle Laravel validation errors (422 status)
+                    if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        const errorMessages = [];
+                        for (let field in errors) {
+                            if (errors.hasOwnProperty(field)) {
+                                errorMessages.push(errors[field][0]);
+                            }
+                        }
+                        errorMessage = errorMessages.join('<br>');
+                    } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.status === 0) {
+                        errorMessage = '{{ __('admin.Network error. Please check your connection.') }}';
+                    } else if (xhr.status === 500) {
+                        errorMessage = '{{ __('admin.Server error. Please try again later.') }}';
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: '{{ __('admin.Error') }}',
+                        html: errorMessage
+                    });
+                    $submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
         });
     });
 });

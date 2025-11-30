@@ -1,11 +1,16 @@
 @php
     $languages = \App\Models\Language::where('status', 1)->get();
     $FeaturedCategories = \App\Models\Category::where(['status' => 1, 'language' => getLangauge(), 'show_at_nav' => 1])
+        ->whereNull('parent_id')
+        ->with(['children' => function($query) {
+            $query->where('status', 1)->orderBy('order', 'asc');
+        }])
         ->orderByRaw('COALESCE(`order`, 999999) ASC')
         ->orderBy('id', 'asc')
         ->get();
 
     $categories = \App\Models\Category::where(['status' => 1, 'language' => getLangauge(), 'show_at_nav' => 0])
+        ->whereNull('parent_id')
         ->orderByRaw('COALESCE(`order`, 999999) ASC')
         ->orderBy('id', 'asc')
         ->get();
@@ -56,16 +61,24 @@
                                 <ul class="dropdown-menu dropdown-menu-right user-dropdown-menu">
                                     <li>
                                         <a href="{{ route('user.profile') }}" class="dropdown-item">
-                                            <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Profile') }}
+                                            <i class="fas fa-user"></i>
+                                            <span>{{ __('frontend.Profile') }}</span>
                                         </a>
                                     </li>
-                                    <li role="separator" class="divider"></li>
                                     <li>
-                                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                                        <a href="{{ route('support-tickets.index') }}" class="dropdown-item">
+                                            <i class="fas fa-ticket-alt"></i>
+                                            <span>Support Tickets</span>
+                                        </a>
+                                    </li>
+                                   
+                                    <li>
+                                        <a href="javascript:void(0)" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            <span>{{ __('frontend.Logout') }}</span>
+                                        </a>
+                                        <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
                                             @csrf
-                                            <a href="javascript:void(0)" onclick="event.preventDefault(); this.closest('form').submit();" class="dropdown-item">
-                                                <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Logout') }}
-                                            </a>
                                         </form>
                                     </li>
                                 </ul>
@@ -99,10 +112,37 @@
                 <div class="collapse navbar-collapse justify-content-between" id="main_nav99">
                     <ul class="navbar-nav ml-auto ">
                         @foreach ($FeaturedCategories as $category)
-                            <li class="nav-item">
-                                <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
-                            </li>
-
+                            @php
+                                $hasActiveChildren = $category->children->where('status', 1)->count() > 0;
+                            @endphp
+                            @if($hasActiveChildren && $category->show_at_nav)
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        {{ $category->name }}
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">
+                                                {{ __('All') }} {{ $category->name }}
+                                            </a>
+                                        </li>
+                                        @if($hasActiveChildren)
+                                            <li role="separator" class="divider"></li>
+                                            @foreach($category->children->where('status', 1) as $child)
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">
+                                                        {{ $child->name }}
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        @endif
+                                    </ul>
+                                </li>
+                            @else
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
+                                </li>
+                            @endif
                         @endforeach
 
                         @if (count($categories) > 0)
@@ -186,9 +226,37 @@
                     <nav class="list-group list-group-flush">
                         <ul class="navbar-nav ">
                             @foreach ($FeaturedCategories as $category)
-                            <li class="nav-item">
-                                <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
-                            </li>
+                                @php
+                                    $hasActiveChildren = $category->children->where('status', 1)->count() > 0;
+                                @endphp
+                                @if($hasActiveChildren && $category->show_at_nav)
+                                    <li class="nav-item">
+                                        <a class="nav-link active dropdown-toggle text-dark" href="#" data-toggle="dropdown">
+                                            {{ $category->name }}
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-left">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">
+                                                    {{ __('All') }} {{ $category->name }}
+                                                </a>
+                                            </li>
+                                            @if($hasActiveChildren)
+                                                <li role="separator" class="divider"></li>
+                                                @foreach($category->children->where('status', 1) as $child)
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">
+                                                            {{ $child->name }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            @endif
+                                        </ul>
+                                    </li>
+                                @else
+                                    <li class="nav-item">
+                                        <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
+                                    </li>
+                                @endif
                             @endforeach
 
                             @if (count($categories) > 0)

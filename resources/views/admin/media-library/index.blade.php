@@ -197,14 +197,14 @@ $(document).ready(function() {
         const $item = $(this).closest('.media-item');
 
         Swal.fire({
-            title: '{{ __('admin.Are you sure?') }}',
-            text: '{{ __('admin.This action cannot be undone') }}',
+            title: '{{ __('Are you sure?') }}',
+            html: '<p>{{ __('This action cannot be undone') }}</p><p class="text-danger mt-2"><i class="fas fa-exclamation-triangle"></i> <strong>{{ __('Warning') }}:</strong> {{ __('Deleting this media will break all links where it is used (news articles, pages, etc.)') }}</p>',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: '{{ __('admin.Yes, delete it') }}',
-            cancelButtonText: '{{ __('admin.Cancel') }}'
+            confirmButtonText: '{{ __('Yes, delete it') }}',
+            cancelButtonText: '{{ __('Cancel') }}'
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
@@ -238,12 +238,185 @@ $(document).ready(function() {
             url: '/admin/media-library/' + id,
             method: 'GET',
             success: function(response) {
-                // Populate view modal
+                let html = '';
+                
+                // Media Preview Section
+                html += '<div class="text-center mb-4">';
+                if (response.file_type === 'image') {
+                    html += '<img src="' + response.file_url + '" alt="' + (response.alt_text || response.title || 'Media') + '" class="img-fluid" style="max-height: 400px; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: #f8f9fa;">';
+                } else if (response.file_type === 'video') {
+                    html += '<div class="d-flex align-items-center justify-content-center" style="height: 300px; background: #f0f0f0; border-radius: 4px;">';
+                    html += '<i class="fas fa-video fa-5x text-primary"></i>';
+                    html += '</div>';
+                } else if (response.file_type === 'audio') {
+                    html += '<div class="d-flex align-items-center justify-content-center" style="height: 300px; background: #f0f0f0; border-radius: 4px;">';
+                    html += '<i class="fas fa-music fa-5x text-primary"></i>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="d-flex align-items-center justify-content-center" style="height: 300px; background: #f0f0f0; border-radius: 4px;">';
+                    html += '<i class="fas fa-file fa-5x text-primary"></i>';
+                    html += '</div>';
+                }
+                html += '</div>';
+                
+                // Media Details
+                html += '<div class="row">';
+                html += '<div class="col-md-6">';
+                html += '<table class="table table-bordered">';
+                html += '<tbody>';
+                
+                // Title
+                html += '<tr>';
+                html += '<th style="width: 40%;">{{ __('Title') }}</th>';
+                html += '<td>' + (response.title ? escapeHtml(response.title) : '<span class="text-muted">-</span>') + '</td>';
+                html += '</tr>';
+                
+                // Original Filename
+                html += '<tr>';
+                html += '<th>{{ __('Filename') }}</th>';
+                html += '<td><code>' + (response.original_filename ? escapeHtml(response.original_filename) : '-') + '</code></td>';
+                html += '</tr>';
+                
+                // File Type
+                html += '<tr>';
+                html += '<th>{{ __('File Type') }}</th>';
+                html += '<td><span class="badge badge-primary">' + (response.file_type ? response.file_type.toUpperCase() : '-') + '</span></td>';
+                html += '</tr>';
+                
+                // MIME Type
+                html += '<tr>';
+                html += '<th>{{ __('MIME Type') }}</th>';
+                html += '<td><code>' + (response.mime_type || '-') + '</code></td>';
+                html += '</tr>';
+                
+                // File Size
+                html += '<tr>';
+                html += '<th>{{ __('File Size') }}</th>';
+                html += '<td>' + (response.human_readable_size || formatFileSize(response.file_size) || '-') + '</td>';
+                html += '</tr>';
+                
+                html += '</tbody>';
+                html += '</table>';
+                html += '</div>';
+                
+                html += '<div class="col-md-6">';
+                html += '<table class="table table-bordered">';
+                html += '<tbody>';
+                
+                // Dimensions (for images/videos)
+                if (response.width && response.height) {
+                    html += '<tr>';
+                    html += '<th style="width: 40%;">{{ __('Dimensions') }}</th>';
+                    html += '<td>' + response.width + ' × ' + response.height + ' px</td>';
+                    html += '</tr>';
+                }
+                
+                // Alt Text
+                html += '<tr>';
+                html += '<th>{{ __('Alt Text') }}</th>';
+                html += '<td>' + (response.alt_text ? escapeHtml(response.alt_text) : '<span class="text-muted">-</span>') + '</td>';
+                html += '</tr>';
+                
+                // Uploaded By
+                html += '<tr>';
+                html += '<th>{{ __('Uploaded By') }}</th>';
+                html += '<td>' + (response.uploader ? escapeHtml(response.uploader.name) : '-') + '</td>';
+                html += '</tr>';
+                
+                // Uploaded Date
+                html += '<tr>';
+                html += '<th>{{ __('Uploaded Date') }}</th>';
+                html += '<td>' + (response.created_at ? new Date(response.created_at).toLocaleString() : '-') + '</td>';
+                html += '</tr>';
+                
+                // Last Updated
+                html += '<tr>';
+                html += '<th>{{ __('Last Updated') }}</th>';
+                html += '<td>' + (response.updated_at ? new Date(response.updated_at).toLocaleString() : '-') + '</td>';
+                html += '</tr>';
+                
+                html += '</tbody>';
+                html += '</table>';
+                html += '</div>';
+                html += '</div>';
+                
+                // Caption
+                if (response.caption) {
+                    html += '<div class="form-group mt-3">';
+                    html += '<label><strong>{{ __('Caption') }}</strong></label>';
+                    html += '<p class="text-muted">' + escapeHtml(response.caption) + '</p>';
+                    html += '</div>';
+                }
+                
+                // Description
+                if (response.description) {
+                    html += '<div class="form-group mt-3">';
+                    html += '<label><strong>{{ __('Description') }}</strong></label>';
+                    html += '<p class="text-muted">' + escapeHtml(response.description) + '</p>';
+                    html += '</div>';
+                }
+                
+                // File URL
+                html += '<div class="form-group mt-3">';
+                html += '<label><strong>{{ __('File URL') }}</strong></label>';
+                html += '<div class="input-group">';
+                html += '<input type="text" class="form-control" value="' + (response.file_url || '') + '" readonly id="viewMediaUrl">';
+                html += '<div class="input-group-append">';
+                html += '<button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard(\'#viewMediaUrl\')"><i class="fas fa-copy"></i> {{ __('Copy') }}</button>';
+                html += '<a href="' + (response.file_url || '#') + '" target="_blank" class="btn btn-outline-primary"><i class="fas fa-external-link-alt"></i> {{ __('Open') }}</a>';
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+                
+                // Populate modal content
+                $('#viewMediaContent').html(html);
                 $('#viewMediaModal').modal('show');
-                // Add view modal content population here
+            },
+            error: function(xhr) {
+                Swal.fire('{{ __('Error') }}', '{{ __('Failed to load media details') }}', 'error');
             }
         });
     });
+    
+    // Helper function to format file size
+    function formatFileSize(bytes) {
+        if (!bytes) return '-';
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let size = bytes;
+        let unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+        return Math.round(size * 100) / 100 + ' ' + units[unitIndex];
+    }
+    
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+    
+    // Helper function to copy to clipboard
+    function copyToClipboard(selector) {
+        const input = document.querySelector(selector);
+        input.select();
+        document.execCommand('copy');
+        Swal.fire({
+            icon: 'success',
+            title: '{{ __('Copied') }}',
+            text: '{{ __('URL copied to clipboard') }}',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
 
     // Edit media
     $(document).on('click', '.edit-media', function() {
@@ -254,11 +427,24 @@ $(document).ready(function() {
             method: 'GET',
             success: function(response) {
                 $('#editMediaId').val(response.id);
+                $('#editMediaType').val(response.file_type || '');
                 $('#editTitle').val(response.title || '');
                 $('#editAltText').val(response.alt_text || '');
                 $('#editCaption').val(response.caption || '');
                 $('#editDescription').val(response.description || '');
-                $('#editIsFeatured').prop('checked', response.is_featured);
+                
+                // Show image preview if it's an image
+                const $preview = $('#editMediaPreview');
+                const $previewImage = $('#editPreviewImage');
+                
+                if (response.file_type === 'image' && response.file_url) {
+                    $previewImage.attr('src', response.file_url);
+                    $previewImage.attr('alt', response.alt_text || response.title || 'Media Preview');
+                    $preview.show();
+                } else {
+                    $preview.hide();
+                }
+                
                 $('#editMediaModal').modal('show');
             }
         });

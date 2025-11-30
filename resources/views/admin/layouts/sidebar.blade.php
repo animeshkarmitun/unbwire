@@ -109,6 +109,20 @@
                         @endif
                     </a></li>
             @endif
+
+            @if (canAccess(['support tickets index']))
+                <li class="dropdown {{ setSidebarActive(['admin.support-tickets.*', 'admin.support-ticket-tags.*']) }}">
+                    <a href="#" class="nav-link has-dropdown"><i class="fas fa-ticket-alt"></i>
+                        <span>Support Tickets</span></a>
+                    <ul class="dropdown-menu">
+                        <li class="{{ setSidebarActive(['admin.support-tickets.*']) }}"><a class="nav-link"
+                                href="{{ route('admin.support-tickets.index') }}">All Tickets</a></li>
+                        <li class="{{ setSidebarActive(['admin.support-ticket-tags.*']) }}"><a class="nav-link"
+                                href="{{ route('admin.support-ticket-tags.index') }}">Tags</a></li>
+                    </ul>
+                </li>
+            @endif
+
             @if (canAccess(['home section index']))
                 <li class="{{ setSidebarActive(['admin.home-section-setting.*']) }}"><a class="nav-link"
                         href="{{ route('admin.home-section-setting.index') }}"><i class="fas fa-wrench"></i>

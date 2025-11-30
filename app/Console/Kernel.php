@@ -21,6 +21,10 @@ class Kernel extends ConsoleKernel
         $schedule->job(new \App\Jobs\AggregateDailyAnalytics())
             ->dailyAt('01:00')
             ->timezone('UTC');
+        
+        // Check support ticket SLA every hour
+        $schedule->command('support-tickets:check-sla')
+            ->hourly();
     }
 
     /**

@@ -113,8 +113,14 @@
         .user-dropdown-menu .dropdown-item i {
             color: #666;
             transition: color 0.2s ease;
-            width: 16px;
+            width: 20px;
             text-align: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .user-dropdown-menu .dropdown-item span {
+            flex: 1;
         }
         
         .user-dropdown-menu .dropdown-item:hover i {

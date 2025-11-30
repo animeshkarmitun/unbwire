@@ -36,6 +36,22 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="">{{ __('Parent Category') }} ({{ __('Optional') }})</label>
+                        <select name="parent_id" id="parent_id" class="form-control select2">
+                            <option value="">{{ __('None (Main Category)') }}</option>
+                            @foreach($parentCategories as $parent)
+                                <option value="{{ $parent->id }}" data-language="{{ $parent->language }}">
+                                    {{ $parent->name }} ({{ $parent->language }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">{{ __('Select a parent category to make this a subcategory. Leave empty for main category.') }}</small>
+                        @error('parent_id')
+                            <p class="text-danger">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
                         <label for="">{{ __('admin.Show at Nav') }} </label>
                         <select name="show_at_nav" id="" class="form-control">
                             <option value="0">{{ __('admin.No') }}</option>
@@ -69,3 +85,34 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            // Filter parent categories based on selected language
+            $('#language-select').on('change', function() {
+                const selectedLanguage = $(this).val();
+                const $parentSelect = $('#parent_id');
+                
+                if (selectedLanguage) {
+                    // Show only categories matching selected language
+                    $parentSelect.find('option[data-language]').each(function() {
+                        if ($(this).data('language') === selectedLanguage) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                    
+                    // Reset selection if current selection doesn't match
+                    if ($parentSelect.val() && $parentSelect.find('option:selected').data('language') !== selectedLanguage) {
+                        $parentSelect.val('').trigger('change');
+                    }
+                } else {
+                    // Show all if no language selected
+                    $parentSelect.find('option[data-language]').show();
+                }
+            });
+        });
+    </script>
+@endpush

@@ -236,6 +236,7 @@ class NewsController extends Controller
         $news->is_breaking_news = $request->is_breaking_news == 1 ? 1 : 0;
         $news->show_at_slider = $request->show_at_slider == 1 ? 1 : 0;
         $news->show_at_popular = $request->show_at_popular == 1 ? 1 : 0;
+        $news->is_exclusive = $request->is_exclusive == 1 ? 1 : 0;
         $news->status = $request->status == 1 ? 1 : 0;
         $news->save();
 

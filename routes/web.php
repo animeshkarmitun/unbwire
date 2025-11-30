@@ -56,6 +56,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [\App\Http\Controllers\Frontend\UserProfileController::class, 'index'])->name('user.profile');
     Route::post('/profile/password/update', [\App\Http\Controllers\Frontend\UserProfileController::class, 'updatePassword'])->name('user.profile.password.update');
     Route::post('/profile/package/change', [\App\Http\Controllers\Frontend\UserProfileController::class, 'changePackage'])->name('user.profile.package.change');
+    
+    // Support Ticket Routes
+    Route::prefix('support-tickets')->name('support-tickets.')->group(function() {
+        Route::post('/{id}/reply', [\App\Http\Controllers\Frontend\SupportTicketController::class, 'addReply'])->name('reply');
+        Route::post('/{id}/rating', [\App\Http\Controllers\Frontend\SupportTicketController::class, 'submitRating'])->name('rating');
+    });
+    Route::resource('support-tickets', \App\Http\Controllers\Frontend\SupportTicketController::class);
 });
 
 require __DIR__.'/auth.php';

@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ImageGalleryController;
 use App\Http\Controllers\Admin\VideoGalleryController;
+use App\Http\Controllers\Admin\SupportTicketController;
 use App\Models\FooterGridOne;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
@@ -194,6 +195,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::post('/{id}/restore', [ActivityLogController::class, 'restore'])->name('restore');
         Route::get('/{id}', [ActivityLogController::class, 'show'])->name('show');
     });
+
+    /** Support Ticket Routes */
+    Route::prefix('support-tickets')->name('support-tickets.')->group(function() {
+        Route::post('/{id}/assign', [SupportTicketController::class, 'assign'])->name('assign');
+        Route::post('/{id}/reply', [SupportTicketController::class, 'addReply'])->name('reply');
+    });
+    Route::resource('support-tickets', SupportTicketController::class);
+    
+    /** Support Ticket Tags Routes */
+    Route::resource('support-ticket-tags', \App\Http\Controllers\Admin\SupportTicketTagController::class);
 
 });
 
