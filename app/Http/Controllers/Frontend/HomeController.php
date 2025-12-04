@@ -52,28 +52,36 @@ class HomeController extends Controller
         $breakingNews = News::where(['is_breaking_news' => 1,])
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')->take(10)->get();
+            ->orderBy('breaking_order', 'ASC')
+            ->orderBy('created_at', 'DESC')
+            ->take(10)->get();
             
         $heroSlider = News::with(['category', 'auther'])
             ->where('show_at_slider', 1)
             ->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')->take(7)
+            ->orderBy('slider_order', 'ASC')
+            ->orderBy('created_at', 'DESC')
+            ->take(7)
             ->get();
 
         $recentNews = News::with(['category', 'auther'])
             ->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')->take(6)->get();
+            ->orderBy('order_position', 'ASC')
+            ->orderBy('created_at', 'DESC')
+            ->take(6)->get();
             
         $popularNews = News::with(['category', 'auther'])
             ->where('show_at_popular', 1)
             ->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('updated_at', 'DESC')->take(4)->get();
+            ->orderBy('popular_order', 'ASC')
+            ->orderBy('created_at', 'DESC')
+            ->take(4)->get();
 
         $HomeSectionSetting = HomeSectionSetting::where('language', getLangauge())->first();
 
@@ -81,28 +89,32 @@ class HomeController extends Controller
             $categorySectionOne = News::where('category_id', $HomeSectionSetting->category_section_one)
                 ->activeEntries()->withLocalize()
                 ->forSubscriptionTier($subscriptionTier)
-                ->orderBy('id', 'DESC')
+                ->orderBy('order_position', 'ASC')
+                ->orderBy('created_at', 'DESC')
                 ->take(8)
                 ->get();
 
         $categorySectionTwo = News::where('category_id', $HomeSectionSetting->category_section_two)
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')
+            ->orderBy('order_position', 'ASC')
+            ->orderBy('created_at', 'DESC')
             ->take(8)
             ->get();
 
         $categorySectionThree = News::where('category_id', $HomeSectionSetting->category_section_three)
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')
+            ->orderBy('order_position', 'ASC')
+            ->orderBy('created_at', 'DESC')
             ->take(6)
             ->get();
 
         $categorySectionFour = News::where('category_id', $HomeSectionSetting->category_section_four)
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')
+            ->orderBy('order_position', 'ASC')
+            ->orderBy('created_at', 'DESC')
             ->take(4)
             ->get();
         }else {
@@ -507,11 +519,17 @@ class HomeController extends Controller
         $news = $news->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->orderBy('order_position', 'ASC')
+            ->orderBy('created_at', 'DESC')
             ->paginate(20);
 
 
         $recentNews = News::with(['category', 'auther'])
-            ->activeEntries()->withLocalize()->orderBy('id', 'DESC')->take(4)->get();
+            ->activeEntries()
+            ->withLocalize()
+            ->orderBy('order_position', 'ASC')
+            ->orderBy('created_at', 'DESC')
+            ->take(4)->get();
         $mostCommonTags = $this->mostCommonTags();
 
         // Get categories ordered to match menu: nav categories first by order, then non-nav by order

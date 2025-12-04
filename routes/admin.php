@@ -64,9 +64,19 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     /** News Route */
     Route::get('fetch-news-category', [NewsController::class, 'fetchCategory'])->name('fetch-news-category');
     Route::get('toggle-news-status', [NewsController::class, 'toggleNewsStatus'])->name('toggle-news-status');
+    Route::post('update-news-order-position', [NewsController::class, 'updateOrderPosition'])->name('update-news-order-position');
     Route::get('news-copy/{id}', [NewsController::class, 'copyNews'])->name('news-copy');
     Route::get('pending-news', [NewsController::class, 'pendingNews'])->name('pending.news');
     Route::put('approve-news', [NewsController::class, 'approveNews'])->name('approve.news');
+
+    /** News Sorting Routes */
+    Route::prefix('news-sorting')->name('news-sorting.')->group(function() {
+        Route::get('/', [NewsController::class, 'newsSorting'])->name('index');
+        Route::get('/get-news/{type}', [NewsController::class, 'getNewsByType'])->name('get-news');
+        Route::post('/update-order', [NewsController::class, 'updateSortingOrder'])->name('update-order');
+        Route::post('/add-to-tab', [NewsController::class, 'addNewsToTab'])->name('add-to-tab');
+        Route::post('/remove-from-tab', [NewsController::class, 'removeNewsFromTab'])->name('remove-from-tab');
+    });
 
     Route::resource('news', NewsController::class);
 

@@ -22,9 +22,9 @@ class NewsController extends Controller
 
     public function __construct()
     {
-        $this->middleware(['permission:news index,admin'])->only(['index', 'copyNews']);
+        $this->middleware(['permission:news index,admin'])->only(['index', 'copyNews', 'newsSorting', 'getNewsByType', 'updateSortingOrder', 'addNewsToTab', 'removeNewsFromTab']);
         $this->middleware(['permission:news create,admin'])->only(['create', 'store']);
-        $this->middleware(['permission:news update,admin'])->only(['edit', 'update']);
+        $this->middleware(['permission:news update,admin'])->only(['edit', 'update', 'updateOrderPosition']);
         $this->middleware(['permission:news delete,admin'])->only(['destroy']);
         $this->middleware(['permission:news all-access,admin'])->only(['toggleNewsStatus']);
     }
@@ -175,6 +175,40 @@ class NewsController extends Controller
             return response(['status' => 'success', 'message' => __('admin.Updated successfully!')]);
         } catch (\Throwable $th) {
             \Log::error('Toggle news status error: ' . $th->getMessage(), [
+                'request' => $request->all(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            return response(['status' => 'error', 'message' => 'Failed to update: ' . $th->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update order position of news
+     */
+    public function updateOrderPosition(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required|exists:news,id',
+                'order_position' => 'required|integer|min:0'
+            ]);
+
+            $news = News::findOrFail($request->id);
+            
+            // Check permission - only allow if user has all-access or is the author
+            if(!canAccess(['news all-access'])){
+                if($news->auther_id != auth()->guard('admin')->user()->id){
+                    return response(['status' => 'error', 'message' => 'Unauthorized'], 403);
+                }
+            }
+            
+            $oldValue = $news->order_position ?? 0;
+            $news->order_position = (int)$request->order_position;
+            $news->save();
+
+            return response(['status' => 'success', 'message' => __('admin.Updated successfully!')]);
+        } catch (\Throwable $th) {
+            \Log::error('Update news order position error: ' . $th->getMessage(), [
                 'request' => $request->all(),
                 'trace' => $th->getTraceAsString()
             ]);
@@ -339,5 +373,202 @@ class NewsController extends Controller
         toast(__('admin.Copied Successfully!'), 'success');
 
         return redirect()->back();
+    }
+
+    /**
+     * Display News Sorting page
+     */
+    public function newsSorting()
+    {
+        $languages = Language::all();
+        return view('admin.news-sorting.index', compact('languages'));
+    }
+
+    /**
+     * Get news by type (breaking, slider, popular, latest)
+     */
+    public function getNewsByType(Request $request, string $type)
+    {
+        $request->validate([
+            'language' => 'required|string'
+        ]);
+
+        $query = News::with(['category', 'auther'])
+            ->where('language', $request->language)
+            ->where('is_approved', 1)
+            ->where('status', 1);
+
+        switch ($type) {
+            case 'breaking':
+                $query->where('is_breaking_news', 1);
+                break;
+            case 'slider':
+                $query->where('show_at_slider', 1);
+                break;
+            case 'popular':
+                $query->where('show_at_popular', 1);
+                break;
+            case 'latest':
+                // Get all latest news (not filtered by type)
+                break;
+            default:
+                return response(['status' => 'error', 'message' => 'Invalid type'], 400);
+        }
+
+        // Handle search for latest news
+        if ($type === 'latest' && $request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('category', function($categoryQuery) use ($searchTerm) {
+                      $categoryQuery->where('name', 'like', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        if ($type === 'latest') {
+            $limit = $request->has('limit') ? (int)$request->limit : 20;
+            $news = $query->orderBy('created_at', 'DESC')
+                ->take($limit)
+                ->get();
+        } else {
+            // Use tab-specific order columns
+            $orderColumnMap = [
+                'breaking' => 'breaking_order',
+                'slider' => 'slider_order',
+                'popular' => 'popular_order'
+            ];
+            
+            $orderColumn = $orderColumnMap[$type] ?? 'order_position';
+            $news = $query->orderBy($orderColumn, 'ASC')
+                ->orderBy('created_at', 'DESC')
+                ->get();
+        }
+
+        return response(['status' => 'success', 'data' => $news]);
+    }
+
+    /**
+     * Update sorting order via drag and drop
+     */
+    public function updateSortingOrder(Request $request)
+    {
+        try {
+            $request->validate([
+                'news_ids' => 'required|array',
+                'news_ids.*' => 'required|exists:news,id',
+                'type' => 'required|in:breaking,slider,popular'
+            ]);
+
+            // Map type to specific order column
+            $orderColumnMap = [
+                'breaking' => 'breaking_order',
+                'slider' => 'slider_order',
+                'popular' => 'popular_order'
+            ];
+
+            $orderColumn = $orderColumnMap[$request->type];
+
+            foreach ($request->news_ids as $index => $newsId) {
+                News::where('id', $newsId)->update([
+                    $orderColumn => $index + 1
+                ]);
+            }
+
+            return response(['status' => 'success', 'message' => 'Order updated successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Update sorting order error: ' . $e->getMessage());
+            return response(['status' => 'error', 'message' => 'Failed to update order'], 500);
+        }
+    }
+
+    /**
+     * Add news to a specific tab
+     */
+    public function addNewsToTab(Request $request)
+    {
+        try {
+            $request->validate([
+                'news_id' => 'required|exists:news,id',
+                'type' => 'required|in:breaking,slider,popular'
+            ]);
+
+            $news = News::findOrFail($request->news_id);
+            
+            // Check permission
+            if(!canAccess(['news all-access'])){
+                if($news->auther_id != auth()->guard('admin')->user()->id){
+                    return response(['status' => 'error', 'message' => 'Unauthorized'], 403);
+                }
+            }
+
+            $fieldMap = [
+                'breaking' => 'is_breaking_news',
+                'slider' => 'show_at_slider',
+                'popular' => 'show_at_popular'
+            ];
+
+            $field = $fieldMap[$request->type];
+            
+            // Map type to specific order column
+            $orderColumnMap = [
+                'breaking' => 'breaking_order',
+                'slider' => 'slider_order',
+                'popular' => 'popular_order'
+            ];
+            
+            $orderColumn = $orderColumnMap[$request->type];
+            
+            // Get max order for this specific tab to add at the end
+            $maxOrder = News::where($field, 1)
+                ->where('language', $news->language)
+                ->max($orderColumn) ?? 0;
+
+            $news->{$field} = 1;
+            $news->{$orderColumn} = $maxOrder + 1;
+            $news->save();
+
+            return response(['status' => 'success', 'message' => 'News added successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Add news to tab error: ' . $e->getMessage());
+            return response(['status' => 'error', 'message' => 'Failed to add news'], 500);
+        }
+    }
+
+    /**
+     * Remove news from a specific tab
+     */
+    public function removeNewsFromTab(Request $request)
+    {
+        try {
+            $request->validate([
+                'news_id' => 'required|exists:news,id',
+                'type' => 'required|in:breaking,slider,popular'
+            ]);
+
+            $news = News::findOrFail($request->news_id);
+            
+            // Check permission
+            if(!canAccess(['news all-access'])){
+                if($news->auther_id != auth()->guard('admin')->user()->id){
+                    return response(['status' => 'error', 'message' => 'Unauthorized'], 403);
+                }
+            }
+
+            $fieldMap = [
+                'breaking' => 'is_breaking_news',
+                'slider' => 'show_at_slider',
+                'popular' => 'show_at_popular'
+            ];
+
+            $field = $fieldMap[$request->type];
+            $news->{$field} = 0;
+            $news->save();
+
+            return response(['status' => 'success', 'message' => 'News removed successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Remove news from tab error: ' . $e->getMessage());
+            return response(['status' => 'error', 'message' => 'Failed to remove news'], 500);
+        }
     }
 }

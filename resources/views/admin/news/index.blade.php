@@ -86,6 +86,7 @@
                                                 <th>{{ __('admin.In Popular') }}</th>
                                                 @endif
                                                 <th>{{ __('admin.Status') }}</th>
+                                                <th>Order Position</th>
                                                 @if (canAccess(['news all-access']))
                                                 <th>Created By</th>
                                                 @endif
@@ -138,6 +139,14 @@
                                                                 value="1" type="checkbox" class="custom-switch-input toggle-status">
                                                             <span class="custom-switch-indicator"></span>
                                                         </label>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" 
+                                                            class="form-control order-position-input" 
+                                                            value="{{ $item->order_position ?? 0 }}" 
+                                                            data-id="{{ $item->id }}"
+                                                            min="0"
+                                                            style="width: 80px; display: inline-block;">
                                                     </td>
                                                     @if (canAccess(['news all-access']))
                                                     <td>
@@ -206,7 +215,7 @@
                 "columnDefs": [
                     {
                         "sortable": false,
-                        "targets": [2, 3]
+                        "targets": [1, -1] // Disable sorting for Image column (1) and Action column (last)
                     }
                 ],
                 "order": [
@@ -239,6 +248,52 @@
                     },
                     error: function(error){
                         console.log(error);
+                    }
+                })
+            })
+
+            // Handle order position update on blur (when user leaves the input field)
+            $(document).on('blur', '.order-position-input', function(){
+                let $input = $(this);
+                let id = $input.data('id');
+                let orderPosition = parseInt($input.val()) || 0;
+
+                // Validate input
+                if(orderPosition < 0){
+                    orderPosition = 0;
+                    $input.val(0);
+                }
+
+                $.ajax({
+                    method: 'POST',
+                    url: "{{ route('admin.update-news-order-position') }}",
+                    data: {
+                        id: id,
+                        order_position: orderPosition,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(data){
+                        if(data.status === 'success'){
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message
+                            })
+                        } else {
+                            Toast.fire({
+                                icon: 'error',
+                                title: data.message || 'Failed to update order position'
+                            })
+                        }
+                    },
+                    error: function(xhr){
+                        let errorMessage = 'Failed to update order position';
+                        if(xhr.responseJSON && xhr.responseJSON.message){
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        Toast.fire({
+                            icon: 'error',
+                            title: errorMessage
+                        })
                     }
                 })
             })

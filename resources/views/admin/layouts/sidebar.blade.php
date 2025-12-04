@@ -62,7 +62,7 @@
             @endif
 
             @if (canAccess(['news index']))
-                <li class="dropdown {{ setSidebarActive(['admin.news.*', 'admin.pending.news']) }}">
+                <li class="dropdown {{ setSidebarActive(['admin.news.*', 'admin.pending.news', 'admin.news-sorting.*']) }}">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-newspaper"></i>
                         <span>{{ __('admin.News') }}</span></a>
                     <ul class="dropdown-menu">
@@ -71,6 +71,9 @@
 
                         <li class="{{ setSidebarActive(['admin.pending.news']) }}"><a class="nav-link"
                                 href="{{ route('admin.pending.news') }}">{{ __('admin.Pending News') }}</a></li>
+
+                        <li class="{{ setSidebarActive(['admin.news-sorting.*']) }}"><a class="nav-link"
+                                href="{{ route('admin.news-sorting.index') }}">News Sorting</a></li>
 
                     </ul>
                 </li>
