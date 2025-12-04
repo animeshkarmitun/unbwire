@@ -189,7 +189,7 @@
     <div class="container">
         <div class="row">
 
-            <div class="col-md-12">
+            <div class="col-md-12 mt-4">
                 <aside class="wrapper__list__article">
                     <h4 class="border_section">{{ @$categorySectionOne->first()->category->name }}</h4>
                 </aside>
@@ -242,7 +242,7 @@
     <div class="container">
         <div class="row">
 
-            <div class="col-md-12">
+            <div class="col-md-12 mt-4">
                 <aside class="wrapper__list__article">
                     <h4 class="border_section">{{ @$categorySectionTwo->first()->category->name }}</h4>
                 </aside>

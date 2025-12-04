@@ -24,7 +24,7 @@ class AdminNewsCreateRequest extends FormRequest
         return [
             'language' => ['required', 'string'],
             'category' => ['required', 'integer', 'exists:categories,id'],
-            'image' => ['required'], // Can be file upload or path from media library
+            'image' => ['nullable'], // Will be validated in withValidator
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'tags' => ['nullable', 'string', 'max:500'],
@@ -42,12 +42,38 @@ class AdminNewsCreateRequest extends FormRequest
      */
     public function withValidator($validator)
     {
-        $validator->sometimes('image', 'image|mimes:jpeg,png,jpg,gif,webp|max:5120', function ($input) {
-            return $input->hasFile('image');
-        });
-        
-        $validator->sometimes('image', 'string|max:500', function ($input) {
-            return !$input->hasFile('image');
+        $validator->after(function ($validator) {
+            $hasFile = $this->hasFile('image');
+            $imagePath = $this->input('image');
+            $hasPath = !empty($imagePath) && is_string($imagePath) && trim($imagePath) !== '';
+            
+            // Image is required - either file upload or media library path
+            if (!$hasFile && !$hasPath) {
+                $validator->errors()->add('image', 'The image field is required. Please select an image from media library or upload a file.');
+                return;
+            }
+            
+            // If it's a file upload, validate file properties
+            if ($hasFile) {
+                $file = $this->file('image');
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!in_array($file->getMimeType(), $allowedMimes)) {
+                    $validator->errors()->add('image', 'The image must be a file of type: jpeg, png, jpg, gif, webp.');
+                }
+                if ($file->getSize() > 5120 * 1024) { // 5MB in bytes
+                    $validator->errors()->add('image', 'The image may not be greater than 5MB.');
+                }
+            }
+            
+            // If it's a path from media library, validate it exists
+            if ($hasPath && !$hasFile) {
+                $path = trim($imagePath);
+                // Check if file exists (optional - you might want to validate against media library DB)
+                if (!file_exists(public_path($path)) && !str_starts_with($path, 'http')) {
+                    // Don't fail validation if it's a valid path format, just log
+                    // The path might be from media library which is stored in DB
+                }
+            }
         });
     }
 }

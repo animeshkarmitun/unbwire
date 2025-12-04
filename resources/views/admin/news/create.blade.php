@@ -19,7 +19,9 @@
                         <select name="language" id="language-select" class="form-control select2">
                             <option value="">--{{ __('Select') }}--</option>
                             @foreach ($languages as $lang)
-                                <option value="{{ $lang->lang }}">{{ $lang->name }}</option>
+                                <option value="{{ $lang->lang }}" {{ old('language') == $lang->lang ? 'selected' : '' }}>
+                                    {{ $lang->name }}
+                                </option>
                             @endforeach
                         </select>
                         @error('language')
@@ -31,7 +33,14 @@
                         <label for="">{{ __('Category') }}</label>
                         <select name="category" id="category" class="form-control select2">
                             <option value="">--{{ __('Select') }}---</option>
-
+                            @if(old('category'))
+                                @php
+                                    $oldCategory = \App\Models\Category::find(old('category'));
+                                @endphp
+                                @if($oldCategory)
+                                    <option value="{{ $oldCategory->id }}" selected>{{ $oldCategory->name }}</option>
+                                @endif
+                            @endif
                         </select>
                         @error('category')
                             <p class="text-danger">{{ $message }}</p>
@@ -42,14 +51,14 @@
                     <div class="form-group">
                         <label for="">{{ __('Feature Image') }}</label>
                         <div id="image-preview" class="image-preview" style="position: relative; min-height: 200px;">
-                            <button type="button" id="select-featured-image" class="btn btn-primary" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+                            <button type="button" id="select-featured-image" class="btn btn-primary" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; {{ old('image') ? 'display: none;' : '' }}">
                                 <i class="fas fa-images"></i> {{ __('Select from Media Library') }}
                             </button>
-                            <button type="button" id="change-featured-image" class="btn btn-sm btn-warning" style="position: absolute; top: 10px; right: 10px; z-index: 10; display: none;">
+                            <button type="button" id="change-featured-image" class="btn btn-sm btn-warning" style="position: absolute; top: 10px; right: 10px; z-index: 10; {{ old('image') ? '' : 'display: none;' }}">
                                 <i class="fas fa-edit"></i> {{ __('Change Image') }}
                             </button>
-                            <input type="hidden" name="image" id="featured-image-path" value="">
-                            <div id="featured-image-preview" style="display: none; width: 100%; height: 100%; min-height: 200px; background-size: cover; background-position: center;"></div>
+                            <input type="hidden" name="image" id="featured-image-path" value="{{ old('image', '') }}">
+                            <div id="featured-image-preview" style="{{ old('image') ? 'background-image: url(' . asset(old('image')) . '); display: block;' : 'display: none;' }} width: 100%; height: 100%; min-height: 200px; background-size: cover; background-position: center;"></div>
                         </div>
                         @error('image')
                             <p class="text-danger">{{ $message }}</p>
@@ -58,7 +67,7 @@
 
                     <div class="form-group">
                         <label for="">{{ __('Title') }}</label>
-                        <input name="title" type="text" class="form-control" id="name">
+                        <input name="title" type="text" class="form-control" id="name" value="{{ old('title', '') }}">
                         @error('title')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
@@ -66,7 +75,7 @@
 
                     <div class="form-group">
                         <label for="">{{ __('Content') }}</label>
-                        <textarea name="content" class="summernote-simple"></textarea>
+                        <textarea name="content" class="summernote-simple">{{ old('content', '') }}</textarea>
                         @error('content')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
@@ -74,7 +83,7 @@
 
                     <div class="form-group">
                         <label class="">{{ __('Tags') }}</label>
-                        <input name="tags" type="text" class="form-control inputtags">
+                        <input name="tags" type="text" class="form-control inputtags" value="{{ old('tags', '') }}">
                         @error('tags')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
@@ -82,7 +91,7 @@
 
                     <div class="form-group">
                         <label for="">{{ __('Meta Title') }}</label>
-                        <input name="meta_title" type="text" class="form-control" id="name">
+                        <input name="meta_title" type="text" class="form-control" id="name" value="{{ old('meta_title', '') }}">
                         @error('meta_title')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
@@ -90,7 +99,7 @@
 
                     <div class="form-group">
                         <label for="">{{ __('Meta Description') }}</label>
-                        <textarea name="meta_description" class="form-control"></textarea>
+                        <textarea name="meta_description" class="form-control">{{ old('meta_description', '') }}</textarea>
                         @error('meta_description')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
@@ -101,7 +110,7 @@
                             <div class="form-group">
                                 <div class="control-label">{{ __('Status') }}</div>
                                 <label class="custom-switch mt-2">
-                                    <input value="1" type="checkbox" name="status" class="custom-switch-input">
+                                    <input value="1" type="checkbox" name="status" class="custom-switch-input" {{ old('status') == '1' ? 'checked' : '' }}>
                                     <span class="custom-switch-indicator"></span>
                                 </label>
                             </div>
@@ -114,7 +123,7 @@
                                 <div class="control-label">{{ __('Is Breaking News') }}</div>
                                 <label class="custom-switch mt-2">
                                     <input value="1" type="checkbox" name="is_breaking_news"
-                                        class="custom-switch-input">
+                                        class="custom-switch-input" {{ old('is_breaking_news') == '1' ? 'checked' : '' }}>
                                     <span class="custom-switch-indicator"></span>
                                 </label>
                             </div>
@@ -123,7 +132,7 @@
                             <div class="form-group">
                                 <div class="control-label">{{ __('Show At Slider') }}</div>
                                 <label class="custom-switch mt-2">
-                                    <input value="1" type="checkbox" name="show_at_slider" class="custom-switch-input">
+                                    <input value="1" type="checkbox" name="show_at_slider" class="custom-switch-input" {{ old('show_at_slider') == '1' ? 'checked' : '' }}>
                                     <span class="custom-switch-indicator"></span>
                                 </label>
                             </div>
@@ -134,7 +143,7 @@
                                 <div class="control-label">{{ __('Show At Popular') }}</div>
                                 <label class="custom-switch mt-2">
                                     <input value="1" type="checkbox" name="show_at_popular"
-                                        class="custom-switch-input">
+                                        class="custom-switch-input" {{ old('show_at_popular') == '1' ? 'checked' : '' }}>
                                     <span class="custom-switch-indicator"></span>
                                 </label>
                             </div>
@@ -144,7 +153,7 @@
                                 <div class="control-label">{{ __('Is Exclusive') }}</div>
                                 <label class="custom-switch mt-2">
                                     <input value="1" type="checkbox" name="is_exclusive"
-                                        class="custom-switch-input">
+                                        class="custom-switch-input" {{ old('is_exclusive') == '1' ? 'checked' : '' }}>
                                     <span class="custom-switch-indicator"></span>
                                 </label>
                             </div>
@@ -175,6 +184,26 @@
             }
         })(function($) {
             $(document).ready(function() {
+                // Restore image preview if old image exists
+                var oldImage = $('#featured-image-path').val();
+                if (oldImage && oldImage.trim() !== '') {
+                    $('#featured-image-preview').css('background-image', 'url(' + '{{ asset("") }}' + oldImage + ')').show();
+                    $('#select-featured-image').hide();
+                    $('#change-featured-image').show();
+                }
+
+                // Restore category if old category exists
+                var oldCategory = '{{ old("category") }}';
+                var oldLanguage = '{{ old("language") }}';
+                if (oldLanguage && oldCategory) {
+                    // Trigger category load for the selected language
+                    $('#language-select').trigger('change');
+                    // Wait a bit for categories to load, then select the old category
+                    setTimeout(function() {
+                        $('#category').val(oldCategory).trigger('change');
+                    }, 500);
+                }
+
                 $('#language-select').on('change', function() {
                     let lang = $(this).val();
                     $.ajax({
@@ -189,8 +218,9 @@
                                 `<option value="">---{{ __('Select') }}---</option>`);
 
                             $.each(data, function(index, data) {
+                                var selected = (oldCategory && oldCategory == data.id) ? 'selected' : '';
                                 $('#category').append(
-                                    `<option value="${data.id}">${data.name}</option>`)
+                                    `<option value="${data.id}" ${selected}>${data.name}</option>`)
                             })
 
                         },
@@ -243,6 +273,14 @@
                             });
                         }
                     });
+                    
+                    // Restore Summernote content if old content exists
+                    @if(old('content'))
+                    var oldContent = @json(old('content'));
+                    if (oldContent && oldContent.trim() !== '') {
+                        $('.summernote-simple').summernote('code', oldContent);
+                    }
+                    @endif
                 }, 500);
             }); // End document ready
         });

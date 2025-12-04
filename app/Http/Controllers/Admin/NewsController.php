@@ -82,9 +82,16 @@ class NewsController extends Controller
         if ($request->hasFile('image')) {
             // File upload
             $imagePath = $this->handleFileUpload($request, 'image');
-        } elseif ($request->filled('image')) {
+        } elseif ($request->filled('image') && !empty(trim($request->input('image')))) {
             // Path from media library
-            $imagePath = $request->input('image');
+            $imagePath = trim($request->input('image'));
+        }
+        
+        // If still no image, return with error
+        if (empty($imagePath)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['image' => 'Please select an image from media library or upload a file.']);
         }
 
         $news = new News();
