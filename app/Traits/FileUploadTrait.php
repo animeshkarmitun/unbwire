@@ -5,6 +5,7 @@ namespace App\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\ImageProcessingService;
 
 trait FileUploadTrait
 {
@@ -49,6 +50,71 @@ trait FileUploadTrait
 
         // Return path compatible with asset() helper (storage/uploads/filename)
         return 'storage/' . $storedPath;
+    }
+
+    /**
+     * Handle image upload with processing (cropping, WebP conversion, watermark)
+     *
+     * @param Request $request
+     * @param string $fieldName
+     * @param string|null $oldPath
+     * @param array|null $cropData
+     * @param bool $convertToWebp
+     * @param bool $addWatermark
+     * @param string|null $watermarkPosition
+     * @param bool $keepOriginal
+     * @return string|null
+     */
+    public function handleImageUploadWithProcessing(
+        Request $request,
+        string $fieldName,
+        ?string $oldPath = null,
+        ?array $cropData = null,
+        bool $convertToWebp = true,
+        bool $addWatermark = false,
+        ?string $watermarkPosition = 'center',
+        bool $keepOriginal = true
+    ): ?string {
+        if (!$request->hasFile($fieldName)) {
+            return $oldPath;
+        }
+
+        $file = $request->file($fieldName);
+
+        // Validate file
+        if (!$file->isValid() || !str_starts_with($file->getMimeType(), 'image/')) {
+            return $oldPath;
+        }
+
+        // Delete old files if exists
+        if ($oldPath) {
+            $this->deleteFile($oldPath);
+            // Also try to delete WebP version if exists
+            $webpPath = str_replace(['.jpg', '.jpeg', '.png', '.gif'], '.webp', $oldPath);
+            if ($webpPath !== $oldPath) {
+                $this->deleteFile($webpPath);
+            }
+        }
+
+        try {
+            $imageService = new ImageProcessingService();
+            $results = $imageService->processImage(
+                $file,
+                $cropData,
+                $convertToWebp,
+                $addWatermark,
+                $watermarkPosition,
+                'uploads',
+                $keepOriginal
+            );
+
+            // Return the processed path (or WebP if available and preferred)
+            return $results['webp_path'] ?? $results['processed_path'] ?? $oldPath;
+        } catch (\Exception $e) {
+            \Log::error('Image processing error: ' . $e->getMessage());
+            // Fallback to simple upload
+            return $this->handleFileUpload($request, $fieldName, $oldPath);
+        }
     }
 
     /**

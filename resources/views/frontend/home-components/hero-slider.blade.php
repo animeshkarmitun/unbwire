@@ -12,7 +12,7 @@
                                 <div class="card__post">
                                     <div class="card__post__body">
                                         <a href="{{ route('news-details', $slider->slug) }}">
-                                            <img src="{{ asset($slider->image) }}" class="img-fluid" alt="">
+                                            <img src="{{ asset($slider->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                         </a>
                                         <div class="card__post__content bg__post-cover">
                                             <div class="card__post__category">
@@ -59,7 +59,7 @@
                             <div class="card__post ">
                                 <div class="card__post__body card__post__transition">
                                     <a href="{{ route('news-details', $popularItem->slug) }}">
-                                        <img src="{{ asset($popularItem->image) }}" class="img-fluid" alt="">
+                                        <img src="{{ asset($popularItem->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                     </a>
                                     <div class="card__post__content bg__post-cover">
                                         <div class="card__post__category">

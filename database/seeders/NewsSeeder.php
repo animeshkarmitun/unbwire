@@ -214,7 +214,7 @@ class NewsSeeder extends Seeder
 
     private function seedNewsArticles(array $articles, $categories, $admin, string $language): void
     {
-        $placeholder = 'admin/assets/img/placeholder.png';
+        $placeholder = 'admin/assets/img/placeholder.webp';
         $orderCounters = [
             'breaking' => 0,
             'slider' => 0,

@@ -143,6 +143,9 @@
 
     <!-- View Media Modal -->
     @include('admin.media-library.partials.view-modal')
+    
+    <!-- Image Cropper Modal (shared from media-modal) -->
+    @include('admin.media-library.partials.cropper-modal')
 @endsection
 
 @push('scripts')
@@ -233,11 +236,25 @@ $(document).ready(function() {
     // View media
     $(document).on('click', '.view-media', function() {
         const id = $(this).data('id');
+        if (!id) {
+            Swal.fire('{{ __('Error') }}', '{{ __('Invalid media ID') }}', 'error');
+            return;
+        }
+        
+        // Show loading state
+        $('#viewMediaContent').html('<div class="text-center p-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">{{ __('Loading...') }}</p></div>');
+        $('#viewMediaModal').modal('show');
+        
         // Load media details and show modal
         $.ajax({
             url: '/admin/media-library/' + id,
             method: 'GET',
             success: function(response) {
+                if (!response) {
+                    Swal.fire('{{ __('Error') }}', '{{ __('Failed to load media details') }}', 'error');
+                    $('#viewMediaModal').modal('hide');
+                    return;
+                }
                 let html = '';
                 
                 // Media Preview Section
@@ -373,7 +390,17 @@ $(document).ready(function() {
                 $('#viewMediaModal').modal('show');
             },
             error: function(xhr) {
-                Swal.fire('{{ __('Error') }}', '{{ __('Failed to load media details') }}', 'error');
+                console.error('View media error:', xhr);
+                let errorMessage = '{{ __('Failed to load media details') }}';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.status === 404) {
+                    errorMessage = '{{ __('Media not found') }}';
+                } else if (xhr.status === 500) {
+                    errorMessage = '{{ __('Server error occurred') }}';
+                }
+                Swal.fire('{{ __('Error') }}', errorMessage, 'error');
+                $('#viewMediaModal').modal('hide');
             }
         });
     });
@@ -421,11 +448,20 @@ $(document).ready(function() {
     // Edit media
     $(document).on('click', '.edit-media', function() {
         const id = $(this).data('id');
+        if (!id) {
+            Swal.fire('{{ __('Error') }}', '{{ __('Invalid media ID') }}', 'error');
+            return;
+        }
+        
         // Load media details and show edit modal
         $.ajax({
             url: '/admin/media-library/' + id,
             method: 'GET',
             success: function(response) {
+                if (!response) {
+                    Swal.fire('{{ __('Error') }}', '{{ __('Failed to load media details') }}', 'error');
+                    return;
+                }
                 $('#editMediaId').val(response.id);
                 $('#editMediaType').val(response.file_type || '');
                 $('#editTitle').val(response.title || '');
@@ -446,6 +482,18 @@ $(document).ready(function() {
                 }
                 
                 $('#editMediaModal').modal('show');
+            },
+            error: function(xhr) {
+                console.error('Edit media error:', xhr);
+                let errorMessage = '{{ __('Failed to load media details') }}';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.status === 404) {
+                    errorMessage = '{{ __('Media not found') }}';
+                } else if (xhr.status === 500) {
+                    errorMessage = '{{ __('Server error occurred') }}';
+                }
+                Swal.fire('{{ __('Error') }}', errorMessage, 'error');
             }
         });
     });

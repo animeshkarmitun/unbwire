@@ -59,7 +59,7 @@
                             <div class="article__entry">
                                 <div class="article__image">
                                     <a href="{{ route('news-details', $post->slug) }}">
-                                        <img src="{{ asset($post->image) }}" alt="" class="img-fluid">
+                                        <img src="{{ asset($post->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                     </a>
                                 </div>
                                 <div class="article__content">
@@ -118,7 +118,7 @@
                                 <div class="card__post card__post-list">
                                     <div class="image-sm">
                                         <a href="{{ route('news-details', $news->slug) }}">
-                                            <img src="{{ asset($news->image) }}" class="img-fluid" alt="">
+                                            <img src="{{ asset($news->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                         </a>
                                     </div>
 
@@ -160,7 +160,7 @@
                             <div class="article__entry">
                                 <div class="article__image">
                                     <a href="{{ route('news-details', $news->slug) }}">
-                                        <img src="{{ asset($news->image) }}" alt="" class="img-fluid">
+                                        <img src="{{ asset($news->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                     </a>
                                 </div>
                                 <div class="article__content">
@@ -237,7 +237,7 @@
                         <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                         <a href="{{ $ad->side_bar_ad_url }}">
                             <figure>
-                                <img src="{{ asset($ad->side_bar_ad) }}" alt="" class="img-fluid">
+                                <img src="{{ asset($ad->side_bar_ad) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                             </figure>
                         </a>
                     </aside>
@@ -255,7 +255,7 @@
                 <div class="col-12">
                     <div class="large_add_banner_img">
                         <a href="{{ $ad->news_page_ad_url }}">
-                            <img src="{{ asset($ad->news_page_ad) }}" alt="adds">
+                            <img src="{{ asset($ad->news_page_ad) }}" alt="adds" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                         </a>
                     </div>
                 </div>

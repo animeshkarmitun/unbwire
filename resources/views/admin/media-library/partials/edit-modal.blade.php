@@ -1,3 +1,36 @@
+<style>
+    /* High z-index to ensure modal appears above backdrop and other elements */
+    #editMediaModal {
+        z-index: 1060 !important;
+    }
+    #editMediaModal.show {
+        z-index: 1060 !important;
+    }
+    #editMediaModal.modal {
+        z-index: 1060 !important;
+    }
+    #editMediaModal .modal-dialog {
+        z-index: 1061 !important;
+        pointer-events: auto !important;
+        position: relative !important;
+    }
+    #editMediaModal .modal-content {
+        z-index: 1062 !important;
+        pointer-events: auto !important;
+        position: relative !important;
+    }
+    body.modal-open #editMediaModal {
+        z-index: 1060 !important;
+    }
+    /* Ensure backdrop is below this modal */
+    body.modal-open .modal-backdrop {
+        z-index: 1040 !important;
+    }
+    /* Ensure this modal is above backdrop */
+    body.modal-open #editMediaModal.show {
+        z-index: 1060 !important;
+    }
+</style>
 <div class="modal fade" id="editMediaModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -69,6 +102,11 @@
             e.preventDefault();
             
             const id = $('#editMediaId').val();
+            if (!id) {
+                Swal.fire('{{ __('admin.Error') }}', '{{ __('admin.Invalid media ID') }}', 'error');
+                return;
+            }
+            
             const formData = $(this).serialize();
             const $submitBtn = $(this).find('button[type="submit"]');
             const originalText = $submitBtn.html();
@@ -92,13 +130,56 @@
                         });
                 },
                 error: function(xhr) {
+                    console.error('Update media error:', xhr);
                     let errorMessage = '{{ __('admin.Error updating media') }}';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.status === 404) {
+                        errorMessage = '{{ __('admin.Media not found') }}';
+                    } else if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        if (errors) {
+                            errorMessage = Object.values(errors).flat().join('<br>');
+                        }
+                    } else if (xhr.status === 500) {
+                        errorMessage = '{{ __('admin.Server error occurred') }}';
                     }
                     
                     Swal.fire('{{ __('admin.Error') }}', errorMessage, 'error');
                     $submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+        
+        // Ensure modal is visible when shown and above backdrop
+        $('#editMediaModal').on('shown.bs.modal', function() {
+            // Force high z-index values
+            $(this).css({
+                'z-index': '1060',
+                'display': 'block',
+                'opacity': '1'
+            });
+            $(this).find('.modal-dialog').css({
+                'z-index': '1061',
+                'pointer-events': 'auto',
+                'position': 'relative'
+            });
+            $(this).find('.modal-content').css({
+                'z-index': '1062',
+                'pointer-events': 'auto',
+                'position': 'relative'
+            });
+            
+            // Ensure backdrop is below this modal
+            $('.modal-backdrop').css('z-index', '1040');
+            
+            // Remove any other modals' high z-index that might interfere
+            $('.modal').not('#editMediaModal').each(function() {
+                if ($(this).hasClass('show') && $(this).attr('id') !== 'editMediaModal') {
+                    const currentZ = parseInt($(this).css('z-index')) || 0;
+                    if (currentZ >= 1060) {
+                        $(this).css('z-index', '1050');
+                    }
                 }
             });
         });

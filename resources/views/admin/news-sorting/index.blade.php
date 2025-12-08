@@ -436,11 +436,11 @@
                     html += `
                         <div class="sortable-item" data-id="${item.id}" style="margin-bottom: 15px !important;">
                             <div class="news-header" style="display: flex !important; flex-direction: row !important; align-items: center !important; flex-wrap: nowrap !important; width: 100% !important;">
-                                <img src="${item.image ? '{{ asset("") }}' + item.image : '{{ asset("admin/assets/img/placeholder.png") }}'}" 
+                                <img src="${item.image ? '{{ asset("") }}' + item.image : '{{ asset("admin/assets/img/placeholder.webp") }}'}" 
                                      alt="${item.title}" 
                                      class="news-image"
                                      style="width: 60px !important; height: 60px !important; max-width: 60px !important; max-height: 60px !important; min-width: 60px !important; min-height: 60px !important; object-fit: cover; border-radius: 4px; flex-shrink: 0 !important; display: block !important; float: none !important; margin-right: 15px !important;"
-                                     onerror="this.src='{{ asset("admin/assets/img/placeholder.png") }}'; this.style.width='60px'; this.style.height='60px'; this.style.maxWidth='60px'; this.style.maxHeight='60px'; this.style.marginRight='15px';">
+                                     onerror="this.onerror=null; this.src='{{ asset("admin/assets/img/placeholder.webp") }}'; this.style.width='60px'; this.style.height='60px'; this.style.maxWidth='60px'; this.style.maxHeight='60px'; this.style.marginRight='15px';">
                                 <div class="news-info" style="flex: 1 1 auto !important; min-width: 0 !important; display: flex !important; flex-direction: column !important; justify-content: center !important;">
                                     <div class="news-title">${item.title}</div>
                                     <div class="news-meta">

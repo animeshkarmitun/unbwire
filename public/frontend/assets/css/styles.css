@@ -131,7 +131,7 @@ img {
 }
 
 .bg-news-image {
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
@@ -139,21 +139,21 @@ img {
 }
 
 .bg-travel-image-center {
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover
 }
 
 .bg-travel-image-left {
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     background-position: bottom left;
     background-repeat: no-repeat;
     background-size: contain
 }
 
 .bg-travel-image-right {
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     background-position: bottom right;
     background-repeat: no-repeat;
     background-size: 233px auto
@@ -12129,7 +12129,7 @@ input[type="number"] {
 .error-content h1 {
     font-size: 150px;
     font-weight: 900;
-    background: url(../images/placeholder/1920x960.jpg) no-repeat;
+    background: url(../images/placeholder.webp) no-repeat;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     -moz-background-clip: text;
@@ -15769,7 +15769,7 @@ input[type="number"] {
 }
 
 .bg-theme-three {
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     width: 100%;
     background-attachment: fixed !important;
     background-position: center center;
@@ -16941,7 +16941,7 @@ body.offcanvas-active {
     height: 100vh;
     min-height: 400px;
     background-size: cover;
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     background-position: top center;
     background-attachment: fixed
 }
@@ -17107,7 +17107,7 @@ body.offcanvas-active {
     background-color: var(--colorBlack);
     padding-top: 240px;
     padding-bottom: 100px;
-    background-image: url(../images/placeholder/1920x960.jpg);
+    background-image: url(../images/placeholder.webp);
     background-position: center center;
     background-size: cover
 }

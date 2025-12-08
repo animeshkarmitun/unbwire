@@ -548,7 +548,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedAds(): void
     {
-        $placeholder = 'frontend/assets/images/placeholder_large.jpg';
+        $placeholder = 'frontend/assets/images/placeholder.webp';
         Ad::updateOrCreate(
             ['id' => 1],
             [
@@ -573,7 +573,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedArticles(array $categoryMap, array $tagMap, Admin $admin, string $language): void
     {
-        $placeholder = 'frontend/assets/images/placeholder_large.jpg';
+        $placeholder = 'frontend/assets/images/placeholder.webp';
 
         if ($language === 'en') {
             $articles = [

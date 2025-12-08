@@ -14,7 +14,7 @@
                             <div class="card__post ">
                                 <div class="card__post__body card__post__transition">
                                     <a href="{{ route('news-details', $news->slug) }}">
-                                        <img src="{{ asset($news->image) }}" class="img-fluid" alt="">
+                                        <img src="{{ asset($news->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                     </a>
                                     <div class="card__post__content bg__post-cover">
                                         <div class="card__post__category">
@@ -61,7 +61,7 @@
                                     <div class="card__post card__post-list">
                                         <div class="image-sm">
                                             <a href="{{ route('news-details', $news->slug) }}">
-                                                <img src="{{ asset($news->image) }}" class="img-fluid" alt="">
+                                                <img src="{{ asset($news->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                             </a>
                                         </div>
 
@@ -108,7 +108,7 @@
                                     <div class="card__post card__post-list">
                                         <div class="image-sm">
                                             <a href="{{ route('news-details', $news->slug) }}">
-                                                <img src="{{ asset($news->image) }}" class="img-fluid" alt="">
+                                                <img src="{{ asset($news->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                             </a>
                                         </div>
 
@@ -203,7 +203,7 @@
                         <div class="article__entry">
                             <div class="article__image">
                                 <a href="{{ route('news-details', $sectionOneNews->slug) }}">
-                                    <img src="{{ asset($sectionOneNews->image) }}" alt="" class="img-fluid">
+                                    <img src="{{ asset($sectionOneNews->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                 </a>
                             </div>
                             <div class="article__content">
@@ -256,7 +256,7 @@
                         <div class="article__entry">
                             <div class="article__image">
                                 <a href="{{ route('news-details', $sectionTwoNews->slug) }}">
-                                    <img src="{{ asset($sectionTwoNews->image) }}" alt="" class="img-fluid">
+                                    <img src="{{ asset($sectionTwoNews->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                 </a>
                             </div>
                             <div class="article__content">
@@ -308,7 +308,7 @@
                                     <div class="article__entry">
                                         <div class="article__image">
                                             <a href="{{ route('news-details', $sectionThreeNews->slug) }}">
-                                                <img src="{{ asset($sectionThreeNews->image) }}" alt="" class="img-fluid">
+                                                <img src="{{ asset($sectionThreeNews->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                             </a>
                                         </div>
                                         <div class="article__content">
@@ -347,7 +347,7 @@
                                     <div class="article__entry">
                                         <div class="article__image">
                                             <a href="{{ route('news-details', $sectionThreeNews->slug) }}">
-                                                <img src="{{ asset($sectionThreeNews->image) }}" alt="" class="img-fluid">
+                                                <img src="{{ asset($sectionThreeNews->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                             </a>
                                         </div>
                                         <div class="article__content">
@@ -385,7 +385,7 @@
                     <div class="small_add_banner">
                         <div class="small_add_banner_img">
                            <a href="{{ $ad->home_middle_ad_url }}">
-                            <img src="{{ asset($ad->home_middle_ad) }}" alt="adds">
+                            <img src="{{ asset($ad->home_middle_ad) }}" alt="adds" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                            </a>
                         </div>
                     </div>
@@ -403,7 +403,7 @@
                                     <div class="col-md-5">
                                         <div class="card__post__transition">
                                             <a href="{{ route('news-details', $sectionFourNews->slug) }}">
-                                                <img src="{{ asset($sectionFourNews->image) }}" class="img-fluid w-100" alt="">
+                                                <img src="{{ asset($sectionFourNews->image) }}" class="img-fluid w-100" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                             </a>
                                         </div>
                                     </div>
@@ -463,7 +463,7 @@
                                 <div class="article__entry">
                                     <div class="article__image">
                                         <a href="{{ route('news-details', $mostViewedNews->slug) }}">
-                                            <img src="{{ asset($mostViewedNews->image) }}" alt="" class="img-fluid">
+                                            <img src="{{ asset($mostViewedNews->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                         </a>
                                     </div>
                                     <div class="article__content">
@@ -503,7 +503,7 @@
                                         <div class="card__post card__post-list">
                                             <div class="image-sm">
                                                 <a href="{{ route('news-details', $mostViewedNews->slug) }}">
-                                                    <img src="{{ asset($mostViewedNews->image) }}" class="img-fluid" alt="">
+                                                    <img src="{{ asset($mostViewedNews->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                                 </a>
                                             </div>
 
@@ -585,7 +585,7 @@
                             <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                             <a href="{{ $ad->side_bar_ad_url }}">
                                 <figure>
-                                    <img src="{{ asset($ad->side_bar_ad) }}" alt="" class="img-fluid">
+                                    <img src="{{ asset($ad->side_bar_ad) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                 </figure>
                             </a>
                         </aside>
