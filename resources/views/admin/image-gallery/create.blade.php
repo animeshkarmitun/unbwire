@@ -121,6 +121,16 @@
 
 @push('scripts')
 <script>
+    (function waitForjQuery(callback) {
+        if (window.jQuery) {
+            callback(window.jQuery);
+        } else {
+            setTimeout(function() {
+                waitForjQuery(callback);
+            }, 100);
+        }
+    })(function($) {
+    $(document).ready(function() {
     let selectedMedia = [];
 
     // Open media library modal for image selection
@@ -134,6 +144,11 @@
 
     // Handle media selection from modal
     window.selectMediaForGallery = function(media) {
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery is not available');
+            return;
+        }
+        
         if (media.file_type !== 'image') {
             Swal.fire('Error', 'Please select an image', 'error');
             return;
@@ -147,7 +162,7 @@
 
         selectedMedia.push(media);
         updateSelectedMediaDisplay();
-        $('#mediaLibraryModal').modal('hide');
+        jQuery('#mediaLibraryModal').modal('hide');
     };
 
     function updateSelectedMediaDisplay() {
@@ -203,6 +218,8 @@
             Swal.fire('Error', 'Please select at least one image from media library', 'error');
             return false;
         }
+    });
+    });
     });
 </script>
 @endpush

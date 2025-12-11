@@ -150,6 +150,15 @@
 
 @push('scripts')
 <script>
+(function waitForjQuery(callback) {
+    if (window.jQuery) {
+        callback(window.jQuery);
+    } else {
+        setTimeout(function() {
+            waitForjQuery(callback);
+        }, 100);
+    }
+})(function($) {
 $(document).ready(function() {
     // View toggle
     $('.view-toggle').on('click', function() {
@@ -497,6 +506,7 @@ $(document).ready(function() {
             }
         });
     });
+});
 });
 </script>
 <style>

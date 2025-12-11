@@ -82,6 +82,15 @@
     let currentFileInput;
     let currentCallback;
 
+    (function waitForjQuery(callback) {
+        if (window.jQuery) {
+            callback(window.jQuery);
+        } else {
+            setTimeout(function() {
+                waitForjQuery(callback);
+            }, 100);
+        }
+    })(function($) {
     $(document).ready(function() {
         // Show watermark position when watermark is enabled
         $('#addWatermark').on('change', function() {
@@ -185,6 +194,7 @@
             }, 'image/jpeg', 0.9);
         });
     });
+    });
 
     // Function to open cropper modal
     function openImageCropper(fileInput, callback) {
@@ -198,13 +208,19 @@
             return;
         }
 
+        // Ensure jQuery is available
+        if (typeof jQuery === 'undefined') {
+            alert('jQuery is not loaded. Please refresh the page.');
+            return;
+        }
+
         currentFileInput = fileInput;
         currentCallback = callback;
 
         const reader = new FileReader();
         reader.onload = function(e) {
-            $('#cropperImage').attr('src', e.target.result);
-            $('#imageCropperModal').modal('show');
+            jQuery('#cropperImage').attr('src', e.target.result);
+            jQuery('#imageCropperModal').modal('show');
         };
         reader.readAsDataURL(file);
     }

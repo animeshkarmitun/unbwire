@@ -11,15 +11,6 @@
             <div class="modal-body" style="padding: 20px;">
                 <div class="row">
                     <div class="col-md-9">
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle"></i> <strong>{{ __('How to Crop:') }}</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>{{ __('Click and drag the blue crop box to move it') }}</li>
-                                <li>{{ __('Drag the blue corner handles to resize the crop area') }}</li>
-                                <li>{{ __('Use aspect ratio buttons below to lock proportions') }}</li>
-                                <li>{{ __('Double-click to toggle between move and crop mode') }}</li>
-                            </ul>
-                        </div>
                         <div class="cropper-wrapper" style="background: #f5f5f5; border: 2px solid #ddd; border-radius: 4px; padding: 10px; min-height: 500px; max-height: 70vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
                             <div class="img-container" id="cropperContainerUpload" style="width: 100%; max-width: 100%; position: relative; max-height: 70vh;">
                                 <img id="cropperImageUpload" src="" alt="Crop me" style="display: block; max-width: 100%; max-height: 70vh;">
@@ -208,6 +199,15 @@
         cropperLibraryLoadedUpload = true;
     }
 
+    (function waitForjQuery(callback) {
+        if (window.jQuery) {
+            callback(window.jQuery);
+        } else {
+            setTimeout(function() {
+                waitForjQuery(callback);
+            }, 100);
+        }
+    })(function($) {
     $(document).ready(function() {
         // Open cropper modal for upload
         $('#openCropperBtnUpload').on('click', function() {
@@ -549,15 +549,20 @@
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
                     
-                    const fileInput = document.getElementById('mediaFile');
+                    // Support both upload-modal (mediaFile/previewImage) and media-modal (quickUploadFile/quickPreviewImage)
+                    const fileInput = document.getElementById('mediaFile') || document.getElementById('quickUploadFile');
+                    const previewImage = document.getElementById('previewImage') || document.getElementById('quickPreviewImage');
+                    
                     if (fileInput) {
                         fileInput.files = dataTransfer.files;
                         
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            $('#previewImage').attr('src', e.target.result);
-                        };
-                        reader.readAsDataURL(file);
+                        if (previewImage) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                $(previewImage).attr('src', e.target.result);
+                            };
+                            reader.readAsDataURL(file);
+                        }
                         
                         window.currentFileForCropperUpload = file;
                         window.useCroppedImageUpload = true;
@@ -574,6 +579,7 @@
         
         // Set default aspect ratio to free
         $('#aspectRatioFreeUpload').addClass('active');
+    });
     });
 </script>
 @endpush

@@ -238,6 +238,15 @@
 window.currentFileForCropperUpload = null;
 window.useCroppedImageUpload = false;
 
+(function waitForjQuery(callback) {
+    if (window.jQuery) {
+        callback(window.jQuery);
+    } else {
+        setTimeout(function() {
+            waitForjQuery(callback);
+        }, 100);
+    }
+})(function($) {
 $(document).ready(function() {
     console.log('Upload modal script loaded');
     
@@ -634,6 +643,7 @@ $(document).ready(function() {
             }
         });
     });
+});
 });
 </script>
 @endpush

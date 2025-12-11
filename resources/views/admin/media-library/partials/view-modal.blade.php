@@ -55,37 +55,47 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // Ensure modal is visible when shown and above backdrop
-    $('#viewMediaModal').on('shown.bs.modal', function() {
-        // Force high z-index values
-        $(this).css({
-            'z-index': '1060',
-            'display': 'block',
-            'opacity': '1'
-        });
-        $(this).find('.modal-dialog').css({
-            'z-index': '1061',
-            'pointer-events': 'auto',
-            'position': 'relative'
-        });
-        $(this).find('.modal-content').css({
-            'z-index': '1062',
-            'pointer-events': 'auto',
-            'position': 'relative'
-        });
-        
-        // Ensure backdrop is below this modal
-        $('.modal-backdrop').css('z-index', '1040');
-        
-        // Remove any other modals' high z-index that might interfere
-        $('.modal').not('#viewMediaModal').each(function() {
-            if ($(this).hasClass('show') && $(this).attr('id') !== 'viewMediaModal') {
-                const currentZ = parseInt($(this).css('z-index')) || 0;
-                if (currentZ >= 1060) {
-                    $(this).css('z-index', '1050');
+(function waitForjQuery(callback) {
+    if (window.jQuery) {
+        callback(window.jQuery);
+    } else {
+        setTimeout(function() {
+            waitForjQuery(callback);
+        }, 100);
+    }
+})(function($) {
+    $(document).ready(function() {
+        // Ensure modal is visible when shown and above backdrop
+        $('#viewMediaModal').on('shown.bs.modal', function() {
+            // Force high z-index values
+            $(this).css({
+                'z-index': '1060',
+                'display': 'block',
+                'opacity': '1'
+            });
+            $(this).find('.modal-dialog').css({
+                'z-index': '1061',
+                'pointer-events': 'auto',
+                'position': 'relative'
+            });
+            $(this).find('.modal-content').css({
+                'z-index': '1062',
+                'pointer-events': 'auto',
+                'position': 'relative'
+            });
+            
+            // Ensure backdrop is below this modal
+            $('.modal-backdrop').css('z-index', '1040');
+            
+            // Remove any other modals' high z-index that might interfere
+            $('.modal').not('#viewMediaModal').each(function() {
+                if ($(this).hasClass('show') && $(this).attr('id') !== 'viewMediaModal') {
+                    const currentZ = parseInt($(this).css('z-index')) || 0;
+                    if (currentZ >= 1060) {
+                        $(this).css('z-index', '1050');
+                    }
                 }
-            }
+            });
         });
     });
 });
