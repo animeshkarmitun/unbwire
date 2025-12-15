@@ -47,9 +47,9 @@
                 </div>
 
                 <aside class="wrapper__list__article ">
-                    @if (request()->has('category'))
+                    @if (isset($selectedCategory) && $selectedCategory)
 
-                    <h4 class="border_section">{{ __('frontend.Category') }}: {{ request()->category }}</h4>
+                    <h4 class="border_section">{{ __('frontend.Category') }}: {{ $selectedCategory->name }}</h4>
                     @endif
 
                     <div class="row">
@@ -74,7 +74,7 @@
                                         </li>
                                         <li class="list-inline-item">
                                             <span class="text-dark text-capitalize">
-                                                {{ date('M d, Y', strtotime($post->created_at)) }}
+                                                {{ formatDate($post->created_at, 'M d, Y') }}
                                             </span>
                                         </li>
 
@@ -94,7 +94,7 @@
                         @endforeach
                         @if (count($news) === 0)
                             <div class="text-center w-100" >
-                                <h4 >{{ __('frontend.No News Found') }} :(</h4>
+                                <h4 >{{ __('frontend.No News Found') }}</h4>
                             </div>
                         @endif
                     </div>
@@ -135,7 +135,7 @@
                                                     </li>
                                                     <li class="list-inline-item">
                                                         <span class="text-dark text-capitalize">
-                                                            {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                            {{ formatDate($news->created_at, 'M d, Y') }}
                                                         </span>
                                                     </li>
 
@@ -232,7 +232,7 @@
                         </div>
                     </aside>
 
-                    @if ($ad->side_bar_ad_status == 1)
+                    @if ($ad->side_bar_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
                     <aside class="wrapper__list__article">
                         <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                         <a href="{{ $ad->side_bar_ad_url }}">
@@ -248,7 +248,7 @@
             <div class="clearfix"></div>
         </div>
     </div>
-    @if ($ad->news_page_ad_status == 1)
+    @if ($ad->news_page_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
     <div class="large_add_banner my-4">
         <div class="container">
             <div class="row">

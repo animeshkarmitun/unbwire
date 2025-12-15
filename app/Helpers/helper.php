@@ -108,6 +108,106 @@ function checkPermission(string $permission){
     return auth()->guard('admin')->user()->hasPermissionTo($permission);
 }
 
+/** Get language name in native script */
+function getLanguageNativeName(string $langCode): string
+{
+    $nativeNames = [
+        'bn' => 'বাংলা',
+        'en' => 'English',
+        'ar' => 'العربية',
+        'hi' => 'हिन्दी',
+        'ur' => 'اردو',
+        // Add more languages as needed
+    ];
+
+    return $nativeNames[$langCode] ?? $langCode;
+}
+
+/** Format date based on language */
+function formatDate($date, string $format = 'M d, Y'): string
+{
+    if (!$date) {
+        return '';
+    }
+
+    // Convert to Carbon instance if it's a string
+    if (is_string($date)) {
+        $date = \Carbon\Carbon::parse($date);
+    } elseif (!$date instanceof \Carbon\Carbon) {
+        $date = \Carbon\Carbon::parse($date);
+    }
+
+    $language = getLangauge();
+
+    // If language is Bengali, translate month and day names
+    if ($language === 'bn') {
+        // Bengali month names (full)
+        $bengaliMonths = [
+            'January' => 'জানুয়ারি', 'February' => 'ফেব্রুয়ারি', 'March' => 'মার্চ', 'April' => 'এপ্রিল',
+            'May' => 'মে', 'June' => 'জুন', 'July' => 'জুলাই', 'August' => 'আগস্ট',
+            'September' => 'সেপ্টেম্বর', 'October' => 'অক্টোবর', 'November' => 'নভেম্বর', 'December' => 'ডিসেম্বর'
+        ];
+
+        // Bengali short month names
+        $bengaliShortMonths = [
+            'Jan' => 'জানু', 'Feb' => 'ফেব্রু', 'Mar' => 'মার্চ', 'Apr' => 'এপ্রিল',
+            'May' => 'মে', 'Jun' => 'জুন', 'Jul' => 'জুলাই', 'Aug' => 'আগস্ট',
+            'Sep' => 'সেপ্ট', 'Oct' => 'অক্টো', 'Nov' => 'নভে', 'Dec' => 'ডিসে'
+        ];
+
+        // Bengali day names (full)
+        $bengaliDays = [
+            'Sunday' => 'রবিবার', 'Monday' => 'সোমবার', 'Tuesday' => 'মঙ্গলবার',
+            'Wednesday' => 'বুধবার', 'Thursday' => 'বৃহস্পতিবার', 'Friday' => 'শুক্রবার', 'Saturday' => 'শনিবার'
+        ];
+
+        // Bengali short day names
+        $bengaliShortDays = [
+            'Sun' => 'রবি', 'Mon' => 'সোম', 'Tue' => 'মঙ্গল',
+            'Wed' => 'বুধ', 'Thu' => 'বৃহ', 'Fri' => 'শুক্র', 'Sat' => 'শনি'
+        ];
+
+        // Get English formatted date
+        $formatted = $date->format($format);
+        
+        // Replace full month names (F)
+        $englishMonth = $date->format('F');
+        if (isset($bengaliMonths[$englishMonth])) {
+            $formatted = str_ireplace($englishMonth, $bengaliMonths[$englishMonth], $formatted);
+        }
+        
+        // Replace short month names (M)
+        $englishShortMonth = $date->format('M');
+        if (isset($bengaliShortMonths[$englishShortMonth])) {
+            $formatted = str_ireplace($englishShortMonth, $bengaliShortMonths[$englishShortMonth], $formatted);
+        }
+        
+        // Replace full day names (l)
+        $englishDay = $date->format('l');
+        if (isset($bengaliDays[$englishDay])) {
+            $formatted = str_ireplace($englishDay, $bengaliDays[$englishDay], $formatted);
+        }
+        
+        // Replace short day names (D)
+        $englishShortDay = $date->format('D');
+        if (isset($bengaliShortDays[$englishShortDay])) {
+            $formatted = str_ireplace($englishShortDay, $bengaliShortDays[$englishShortDay], $formatted);
+        }
+
+        // Convert numbers to Bengali numerals
+        $bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        $englishNumerals = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        
+        // Replace all English numerals with Bengali numerals
+        $formatted = str_replace($englishNumerals, $bengaliNumerals, $formatted);
+
+        return $formatted;
+    }
+
+    // For other languages, use standard PHP date formatting
+    return $date->format($format);
+}
+
 /** Toast notification helper for SweetAlert */
 
 if (!function_exists('toast')) {

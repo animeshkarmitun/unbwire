@@ -37,7 +37,7 @@
                                                 <li class="list-inline-item">
                                                     <span>
 
-                                                        {{ date('M d, Y', strtotime($news->create_at)) }}
+                                                        {{ formatDate($news->created_at, 'M d, Y') }}
                                                     </span>
                                                 </li>
                                             </ul>
@@ -78,7 +78,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-                                                                {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                                {{ formatDate($news->created_at, 'M d, Y') }}
                                                             </span>
                                                         </li>
 
@@ -125,7 +125,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-                                                                {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                                {{ formatDate($news->created_at, 'M d, Y') }}
                                                             </span>
                                                         </li>
 
@@ -215,7 +215,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <span>
-                                            {{ date('M d, Y', strtotime($sectionOneNews->created_at)) }}
+                                            {{ formatDate($sectionOneNews->created_at, 'M d, Y') }}
                                         </span>
                                     </li>
 
@@ -268,7 +268,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <span>
-                                            {{ date('M d, Y', strtotime($sectionTwoNews->created_at)) }}
+                                            {{ formatDate($sectionTwoNews->created_at, 'M d, Y') }}
                                         </span>
                                     </li>
 
@@ -321,7 +321,7 @@
                                                 <li class="list-inline-item">
                                                     <span>
 
-                                                        {{ date('M d, Y', strtotime($sectionThreeNews->created_at)) }}
+                                                        {{ formatDate($sectionThreeNews->created_at, 'M d, Y') }}
                                                     </span>
                                                 </li>
 
@@ -360,7 +360,7 @@
                                                 <li class="list-inline-item">
                                                     <span>
 
-                                                        {{ date('M d, Y', strtotime($sectionThreeNews->created_at)) }}
+                                                        {{ formatDate($sectionThreeNews->created_at, 'M d, Y') }}
                                                     </span>
                                                 </li>
 
@@ -380,7 +380,7 @@
                         </div>
                     </aside>
 
-                    @if ($ad->home_middle_ad_status == 1)
+                    @if ($ad->home_middle_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
 
                     <div class="small_add_banner">
                         <div class="small_add_banner_img">
@@ -423,7 +423,7 @@
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
 
-                                                                {{ date('M d, Y', strtotime($sectionFourNews->created_at)) }}
+                                                                {{ formatDate($sectionFourNews->created_at, 'M d, Y') }}
                                                             </span>
                                                         </li>
                                                     </ul>
@@ -478,7 +478,7 @@
                                             </li>
                                             <li class="list-inline-item">
                                                 <span class="text-dark text-capitalize">
-                                                    {{ date('M d, Y', strtotime($mostViewedNews->created_at)) }}
+                                                    {{ formatDate($mostViewedNews->created_at, 'M d, Y') }}
                                                 </span>
                                             </li>
 
@@ -518,7 +518,7 @@
                                                             </li>
                                                             <li class="list-inline-item">
                                                                 <span class="text-dark text-capitalize">
-                                                                    {{ date('M d, Y', strtotime($mostViewedNews->created_at)) }}
+                                                                    {{ formatDate($mostViewedNews->created_at, 'M d, Y') }}
                                                                 </span>
                                                             </li>
 
@@ -580,7 +580,7 @@
                             </div>
                         </aside>
 
-                        @if ($ad->side_bar_ad_status == 1)
+                        @if ($ad->side_bar_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
                         <aside class="wrapper__list__article">
                             <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                             <a href="{{ $ad->side_bar_ad_url }}">

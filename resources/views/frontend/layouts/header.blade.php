@@ -35,7 +35,7 @@
                         </ul>
                         <div class="topbar-text">
 
-                            {{ date('l, F j, Y') }}
+                            {{ formatDate(now(), 'l, F j, Y') }}
                         </div>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                         <div class="topbar_language">
                             <select id="site-language">
                                 @foreach ($languages as $language)
-                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $language->name }}</option>
+                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ getLanguageNativeName($language->lang) }}</option>
                                 @endforeach
                             </select>
                         </div>

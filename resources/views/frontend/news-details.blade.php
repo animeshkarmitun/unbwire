@@ -78,7 +78,7 @@
                             <li class="list-inline-item">
                                 <span class="text-dark text-capitalize ml-1">
 
-                                    {{ date('M D, Y', strtotime($news->created_at)) }}
+                                    {{ formatDate($news->created_at, 'M D, Y') }}
                                 </span>
                             </li>
                             <li class="list-inline-item">
@@ -211,7 +211,7 @@
 
                                     <div class="comment-metadata">
                                         <a href="javascript:;">
-                                            <span>{{ date('M, d, Y H:i', strtotime($comment->created_at)) }}</span>
+                                            <span>{{ formatDate($comment->created_at, 'M, d, Y H:i') }}</span>
                                         </a>
                                     </div>
                                 </div>
@@ -246,7 +246,7 @@
 
                                             <div class="comment-metadata">
                                                 <a href="javascript:;">
-                                                    <span>{{ date('M, d, Y H:i', strtotime($reply->created_at)) }}</span>
+                                                    <span>{{ formatDate($reply->created_at, 'M, d, Y H:i') }}</span>
                                                 </a>
                                             </div>
                                         </div>
@@ -325,7 +325,7 @@
                             </p>
 
                             <p class="form-submit mb-0">
-                                <input type="submit" name="submit" id="submit" class="submit" value="Post Comment">
+                                <input type="submit" name="submit" id="submit" class="submit" value="{{ __('frontend.Post Comment') }}">
                             </p>
                         </form>
                     </div>
@@ -365,7 +365,7 @@
                     </div>
                 </div>
 
-                @if ($ad->view_page_ad_status == 1)
+                @if ($ad->view_page_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
                 <div class="small_add_banner mb-5 pb-4">
                     <div class="small_add_banner_img">
                         <a href="{{ $ad->view_page_ad_url }}">
@@ -402,7 +402,7 @@
                                         </li>
                                         <li class="list-inline-item">
                                             <span>
-                                                {{ date('M d, Y', strtotime($post->created_at)) }}
+                                                {{ formatDate($post->created_at, 'M d, Y') }}
                                             </span>
                                         </li>
 
@@ -453,7 +453,7 @@
                                                     <li class="list-inline-item">
                                                         <span class="text-dark text-capitalize">
 
-                                                            {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                            {{ formatDate($news->created_at, 'M d, Y') }}
                                                         </span>
                                                     </li>
 
@@ -579,7 +579,7 @@
                         </div>
                     </aside>
 
-                    @if ($ad->side_bar_ad_status == 1)
+                    @if ($ad->side_bar_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
                     <aside class="wrapper__list__article">
                         <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                         <a href="{{ $ad->side_bar_ad_url }}">

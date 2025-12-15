@@ -159,7 +159,7 @@
         border-color: #007bff;
     }
     .modal-backdrop.show {
-        z-index: 1055;
+        z-index: 1001;
     }
     #imageCropperModalUpload.show {
         z-index: 1060;

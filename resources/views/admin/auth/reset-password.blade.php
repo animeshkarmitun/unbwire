@@ -85,7 +85,7 @@
             </div>
 
             <div class="simple-footer">
-              {{ __('admin.Copyright') }} &copy; {{ __('admin.WebSolutionUs 2023') }}
+              {{ __('admin.Copyright') }} &copy; {{ __('admin.unbnews 2025') }}
             </div>
           </div>
         </div>

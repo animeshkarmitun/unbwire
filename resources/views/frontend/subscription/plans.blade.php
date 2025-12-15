@@ -35,6 +35,45 @@
                         </div>
                     @endif
 
+                    @auth
+                        @if($latestSubscription)
+                            <div class="alert alert-info mb-4">
+                                <h5 class="mb-2"><i class="fas fa-info-circle"></i> Your Current Subscription Status</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Package:</strong> {{ $latestSubscription->package->name }}</p>
+                                        <p class="mb-1"><strong>Status:</strong> 
+                                            @if($latestSubscription->status == 'active')
+                                                <span class="badge badge-success">Active</span>
+                                            @elseif($latestSubscription->status == 'pending')
+                                                <span class="badge badge-warning">Pending Approval</span>
+                                            @elseif($latestSubscription->status == 'expired')
+                                                <span class="badge badge-danger">Expired</span>
+                                            @elseif($latestSubscription->status == 'cancelled')
+                                                <span class="badge badge-secondary">Cancelled</span>
+                                            @else
+                                                <span class="badge badge-info">{{ ucfirst($latestSubscription->status) }}</span>
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @if($latestSubscription->status == 'active')
+                                            <p class="mb-1"><strong>Expires:</strong> {{ $latestSubscription->expires_at->format('M d, Y') }}</p>
+                                            <p class="mb-0"><strong>Days Remaining:</strong> {{ $latestSubscription->daysRemaining() }} days</p>
+                                        @elseif($latestSubscription->status == 'pending')
+                                            <p class="mb-0"><strong>Submitted:</strong> {{ $latestSubscription->created_at->format('M d, Y') }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if($latestSubscription->status == 'pending')
+                                    <div class="mt-3">
+                                        <p class="mb-0 text-warning"><i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> You cannot subscribe to a new plan while your subscription request is pending admin approval.</p>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    @endauth
+
                     <div class="row mt-4">
                         @foreach($packages as $package)
                             <div class="col-md-4 mb-4">
@@ -112,6 +151,11 @@
                                                 <button class="btn btn-secondary btn-block" disabled>
                                                     Current Plan
                                                 </button>
+                                            @elseif($hasPendingSubscription)
+                                                <button class="btn btn-warning btn-block" disabled>
+                                                    <i class="fas fa-clock"></i> Pending Approval
+                                                </button>
+                                                <small class="text-muted d-block mt-2 text-center">Please wait for admin approval</small>
                                             @else
                                                 <a href="{{ route('subscription.checkout', $package->id) }}" class="btn btn-primary btn-block">
                                                     @if($userSubscription)
