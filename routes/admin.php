@@ -188,6 +188,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
             Route::get('/settings', [AnalyticsController::class, 'settings'])->name('settings');
             Route::put('/settings', [AnalyticsController::class, 'updateSettings'])->name('settings.update');
             Route::get('/most-visited-ips', [AnalyticsController::class, 'mostVisitedIps'])->name('most-visited-ips');
+            Route::get('/most-viewed-pages', [AnalyticsController::class, 'mostViewedPages'])->name('most-viewed-pages');
             Route::get('/bot-activity', [AnalyticsController::class, 'botActivity'])->name('bot-activity');
             Route::post('/block-ip', [AnalyticsController::class, 'blockIp'])->name('block-ip');
             Route::post('/unblock-ip', [AnalyticsController::class, 'unblockIp'])->name('unblock-ip');

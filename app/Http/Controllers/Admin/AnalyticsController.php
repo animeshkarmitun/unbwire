@@ -19,7 +19,7 @@ class AnalyticsController extends Controller
         
         // Apply permission middleware
         $this->middleware(['permission:analytics index,admin'])->only(['index']);
-        $this->middleware(['permission:analytics view,admin'])->only(['realTime', 'dateWise', 'countryWise', 'organic', 'repeaters']);
+        $this->middleware(['permission:analytics view,admin'])->only(['realTime', 'dateWise', 'countryWise', 'organic', 'repeaters', 'mostViewedPages']);
         $this->middleware(['permission:analytics export,admin'])->only(['export']);
         $this->middleware(['permission:analytics index,admin'])->only(['settings', 'updateSettings', 'mostVisitedIps', 'blockIp', 'unblockIp']);
     }
@@ -301,5 +301,22 @@ class AnalyticsController extends Controller
             'status' => 'success',
             'message' => __('admin.IP address unblocked successfully'),
         ]);
+    }
+
+    /**
+     * Display most viewed pages
+     */
+    public function mostViewedPages(Request $request)
+    {
+        $period = $request->input('period', 'all'); // all, year, month, today
+        $limit = $request->input('limit', 50);
+
+        $pages = $this->analyticsService->getMostViewedPages($period, $limit);
+
+        if ($request->ajax()) {
+            return response()->json($pages);
+        }
+
+        return view('admin.analytics.most-viewed-pages', compact('pages', 'period', 'limit'));
     }
 }

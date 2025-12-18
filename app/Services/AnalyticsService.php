@@ -565,5 +565,47 @@ class AnalyticsService
             ];
         })->toArray();
     }
+
+    /**
+     * Get most viewed pages with time filters
+     */
+    public function getMostViewedPages(string $period = 'all', int $limit = 50): array
+    {
+        $query = PageView::select('page_views.path', 'page_views.title', 'page_views.url', DB::raw('COUNT(*) as view_count'))
+            ->join('visits', 'page_views.visit_id', '=', 'visits.id')
+            ->where('visits.is_bot', false)
+            ->groupBy('page_views.path', 'page_views.title', 'page_views.url')
+            ->orderBy('view_count', 'desc')
+            ->limit($limit);
+
+        // Apply time filters
+        switch ($period) {
+            case 'today':
+                $query->whereDate('page_views.viewed_at', Carbon::today());
+                break;
+            case 'month':
+                $query->whereMonth('page_views.viewed_at', Carbon::now()->month)
+                      ->whereYear('page_views.viewed_at', Carbon::now()->year);
+                break;
+            case 'year':
+                $query->whereYear('page_views.viewed_at', Carbon::now()->year);
+                break;
+            case 'all':
+            default:
+                // No date filter for 'all time'
+                break;
+        }
+
+        $pages = $query->get();
+
+        return $pages->map(function ($page) {
+            return [
+                'path' => $page->path,
+                'title' => $page->title ?: $page->path,
+                'url' => $page->url,
+                'view_count' => $page->view_count,
+            ];
+        })->toArray();
+    }
 }
 

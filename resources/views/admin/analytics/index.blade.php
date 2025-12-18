@@ -8,6 +8,9 @@
             <div class="breadcrumb-item active">Analytics</div>
         </div>
         <div class="section-header-action">
+            <a href="{{ route('admin.analytics.most-viewed-pages') }}" class="btn btn-info ml-2">
+                <i class="fas fa-file-alt"></i> Most Viewed Pages
+            </a>
             <a href="{{ route('admin.analytics.most-visited-ips') }}" class="btn btn-warning ml-2">
                 <i class="fas fa-ban"></i> Most Visited IPs
             </a>
