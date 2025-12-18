@@ -60,10 +60,24 @@ function toBanglaNumber($number): string
 /** Format date based on language */
 function formatDate($date, $format = null): string
 {
+    // Handle null or empty dates
+    if (empty($date) || $date === null) {
+        return '';
+    }
+    
     $language = getLangauge();
     
-    if (is_string($date)) {
-        $date = \Carbon\Carbon::parse($date);
+    try {
+        if (is_string($date)) {
+            $date = \Carbon\Carbon::parse($date);
+        }
+        
+        // Check if date is valid (not epoch)
+        if ($date->timestamp <= 0 || $date->year < 1970) {
+            return '';
+        }
+    } catch (\Exception $e) {
+        return '';
     }
     
     if ($language === 'bn') {

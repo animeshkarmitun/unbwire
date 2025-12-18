@@ -36,8 +36,7 @@
                                                 </li>
                                                 <li class="list-inline-item">
                                                     <span>
-
-                                                        {{ date('M d, Y', strtotime($news->create_at)) }}
+                                                        {{ formatDate($news->created_at) }}
                                                     </span>
                                                 </li>
                                             </ul>
@@ -78,7 +77,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-                                                                {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                                {{ formatDate($news->created_at) }}
                                                             </span>
                                                         </li>
 
@@ -125,7 +124,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-                                                                {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                                {{ formatDate($news->created_at) }}
                                                             </span>
                                                         </li>
 
@@ -215,7 +214,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <span>
-                                            {{ date('M d, Y', strtotime($sectionOneNews->created_at)) }}
+                                            {{ formatDate($sectionOneNews->created_at) }}
                                         </span>
                                     </li>
 
@@ -268,7 +267,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <span>
-                                            {{ date('M d, Y', strtotime($sectionTwoNews->created_at)) }}
+                                            {{ formatDate($sectionTwoNews->created_at) }}
                                         </span>
                                     </li>
 
@@ -320,8 +319,7 @@
                                                 </li>
                                                 <li class="list-inline-item">
                                                     <span>
-
-                                                        {{ date('M d, Y', strtotime($sectionThreeNews->created_at)) }}
+                                                        {{ formatDate($sectionThreeNews->created_at) }}
                                                     </span>
                                                 </li>
 
@@ -359,8 +357,7 @@
                                                 </li>
                                                 <li class="list-inline-item">
                                                     <span>
-
-                                                        {{ date('M d, Y', strtotime($sectionThreeNews->created_at)) }}
+                                                        {{ formatDate($sectionThreeNews->created_at) }}
                                                     </span>
                                                 </li>
 
@@ -422,8 +419,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-
-                                                                {{ date('M d, Y', strtotime($sectionFourNews->created_at)) }}
+                                                                {{ formatDate($sectionFourNews->created_at) }}
                                                             </span>
                                                         </li>
                                                     </ul>
@@ -478,7 +474,7 @@
                                             </li>
                                             <li class="list-inline-item">
                                                 <span class="text-dark text-capitalize">
-                                                    {{ date('M d, Y', strtotime($mostViewedNews->created_at)) }}
+                                                    {{ formatDate($mostViewedNews->created_at) }}
                                                 </span>
                                             </li>
 

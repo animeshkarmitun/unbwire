@@ -32,10 +32,11 @@ class NewsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $languages = Language::all();
-        return view('admin.news.index', compact('languages'));
+        $selectedLang = $request->get('lang');
+        return view('admin.news.index', compact('languages', 'selectedLang'));
     }
 
     public function pendingNews(): View
@@ -128,7 +129,8 @@ class NewsController extends Controller
 
         toast(__('admin.Created Successfully!'), 'success')->width('330');
 
-        return redirect()->route('admin.news.index');
+        // Redirect to the appropriate language tab
+        return redirect()->route('admin.news.index', ['lang' => $news->language]);
     }
 
     /**
@@ -304,7 +306,8 @@ class NewsController extends Controller
 
         toast(__('admin.Update Successfully!'), 'success')->width('330');
 
-        return redirect()->route('admin.news.index');
+        // Redirect to the appropriate language tab
+        return redirect()->route('admin.news.index', ['lang' => $news->language]);
     }
 
     /**

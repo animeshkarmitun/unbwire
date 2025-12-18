@@ -19,10 +19,18 @@
             <div class="card-body">
                 <ul class="nav nav-tabs" id="myTab2" role="tablist">
                     @foreach ($languages as $language)
+                        @php
+                            $isActive = false;
+                            if (isset($selectedLang) && $selectedLang) {
+                                $isActive = ($language->lang === $selectedLang);
+                            } else {
+                                $isActive = ($loop->index === 0);
+                            }
+                        @endphp
                         <li class="nav-item">
-                            <a class="nav-link {{ $loop->index === 0 ? 'active' : '' }}" id="home-tab2" data-toggle="tab"
+                            <a class="nav-link {{ $isActive ? 'active' : '' }}" id="home-tab2" data-toggle="tab"
                                 href="#home-{{ $language->lang }}" role="tab" aria-controls="home"
-                                aria-selected="true">{{ $language->name }}</a>
+                                aria-selected="{{ $isActive ? 'true' : 'false' }}">{{ $language->name }}</a>
                         </li>
                     @endforeach
 
@@ -67,7 +75,15 @@
                                 }
                             }
                         @endphp
-                        <div class="tab-pane fade show {{ $loop->index === 0 ? 'active' : '' }}"
+                        @php
+                            $isPaneActive = false;
+                            if (isset($selectedLang) && $selectedLang) {
+                                $isPaneActive = ($language->lang === $selectedLang);
+                            } else {
+                                $isPaneActive = ($loop->index === 0);
+                            }
+                        @endphp
+                        <div class="tab-pane fade show {{ $isPaneActive ? 'active' : '' }}"
                             id="home-{{ $language->lang }}" role="tabpanel" aria-labelledby="home-tab2">
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -225,6 +241,15 @@
         @endforeach
 
         $(document).ready(function(){
+            // Switch to the correct language tab if lang parameter is present
+            @if(isset($selectedLang) && $selectedLang)
+                var selectedLang = '{{ $selectedLang }}';
+                var $tabLink = $('a[href="#home-' + selectedLang + '"]');
+                if ($tabLink.length) {
+                    $tabLink.tab('show');
+                }
+            @endif
+
             $('.toggle-status').on('click', function(){
                 let id = $(this).data('id');
                 let name = $(this).data('name');
