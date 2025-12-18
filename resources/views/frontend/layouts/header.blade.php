@@ -1,11 +1,15 @@
 @php
     $languages = \App\Models\Language::where('status', 1)->get();
     $FeaturedCategories = \App\Models\Category::where(['status' => 1, 'language' => getLangauge(), 'show_at_nav' => 1])
+        ->whereNull('parent_id')
+        ->with('children')
         ->orderByRaw('COALESCE(`order`, 999999) ASC')
         ->orderBy('id', 'asc')
         ->get();
 
     $categories = \App\Models\Category::where(['status' => 1, 'language' => getLangauge(), 'show_at_nav' => 0])
+        ->whereNull('parent_id')
+        ->with('children')
         ->orderByRaw('COALESCE(`order`, 999999) ASC')
         ->orderBy('id', 'asc')
         ->get();
@@ -38,7 +42,14 @@
                         <div class="topbar_language">
                             <select id="site-language">
                                 @foreach ($languages as $language)
-                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $language->name }}</option>
+                                    @php
+                                        $displayName = match($language->lang) {
+                                            'en' => 'English',
+                                            'bn' => 'বাংলা',
+                                            default => $language->name,
+                                        };
+                                    @endphp
+                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $displayName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -98,10 +109,23 @@
                 <div class="collapse navbar-collapse justify-content-between" id="main_nav99">
                     <ul class="navbar-nav ml-auto ">
                         @foreach ($FeaturedCategories as $category)
-                            <li class="nav-item">
-                                <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
-                            </li>
-
+                            @if($category->children->count() > 0)
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        {{ $category->name }}
+                                    </a>
+                                    <ul class="dropdown-menu animate fade-up">
+                                        <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
+                                        @foreach ($category->children as $child)
+                                            <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
+                                        @endforeach
+                                    </ul>
+                                </li>
+                            @else
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
+                                </li>
+                            @endif
                         @endforeach
 
                         @if (count($categories) > 0)
@@ -109,8 +133,20 @@
                             <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"> {{ __('frontend.More') }} </a>
                             <ul class="dropdown-menu animate fade-up">
                                 @foreach ($categories as $category)
-                                <li><a class="dropdown-item icon-arrow" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}
-                                    </a></li>
+                                    @if($category->children->count() > 0)
+                                        <li class="dropdown-submenu">
+                                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown">{{ $category->name }}</a>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
+                                                @foreach ($category->children as $child)
+                                                    <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
+                                                @endforeach
+                                            </ul>
+                                        </li>
+                                    @else
+                                        <li><a class="dropdown-item icon-arrow" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}
+                                            </a></li>
+                                    @endif
                                 @endforeach
 
                             </ul>
@@ -185,9 +221,21 @@
                     <nav class="list-group list-group-flush">
                         <ul class="navbar-nav ">
                             @foreach ($FeaturedCategories as $category)
-                            <li class="nav-item">
-                                <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
-                            </li>
+                                @if($category->children->count() > 0)
+                                    <li class="nav-item">
+                                        <a class="nav-link active dropdown-toggle text-dark" href="#" data-toggle="dropdown">{{ $category->name }}</a>
+                                        <ul class="dropdown-menu dropdown-menu-left">
+                                            <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
+                                            @foreach ($category->children as $child)
+                                                <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
+                                            @endforeach
+                                        </ul>
+                                    </li>
+                                @else
+                                    <li class="nav-item">
+                                        <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
+                                    </li>
+                                @endif
                             @endforeach
 
                             @if (count($categories) > 0)
@@ -196,7 +244,19 @@
                                     data-toggle="dropdown">{{ __('frontend.More') }} </a>
                                 <ul class="dropdown-menu dropdown-menu-left">
                                     @foreach ($categories as $category)
-                                    <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a></li>
+                                        @if($category->children->count() > 0)
+                                            <li class="dropdown-submenu">
+                                                <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown">{{ $category->name }}</a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
+                                                    @foreach ($category->children as $child)
+                                                        <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
+                                                    @endforeach
+                                                </ul>
+                                            </li>
+                                        @else
+                                            <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a></li>
+                                        @endif
                                     @endforeach
 
                                 </ul>
