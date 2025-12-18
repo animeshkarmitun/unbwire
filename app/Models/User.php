@@ -63,6 +63,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the pending subscription for this user
+     */
+    public function pendingSubscription()
+    {
+        return $this->hasOne(UserSubscription::class)
+            ->where('status', 'pending')
+            ->latest();
+    }
+
+    /**
      * Get the current subscription package
      */
     public function currentPackage()
@@ -93,7 +103,7 @@ class User extends Authenticatable
     {
         $package = $this->currentPackage();
         
-        // Free users can only access free content and non-exclusive
+        // Free users can only access free content
         if (!$package) {
             return $news->subscription_required === 'free' && !$news->is_exclusive;
         }
@@ -107,31 +117,16 @@ class User extends Authenticatable
             default => 0,
         };
 
-        // Exclusive content is only accessible to Ultra tier (tier 3)
-        if ($news->is_exclusive && $packageTier < 3) {
-            return false;
-        }
-
         // User's package tier must be >= required tier
         return $packageTier >= $requiredTier;
     }
 
     /**
-     * Check if user has ad-free subscription
+     * Check if user has ad-free access
      */
     public function hasAdFreeAccess(): bool
     {
-        $subscription = $this->activeSubscription;
-        if (!$subscription) {
-            return false;
-        }
-        
-        // Load package if not already loaded
-        if (!$subscription->relationLoaded('package')) {
-            $subscription->load('package');
-        }
-        
-        $package = $subscription->package;
+        $package = $this->currentPackage();
         return $package && $package->ad_free === true;
     }
 }

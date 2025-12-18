@@ -34,6 +34,75 @@
                         </div>
                     @endif
 
+                    @if($pendingSubscription)
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h4 class="mb-0"><i class="fas fa-clock"></i> Pending Subscription</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>{{ $pendingSubscription->package->name }}</h5>
+                                        <p class="text-muted">{{ $pendingSubscription->package->description }}</p>
+                                        
+                                        <div class="mt-3">
+                                            <strong>Status:</strong>
+                                            <span class="badge badge-warning">Pending</span>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <strong>Applied On:</strong> 
+                                            {{ $pendingSubscription->created_at->format('M d, Y') }}
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <strong>Expected Start:</strong> 
+                                            {{ $pendingSubscription->starts_at->format('M d, Y') }}
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <strong>Expected Expiry:</strong> 
+                                            {{ $pendingSubscription->expires_at->format('M d, Y') }}
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <strong>Payment Method:</strong>
+                                            <span class="badge badge-info">{{ ucfirst($pendingSubscription->payment_method ?? 'N/A') }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Your subscription request is pending admin approval.</strong>
+                                            <p class="mb-0 mt-2">You will be notified once your subscription is activated. Please do not apply for another subscription until this one is processed.</p>
+                                        </div>
+
+                                        <h6>Features Included:</h6>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check text-success"></i> News Articles</li>
+                                            @if($pendingSubscription->package->access_images)
+                                                <li><i class="fas fa-check text-success"></i> High-Quality Images</li>
+                                            @endif
+                                            @if($pendingSubscription->package->access_videos)
+                                                <li><i class="fas fa-check text-success"></i> Video Content</li>
+                                            @endif
+                                            @if($pendingSubscription->package->access_exclusive)
+                                                <li><i class="fas fa-check text-success"></i> Exclusive Articles</li>
+                                            @endif
+                                            @if($pendingSubscription->package->ad_free)
+                                                <li><i class="fas fa-check text-success"></i> Ad-Free Experience</li>
+                                            @endif
+                                            @if($pendingSubscription->package->priority_support)
+                                                <li><i class="fas fa-check text-success"></i> Priority Support</li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($activeSubscription)
                         <div class="card mb-4">
                             <div class="card-header bg-primary text-white">
@@ -115,7 +184,7 @@
                                 </div>
                             </div>
                         </div>
-                    @else
+                    @elseif(!$pendingSubscription)
                         <div class="alert alert-warning">
                             <h5>No Active Subscription</h5>
                             <p>You don't have an active subscription. Please subscribe to access our premium news content.</p>
@@ -153,6 +222,8 @@
                                                             <span class="badge badge-danger">Expired</span>
                                                         @elseif($subscription->status == 'cancelled')
                                                             <span class="badge badge-warning">Cancelled</span>
+                                                        @elseif($subscription->status == 'pending')
+                                                            <span class="badge badge-warning">Pending</span>
                                                         @else
                                                             <span class="badge badge-secondary">{{ ucfirst($subscription->status) }}</span>
                                                         @endif
@@ -169,11 +240,13 @@
                         </div>
                     @endif
 
-                    <div class="mt-4">
-                        <a href="{{ route('subscription.plans') }}" class="btn btn-primary">
-                            <i class="fas fa-crown"></i> View All Plans
-                        </a>
-                    </div>
+                    @if(!$pendingSubscription)
+                        <div class="mt-4">
+                            <a href="{{ route('subscription.plans') }}" class="btn btn-primary">
+                                <i class="fas fa-crown"></i> View All Plans
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

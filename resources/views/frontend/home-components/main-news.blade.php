@@ -37,7 +37,7 @@
                                                 <li class="list-inline-item">
                                                     <span>
 
-                                                        {{ formatDate($news->created_at, 'M d, Y') }}
+                                                        {{ date('M d, Y', strtotime($news->create_at)) }}
                                                     </span>
                                                 </li>
                                             </ul>
@@ -78,7 +78,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-                                                                {{ formatDate($news->created_at, 'M d, Y') }}
+                                                                {{ date('M d, Y', strtotime($news->created_at)) }}
                                                             </span>
                                                         </li>
 
@@ -125,7 +125,7 @@
                                                         </li>
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
-                                                                {{ formatDate($news->created_at, 'M d, Y') }}
+                                                                {{ date('M d, Y', strtotime($news->created_at)) }}
                                                             </span>
                                                         </li>
 
@@ -215,7 +215,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <span>
-                                            {{ formatDate($sectionOneNews->created_at, 'M d, Y') }}
+                                            {{ date('M d, Y', strtotime($sectionOneNews->created_at)) }}
                                         </span>
                                     </li>
 
@@ -268,7 +268,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <span>
-                                            {{ formatDate($sectionTwoNews->created_at, 'M d, Y') }}
+                                            {{ date('M d, Y', strtotime($sectionTwoNews->created_at)) }}
                                         </span>
                                     </li>
 
@@ -321,7 +321,7 @@
                                                 <li class="list-inline-item">
                                                     <span>
 
-                                                        {{ formatDate($sectionThreeNews->created_at, 'M d, Y') }}
+                                                        {{ date('M d, Y', strtotime($sectionThreeNews->created_at)) }}
                                                     </span>
                                                 </li>
 
@@ -360,7 +360,7 @@
                                                 <li class="list-inline-item">
                                                     <span>
 
-                                                        {{ formatDate($sectionThreeNews->created_at, 'M d, Y') }}
+                                                        {{ date('M d, Y', strtotime($sectionThreeNews->created_at)) }}
                                                     </span>
                                                 </li>
 
@@ -380,7 +380,7 @@
                         </div>
                     </aside>
 
-                    @if ($ad->home_middle_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
+                    @if ($ad->home_middle_ad_status == 1 && (!auth()->check() || !auth()->user()->hasAdFreeAccess()))
 
                     <div class="small_add_banner">
                         <div class="small_add_banner_img">
@@ -423,7 +423,7 @@
                                                         <li class="list-inline-item">
                                                             <span class="text-dark text-capitalize">
 
-                                                                {{ formatDate($sectionFourNews->created_at, 'M d, Y') }}
+                                                                {{ date('M d, Y', strtotime($sectionFourNews->created_at)) }}
                                                             </span>
                                                         </li>
                                                     </ul>
@@ -478,7 +478,7 @@
                                             </li>
                                             <li class="list-inline-item">
                                                 <span class="text-dark text-capitalize">
-                                                    {{ formatDate($mostViewedNews->created_at, 'M d, Y') }}
+                                                    {{ date('M d, Y', strtotime($mostViewedNews->created_at)) }}
                                                 </span>
                                             </li>
 
@@ -518,7 +518,7 @@
                                                             </li>
                                                             <li class="list-inline-item">
                                                                 <span class="text-dark text-capitalize">
-                                                                    {{ formatDate($mostViewedNews->created_at, 'M d, Y') }}
+                                                                    {{ date('M d, Y', strtotime($mostViewedNews->created_at)) }}
                                                                 </span>
                                                             </li>
 
@@ -552,7 +552,7 @@
                                             <i class="{{ $socialCount->icon }}"></i>
                                         </span>
                                         <span class="social__media__widget-counter">
-                                            {{ $socialCount->fan_count }} {{ $socialCount->fan_type }}
+                                            {{ getLangauge() === 'bn' ? toBanglaNumber($socialCount->fan_count) : $socialCount->fan_count }} {{ $socialCount->fan_type }}
                                         </span>
                                         <span class="social__media__widget-name">
                                             {{ $socialCount->button_text }}
@@ -572,7 +572,7 @@
 
                                     <li class="list-inline-item">
                                         <a href="{{ route('news', ['tag' => $tag->name]) }}">
-                                            #{{ $tag->name }} ({{ $tag->count }})
+                                            #{{ $tag->name }} ({{ getLangauge() === 'bn' ? toBanglaNumber($tag->count) : $tag->count }})
                                         </a>
                                     </li>
                                     @endforeach
@@ -580,7 +580,7 @@
                             </div>
                         </aside>
 
-                        @if ($ad->side_bar_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
+                        @if ($ad->side_bar_ad_status == 1 && (!auth()->check() || !auth()->user()->hasAdFreeAccess()))
                         <aside class="wrapper__list__article">
                             <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                             <a href="{{ $ad->side_bar_ad_url }}">
@@ -601,7 +601,7 @@
                                 <p><small>{{ __('frontend.Get magzrenvi daily newsletter on your inbox') }}.</small></p>
                                 <form action="" class="newsletter-form">
                                     <div class="input-group ">
-                                        <input type="text" class="form-control" name="email" placeholder="Your email address">
+                                        <input type="text" class="form-control" name="email" placeholder="{{ __('frontend.Your email address') }}">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary newsletter-button" type="submit">{{ __('frontend.sign up') }}</button>
                                         </div>

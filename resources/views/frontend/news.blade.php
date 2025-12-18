@@ -28,7 +28,7 @@
                     <form action="{{ route('news') }}" method="GET">
                         <div class="row">
                             <div class="col-lg-5">
-                                <input type="text" placeholder="Type here" value="{{ request()->search }}" name="search">
+                                <input type="text" placeholder="{{ __('frontend.Type here') }}" value="{{ request()->search }}" name="search">
                             </div>
                             <div class="col-lg-4">
                                 <select name="category">
@@ -47,9 +47,11 @@
                 </div>
 
                 <aside class="wrapper__list__article ">
-                    @if (isset($selectedCategory) && $selectedCategory)
-
-                    <h4 class="border_section">{{ __('frontend.Category') }}: {{ $selectedCategory->name }}</h4>
+                    @if (request()->has('category'))
+                    @php
+                        $categoryName = $categories->where('slug', request()->category)->first()->name ?? request()->category;
+                    @endphp
+                    <h4 class="border_section">{{ __('frontend.Category') }}: {{ $categoryName }}</h4>
                     @endif
 
                     <div class="row">
@@ -74,7 +76,7 @@
                                         </li>
                                         <li class="list-inline-item">
                                             <span class="text-dark text-capitalize">
-                                                {{ formatDate($post->created_at, 'M d, Y') }}
+                                                {{ formatDate($post->created_at) }}
                                             </span>
                                         </li>
 
@@ -94,7 +96,7 @@
                         @endforeach
                         @if (count($news) === 0)
                             <div class="text-center w-100" >
-                                <h4 >{{ __('frontend.No News Found') }}</h4>
+                                <h4 >{{ __('frontend.No News Found') }} :(</h4>
                             </div>
                         @endif
                     </div>
@@ -135,7 +137,7 @@
                                                     </li>
                                                     <li class="list-inline-item">
                                                         <span class="text-dark text-capitalize">
-                                                            {{ formatDate($news->created_at, 'M d, Y') }}
+                                                            {{ formatDate($news->created_at) }}
                                                         </span>
                                                     </li>
 
@@ -175,7 +177,7 @@
                                         </li>
                                         <li class="list-inline-item">
                                             <span class="text-dark text-capitalize">
-                                                {{ date('M d, Y', strtotime($news->created_at)) }}
+                                                {{ formatDate($news->created_at) }}
                                             </span>
                                         </li>
 
@@ -203,7 +205,7 @@
                                 @foreach ($mostCommonTags as $tag)
                                 <li class="list-inline-item">
                                     <a href="{{ route('news', ['tag' => $tag->name]) }}">
-                                        #{{ $tag->name }} ({{ $tag->count }})
+                                        #{{ $tag->name }} ({{ getLangauge() === 'bn' ? toBanglaNumber($tag->count) : $tag->count }})
                                     </a>
                                 </li>
                                 @endforeach
@@ -223,7 +225,7 @@
                             <p><small>{{ __('frontend.Get magzrenvi daily newsletter on your inbox') }}.</small></p>
                             <form action="" class="newsletter-form">
                                 <div class="input-group ">
-                                    <input type="text" class="form-control" name="email" placeholder="Your email address">
+                                    <input type="text" class="form-control" name="email" placeholder="{{ __('frontend.Your email address') }}">
                                     <div class="input-group-append">
                                         <button class="btn btn-primary newsletter-button" type="submit">{{ __('frontend.sign up') }}</button>
                                     </div>
@@ -232,7 +234,7 @@
                         </div>
                     </aside>
 
-                    @if ($ad->side_bar_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
+                    @if ($ad->side_bar_ad_status == 1 && (!auth()->check() || !auth()->user()->hasAdFreeAccess()))
                     <aside class="wrapper__list__article">
                         <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                         <a href="{{ $ad->side_bar_ad_url }}">
@@ -248,7 +250,7 @@
             <div class="clearfix"></div>
         </div>
     </div>
-    @if ($ad->news_page_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
+    @if ($ad->news_page_ad_status == 1 && (!auth()->check() || !auth()->user()->hasAdFreeAccess()))
     <div class="large_add_banner my-4">
         <div class="container">
             <div class="row">

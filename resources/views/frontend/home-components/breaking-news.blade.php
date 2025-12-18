@@ -25,7 +25,7 @@
                                             </li>
                                             <li class="list-inline-item">
                                                 <span class="text-dark text-capitalize">
-                                                    {{ formatDate($news->created_at, 'M d, Y') }}
+                                                    {{ date('M d, Y', strtotime($news->created_at)) }}
                                                 </span>
                                             </li>
 

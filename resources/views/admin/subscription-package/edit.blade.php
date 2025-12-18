@@ -29,10 +29,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>{{ __('admin.Currency') }} <span class="text-danger">*</span></label>
-                                <select name="currency" class="form-control" required>
-                                    <option value="USD" {{ old('currency', $package->currency) == 'USD' ? 'selected' : '' }}>USD</option>
-                                    <option value="BDT" {{ old('currency', $package->currency) == 'BDT' ? 'selected' : '' }}>BDT</option>
-                                </select>
+                                <input name="currency" type="text" class="form-control" value="{{ old('currency', $package->currency) }}" maxlength="3" required>
                                 @error('currency')
                                     <p class="text-danger">{{ $message }}</p>
                                 @enderror

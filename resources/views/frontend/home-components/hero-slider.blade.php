@@ -35,7 +35,7 @@
                                                     <li class="list-inline-item">
                                                         <span>
 
-                                                            {{ formatDate($slider->created_at, 'M d, Y') }}
+                                                            {{ date('M d, Y', strtotime($slider->created_at)) }}
                                                         </span>
                                                     </li>
                                                 </ul>
@@ -81,7 +81,7 @@
                                                 </li>
                                                 <li class="list-inline-item">
                                                     <span>
-                                                        {{ formatDate($popularItem->created_at, 'M d, Y') }}
+                                                        {{ date('M d, Y', strtotime($popularItem->created_at)) }}
                                                     </span>
                                                 </li>
                                             </ul>

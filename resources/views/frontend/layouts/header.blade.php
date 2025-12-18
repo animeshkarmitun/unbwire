@@ -1,16 +1,11 @@
 @php
     $languages = \App\Models\Language::where('status', 1)->get();
     $FeaturedCategories = \App\Models\Category::where(['status' => 1, 'language' => getLangauge(), 'show_at_nav' => 1])
-        ->whereNull('parent_id')
-        ->with(['children' => function($query) {
-            $query->where('status', 1)->orderBy('order', 'asc');
-        }])
         ->orderByRaw('COALESCE(`order`, 999999) ASC')
         ->orderBy('id', 'asc')
         ->get();
 
     $categories = \App\Models\Category::where(['status' => 1, 'language' => getLangauge(), 'show_at_nav' => 0])
-        ->whereNull('parent_id')
         ->orderByRaw('COALESCE(`order`, 999999) ASC')
         ->orderBy('id', 'asc')
         ->get();
@@ -34,8 +29,7 @@
 
                         </ul>
                         <div class="topbar-text">
-
-                            {{ formatDate(now(), 'l, F j, Y') }}
+                            {{ formatDate(now(), 'full') }}
                         </div>
                     </div>
                 </div>
@@ -44,7 +38,7 @@
                         <div class="topbar_language">
                             <select id="site-language">
                                 @foreach ($languages as $language)
-                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ getLanguageNativeName($language->lang) }}</option>
+                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $language->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -61,24 +55,16 @@
                                 <ul class="dropdown-menu dropdown-menu-right user-dropdown-menu">
                                     <li>
                                         <a href="{{ route('user.profile') }}" class="dropdown-item">
-                                            <i class="fas fa-user"></i>
-                                            <span>{{ __('frontend.Profile') }}</span>
+                                            <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Profile') }}
                                         </a>
                                     </li>
+                                    <li role="separator" class="divider"></li>
                                     <li>
-                                        <a href="{{ route('support-tickets.index') }}" class="dropdown-item">
-                                            <i class="fas fa-ticket-alt"></i>
-                                            <span>Support Tickets</span>
-                                        </a>
-                                    </li>
-                                   
-                                    <li>
-                                        <a href="javascript:void(0)" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="dropdown-item">
-                                            <i class="fas fa-sign-out-alt"></i>
-                                            <span>{{ __('frontend.Logout') }}</span>
-                                        </a>
-                                        <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
+                                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                                             @csrf
+                                            <a href="javascript:void(0)" onclick="event.preventDefault(); this.closest('form').submit();" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Logout') }}
+                                            </a>
                                         </form>
                                     </li>
                                 </ul>
@@ -112,37 +98,10 @@
                 <div class="collapse navbar-collapse justify-content-between" id="main_nav99">
                     <ul class="navbar-nav ml-auto ">
                         @foreach ($FeaturedCategories as $category)
-                            @php
-                                $hasActiveChildren = $category->children->where('status', 1)->count() > 0;
-                            @endphp
-                            @if($hasActiveChildren && $category->show_at_nav)
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                        {{ $category->name }}
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">
-                                                {{ __('All') }} {{ $category->name }}
-                                            </a>
-                                        </li>
-                                        @if($hasActiveChildren)
-                                            <li role="separator" class="divider"></li>
-                                            @foreach($category->children->where('status', 1) as $child)
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">
-                                                        {{ $child->name }}
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        @endif
-                                    </ul>
-                                </li>
-                            @else
-                                <li class="nav-item">
-                                    <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
-                                </li>
-                            @endif
+                            <li class="nav-item">
+                                <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
+                            </li>
+
                         @endforeach
 
                         @if (count($categories) > 0)
@@ -178,7 +137,7 @@
                                     <div class="row no-gutters mt-3">
                                         <div class="col">
                                             <input class="form-control border-secondary border-right-0 rounded-0"
-                                                type="search" value="" placeholder="Search "
+                                                type="search" value="" placeholder="{{ __('frontend.Search') }}"
                                                 id="example-search-input4" name="search">
                                         </div>
                                         <div class="col-auto">
@@ -208,7 +167,7 @@
                             <div class="row no-gutters">
                                 <div class="col">
                                     <input class="form-control border-secondary border-right-0 rounded-0" value=""
-                                        placeholder="Search" type="search" name="search">
+                                        placeholder="{{ __('frontend.Search') }}" type="search" name="search">
                                 </div>
                                 <div class="col-auto">
                                     <button type="submit" class="btn btn-outline-secondary border-left-0 rounded-0 rounded-right">
@@ -226,43 +185,15 @@
                     <nav class="list-group list-group-flush">
                         <ul class="navbar-nav ">
                             @foreach ($FeaturedCategories as $category)
-                                @php
-                                    $hasActiveChildren = $category->children->where('status', 1)->count() > 0;
-                                @endphp
-                                @if($hasActiveChildren && $category->show_at_nav)
-                                    <li class="nav-item">
-                                        <a class="nav-link active dropdown-toggle text-dark" href="#" data-toggle="dropdown">
-                                            {{ $category->name }}
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-left">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">
-                                                    {{ __('All') }} {{ $category->name }}
-                                                </a>
-                                            </li>
-                                            @if($hasActiveChildren)
-                                                <li role="separator" class="divider"></li>
-                                                @foreach($category->children->where('status', 1) as $child)
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">
-                                                            {{ $child->name }}
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            @endif
-                                        </ul>
-                                    </li>
-                                @else
-                                    <li class="nav-item">
-                                        <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
-                                    </li>
-                                @endif
+                            <li class="nav-item">
+                                <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
+                            </li>
                             @endforeach
 
                             @if (count($categories) > 0)
                             <li class="nav-item">
                                 <a class="nav-link active dropdown-toggle  text-dark" href="#"
-                                    data-toggle="dropdown">More </a>
+                                    data-toggle="dropdown">{{ __('frontend.More') }} </a>
                                 <ul class="dropdown-menu dropdown-menu-left">
                                     @foreach ($categories as $category)
                                     <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a></li>

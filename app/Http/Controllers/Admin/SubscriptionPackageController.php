@@ -43,16 +43,16 @@ class SubscriptionPackageController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
-            'currency' => ['required', 'string', 'in:BDT,USD'],
+            'currency' => ['required', 'string', 'max:3'],
             'billing_period' => ['required', 'in:monthly,yearly'],
-            'access_news' => ['nullable', 'boolean'],
-            'access_images' => ['nullable', 'boolean'],
-            'access_videos' => ['nullable', 'boolean'],
-            'access_exclusive' => ['nullable', 'boolean'],
+            'access_news' => ['required', 'boolean'],
+            'access_images' => ['required', 'boolean'],
+            'access_videos' => ['required', 'boolean'],
+            'access_exclusive' => ['required', 'boolean'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
-            'ad_free' => ['nullable', 'boolean'],
-            'priority_support' => ['nullable', 'boolean'],
-            'is_active' => ['nullable', 'boolean'],
+            'ad_free' => ['required', 'boolean'],
+            'priority_support' => ['required', 'boolean'],
+            'is_active' => ['required', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
 
@@ -63,14 +63,14 @@ class SubscriptionPackageController extends Controller
         $package->price = $request->price;
         $package->currency = $request->currency;
         $package->billing_period = $request->billing_period;
-        $package->access_news = $request->has('access_news') ? (bool) $request->access_news : false;
-        $package->access_images = $request->has('access_images') ? (bool) $request->access_images : false;
-        $package->access_videos = $request->has('access_videos') ? (bool) $request->access_videos : false;
-        $package->access_exclusive = $request->has('access_exclusive') ? (bool) $request->access_exclusive : false;
+        $package->access_news = (bool) $request->access_news;
+        $package->access_images = (bool) $request->access_images;
+        $package->access_videos = (bool) $request->access_videos;
+        $package->access_exclusive = (bool) $request->access_exclusive;
         $package->max_articles_per_day = $request->max_articles_per_day;
-        $package->ad_free = $request->has('ad_free') ? (bool) $request->ad_free : false;
-        $package->priority_support = $request->has('priority_support') ? (bool) $request->priority_support : false;
-        $package->is_active = $request->has('is_active') ? (bool) $request->is_active : false;
+        $package->ad_free = (bool) $request->ad_free;
+        $package->priority_support = (bool) $request->priority_support;
+        $package->is_active = (bool) $request->is_active;
         $package->sort_order = $request->sort_order ?? 0;
         $package->save();
 
@@ -97,16 +97,16 @@ class SubscriptionPackageController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
-            'currency' => ['required', 'string', 'in:BDT,USD'],
+            'currency' => ['required', 'string', 'max:3'],
             'billing_period' => ['required', 'in:monthly,yearly'],
-            'access_news' => ['nullable', 'boolean'],
-            'access_images' => ['nullable', 'boolean'],
-            'access_videos' => ['nullable', 'boolean'],
-            'access_exclusive' => ['nullable', 'boolean'],
+            'access_news' => ['required', 'boolean'],
+            'access_images' => ['required', 'boolean'],
+            'access_videos' => ['required', 'boolean'],
+            'access_exclusive' => ['required', 'boolean'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
-            'ad_free' => ['nullable', 'boolean'],
-            'priority_support' => ['nullable', 'boolean'],
-            'is_active' => ['nullable', 'boolean'],
+            'ad_free' => ['required', 'boolean'],
+            'priority_support' => ['required', 'boolean'],
+            'is_active' => ['required', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
 
@@ -117,14 +117,14 @@ class SubscriptionPackageController extends Controller
         $package->price = $request->price;
         $package->currency = $request->currency;
         $package->billing_period = $request->billing_period;
-        $package->access_news = $request->has('access_news') ? (bool) $request->access_news : false;
-        $package->access_images = $request->has('access_images') ? (bool) $request->access_images : false;
-        $package->access_videos = $request->has('access_videos') ? (bool) $request->access_videos : false;
-        $package->access_exclusive = $request->has('access_exclusive') ? (bool) $request->access_exclusive : false;
+        $package->access_news = (bool) $request->access_news;
+        $package->access_images = (bool) $request->access_images;
+        $package->access_videos = (bool) $request->access_videos;
+        $package->access_exclusive = (bool) $request->access_exclusive;
         $package->max_articles_per_day = $request->max_articles_per_day;
-        $package->ad_free = $request->has('ad_free') ? (bool) $request->ad_free : false;
-        $package->priority_support = $request->has('priority_support') ? (bool) $request->priority_support : false;
-        $package->is_active = $request->has('is_active') ? (bool) $request->is_active : false;
+        $package->ad_free = (bool) $request->ad_free;
+        $package->priority_support = (bool) $request->priority_support;
+        $package->is_active = (bool) $request->is_active;
         $package->sort_order = $request->sort_order ?? 0;
         $package->save();
 

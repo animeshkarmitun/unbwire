@@ -194,39 +194,25 @@ class HomeController extends Controller
             $news->logActivity('viewed', null, ['news_id' => $news->id, 'slug' => $news->slug]);
         }
 
-        // Get subscription tier for filtering related news
-        $currentPackage = $user->currentPackage();
-        $subscriptionTier = $currentPackage ? $currentPackage->slug : 'free';
-
         $recentNews = News::with(['category', 'auther'])->where('slug','!=', $news->slug)
-            ->activeEntries()
-            ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'DESC')
-            ->take(4)
-            ->get();
+            ->activeEntries()->withLocalize()->orderBy('id', 'DESC')->take(4)->get();
 
         $mostCommonTags = $this->mostCommonTags();
 
         $nextPost = News::where('id', '>', $news->id)
             ->activeEntries()
             ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'asc')
-            ->first();
+            ->orderBy('id', 'asc')->first();
 
         $previousPost = News::where('id', '<', $news->id)
             ->activeEntries()
             ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->orderBy('id', 'desc')
-            ->first();
+            ->orderBy('id', 'desc')->first();
 
         $relatedPosts = News::where('slug', '!=', $news->slug)
             ->where('category_id', $news->category_id)
             ->activeEntries()
             ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
             ->take(5)
             ->get();
 
@@ -541,11 +527,9 @@ class HomeController extends Controller
         $recentNews = News::with(['category', 'auther'])
             ->activeEntries()
             ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
-            ->take(4)
-            ->get();
+            ->take(4)->get();
         $mostCommonTags = $this->mostCommonTags();
 
         // Get categories ordered to match menu: nav categories first by order, then non-nav by order
@@ -555,15 +539,9 @@ class HomeController extends Controller
             ->orderBy('id', 'asc') // Finally by ID as tiebreaker
             ->get();
 
-        // Get the selected category if category filter is applied
-        $selectedCategory = null;
-        if ($request->has('category') && !empty($request->category)) {
-            $selectedCategory = Category::where(['slug' => $request->category, 'language' => getLangauge()])->first();
-        }
-
         $ad = $this->getAdSettings();
 
-        return view('frontend.news', compact('news', 'recentNews', 'mostCommonTags', 'categories', 'selectedCategory', 'ad'));
+        return view('frontend.news', compact('news', 'recentNews', 'mostCommonTags', 'categories', 'ad'));
     }
 
     public function countView($news)

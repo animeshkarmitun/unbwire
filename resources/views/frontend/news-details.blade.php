@@ -78,7 +78,7 @@
                             <li class="list-inline-item">
                                 <span class="text-dark text-capitalize ml-1">
 
-                                    {{ formatDate($news->created_at, 'M D, Y') }}
+                                    {{ date('M D, Y', strtotime($news->created_at)) }}
                                 </span>
                             </li>
                             <li class="list-inline-item">
@@ -195,7 +195,7 @@
                 <!-- Comment  -->
                 @auth
                 <div id="comments" class="comments-area">
-                    <h3 class="comments-title">{{ $news->comments()->count() }} {{ __('frontend.Comments:') }}</h3>
+                    <h3 class="comments-title">{{ getLangauge() === 'bn' ? toBanglaNumber($news->comments()->count()) : $news->comments()->count() }} {{ __('frontend.Comments:') }}</h3>
 
                     <ol class="comment-list">
                         @foreach ($news->comments()->whereNull('parent_id')->get() as $comment)
@@ -211,7 +211,7 @@
 
                                     <div class="comment-metadata">
                                         <a href="javascript:;">
-                                            <span>{{ formatDate($comment->created_at, 'M, d, Y H:i') }}</span>
+                                            <span>{{ formatDate($comment->created_at) }} {{ getLangauge() === 'bn' ? toBanglaNumber($comment->created_at->format('H:i')) : $comment->created_at->format('H:i') }}</span>
                                         </a>
                                     </div>
                                 </div>
@@ -246,7 +246,7 @@
 
                                             <div class="comment-metadata">
                                                 <a href="javascript:;">
-                                                    <span>{{ formatDate($reply->created_at, 'M, d, Y H:i') }}</span>
+                                                    <span>{{ formatDate($reply->created_at) }} {{ getLangauge() === 'bn' ? toBanglaNumber($reply->created_at->format('H:i')) : $reply->created_at->format('H:i') }}</span>
                                                 </a>
                                             </div>
                                         </div>
@@ -288,7 +288,7 @@
                                         <div class="modal-body">
                                             <form action="{{ route('news-comment-replay') }}" method="POST">
                                                 @csrf
-                                                <textarea name="replay" cols="30" rows="7" placeholder="Type. . ."></textarea>
+                                                <textarea name="replay" cols="30" rows="7" placeholder="{{ __('frontend.Type. . .') }}"></textarea>
                                                 <input type="hidden" name="news_id" value="{{ $news->id }}">
                                                 <input type="hidden" name="parent_id" value="{{ $comment->id }}">
 
@@ -365,7 +365,7 @@
                     </div>
                 </div>
 
-                @if ($ad->view_page_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
+                @if ($ad->view_page_ad_status == 1 && (!auth()->check() || !auth()->user()->hasAdFreeAccess()))
                 <div class="small_add_banner mb-5 pb-4">
                     <div class="small_add_banner_img">
                         <a href="{{ $ad->view_page_ad_url }}">
@@ -402,7 +402,7 @@
                                         </li>
                                         <li class="list-inline-item">
                                             <span>
-                                                {{ formatDate($post->created_at, 'M d, Y') }}
+                                                {{ date('M d, Y', strtotime($post->created_at)) }}
                                             </span>
                                         </li>
 
@@ -453,7 +453,7 @@
                                                     <li class="list-inline-item">
                                                         <span class="text-dark text-capitalize">
 
-                                                            {{ formatDate($news->created_at, 'M d, Y') }}
+                                                            {{ date('M d, Y', strtotime($news->created_at)) }}
                                                         </span>
                                                     </li>
 
@@ -528,7 +528,7 @@
                                         <i class="{{ $socialCount->icon }}"></i>
                                     </span>
                                     <span class="social__media__widget-counter">
-                                        {{ $socialCount->fan_count }} {{ $socialCount->fan_type }}
+                                        {{ getLangauge() === 'bn' ? toBanglaNumber($socialCount->fan_count) : $socialCount->fan_count }} {{ $socialCount->fan_type }}
                                     </span>
                                     <span class="social__media__widget-name">
                                         {{ $socialCount->button_text }}
@@ -550,7 +550,7 @@
 
                                 <li class="list-inline-item">
                                     <a href="{{ route('news', ['tag' => $tag->name]) }}">
-                                        #{{ $tag->name }} ({{ $tag->count }})
+                                        #{{ $tag->name }} ({{ getLangauge() === 'bn' ? toBanglaNumber($tag->count) : $tag->count }})
                                     </a>
                                 </li>
                                 @endforeach
@@ -570,7 +570,7 @@
                             <p><small>{{ __('frontend.Get magzrenvi daily newsletter on your inbox') }}.</small></p>
                             <form action="" class="newsletter-form">
                                 <div class="input-group ">
-                                    <input type="text" class="form-control" name="email" placeholder="Your email address">
+                                    <input type="text" class="form-control" name="email" placeholder="{{ __('frontend.Your email address') }}">
                                     <div class="input-group-append">
                                         <button class="btn btn-primary newsletter-button" type="submit">{{ __('frontend.sign up') }}</button>
                                     </div>
@@ -579,7 +579,7 @@
                         </div>
                     </aside>
 
-                    @if ($ad->side_bar_ad_status == 1 && !(Auth::check() && Auth::user()->hasAdFreeAccess()))
+                    @if ($ad->side_bar_ad_status == 1 && (!auth()->check() || !auth()->user()->hasAdFreeAccess()))
                     <aside class="wrapper__list__article">
                         <h4 class="border_section">{{ __('frontend.Advertise') }}</h4>
                         <a href="{{ $ad->side_bar_ad_url }}">

@@ -25,12 +25,13 @@ class UserProfileController extends Controller
 
         $user = Auth::user();
         $activeSubscription = $user->activeSubscription;
+        $pendingSubscription = $user->pendingSubscription;
         $currentPackage = $user->currentPackage();
         $packages = SubscriptionPackage::active()
             ->orderBy('sort_order')
             ->get();
 
-        return view('frontend.profile.index', compact('user', 'activeSubscription', 'currentPackage', 'packages'));
+        return view('frontend.profile.index', compact('user', 'activeSubscription', 'pendingSubscription', 'currentPackage', 'packages'));
     }
 
     /**
@@ -69,6 +70,14 @@ class UserProfileController extends Controller
         ]);
 
         $user = Auth::user();
+        
+        // Check if user already has a pending subscription
+        $pendingSubscription = $user->pendingSubscription;
+        if ($pendingSubscription) {
+            return redirect()->back()
+                ->with('error', 'You already have a pending subscription request. Please wait for admin approval before changing your package.');
+        }
+
         $newPackage = SubscriptionPackage::active()->findOrFail($request->package_id);
         $activeSubscription = $user->activeSubscription;
 

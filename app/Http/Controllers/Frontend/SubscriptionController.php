@@ -21,25 +21,10 @@ class SubscriptionController extends Controller
             ->get();
         
         $user = Auth::user();
-        $userSubscription = null;
-        $latestSubscription = null;
-        $hasPendingSubscription = false;
-        
-        if (Auth::check() && $user) {
-            $userSubscription = $user->activeSubscription;
-            // Get the latest subscription (any status)
-            $latestSubscription = $user->subscriptions()
-                ->with('package')
-                ->orderBy('created_at', 'desc')
-                ->first();
-            
-            // Check if user has a pending subscription
-            $hasPendingSubscription = $user->subscriptions()
-                ->where('status', 'pending')
-                ->exists();
-        }
+        $userSubscription = $user ? $user->activeSubscription : null;
+        $pendingSubscription = $user ? $user->pendingSubscription : null;
 
-        return view('frontend.subscription.plans', compact('packages', 'userSubscription', 'latestSubscription', 'hasPendingSubscription'));
+        return view('frontend.subscription.plans', compact('packages', 'userSubscription', 'pendingSubscription'));
     }
 
     /**
@@ -55,14 +40,11 @@ class SubscriptionController extends Controller
         $package = SubscriptionPackage::active()->findOrFail($packageId);
         $user = Auth::user();
 
-        // Check if user has a pending subscription
-        $pendingSubscription = $user->subscriptions()
-            ->where('status', 'pending')
-            ->first();
-        
+        // Check if user already has a pending subscription
+        $pendingSubscription = $user->pendingSubscription;
         if ($pendingSubscription) {
             return redirect()->route('subscription.plans')
-                ->with('error', 'You already have a pending subscription. Please wait for admin approval before subscribing to a new plan.');
+                ->with('error', 'You already have a pending subscription request. Please wait for admin approval before applying for a new subscription.');
         }
 
         // Check if user already has an active subscription
@@ -89,14 +71,11 @@ class SubscriptionController extends Controller
         $package = SubscriptionPackage::active()->findOrFail($packageId);
         $user = Auth::user();
 
-        // Check if user has a pending subscription
-        $pendingSubscription = $user->subscriptions()
-            ->where('status', 'pending')
-            ->first();
-        
+        // Check if user already has a pending subscription
+        $pendingSubscription = $user->pendingSubscription;
         if ($pendingSubscription) {
             return redirect()->route('subscription.plans')
-                ->with('error', 'You already have a pending subscription. Please wait for admin approval before subscribing to a new plan.');
+                ->with('error', 'You already have a pending subscription request. Please wait for admin approval before applying for a new subscription.');
         }
 
         // Cancel existing active subscription if upgrading
@@ -141,12 +120,13 @@ class SubscriptionController extends Controller
 
         $user = Auth::user();
         $activeSubscription = $user->activeSubscription;
+        $pendingSubscription = $user->pendingSubscription;
         $subscriptionHistory = $user->subscriptions()
             ->with('package')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('frontend.subscription.my-subscription', compact('activeSubscription', 'subscriptionHistory'));
+        return view('frontend.subscription.my-subscription', compact('activeSubscription', 'pendingSubscription', 'subscriptionHistory'));
     }
 
     /**

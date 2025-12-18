@@ -42,7 +42,7 @@
 
                                     @foreach ($footerGridOne as $gridOne)
                                     <li>
-                                        <a href="{{ $gridOne->url }}">{{ $gridOne->name }}</a>
+                                        <a href="{{ normalizeFooterUrl($gridOne->url) }}">{{ $gridOne->name }}</a>
                                     </li>
                                     @endforeach
 
@@ -62,7 +62,7 @@
 
                                     @foreach ($footerGridTwo as $gridTwo)
                                     <li>
-                                        <a href="{{ $gridTwo->url }}">{{ $gridTwo->name }}</a>
+                                        <a href="{{ normalizeFooterUrl($gridTwo->url) }}">{{ $gridTwo->name }}</a>
                                     </li>
                                     @endforeach
 
@@ -82,7 +82,7 @@
                                 <ul class="list-unstyled option-content is-hidden">
                                     @foreach ($footerGridThree as $gridThree)
                                     <li>
-                                        <a href="{{ $gridThree->url }}">{{ $gridThree->name }}</a>
+                                        <a href="{{ normalizeFooterUrl($gridThree->url) }}">{{ $gridThree->name }}</a>
                                     </li>
                                     @endforeach
                                 </ul>
@@ -99,7 +99,14 @@
                         <div class="col-md-12">
                             <div class="border-top-1 bg__footer-bottom-section">
                                 <p class="text-white text-center">
-                                    {{ @$footerInfo->copyright }}</p>
+                                    @if(getLangauge() === 'bn' && isset($footerInfo->copyright))
+                                        {{ preg_replace_callback('/\d+/', function($matches) {
+                                            return toBanglaNumber($matches[0]);
+                                        }, $footerInfo->copyright) }}
+                                    @else
+                                        {{ @$footerInfo->copyright }}
+                                    @endif
+                                </p>
 
                             </div>
 
