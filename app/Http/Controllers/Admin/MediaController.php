@@ -11,6 +11,14 @@ use Illuminate\Support\Str;
 
 class MediaController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['permission:media library index,admin'])->only(['index', 'show', 'getMediaForEditor']);
+        $this->middleware(['permission:media library create,admin'])->only(['store']);
+        $this->middleware(['permission:media library update,admin'])->only(['update']);
+        $this->middleware(['permission:media library delete,admin'])->only(['destroy']);
+    }
+
     /**
      * Display a listing of the media library.
      */

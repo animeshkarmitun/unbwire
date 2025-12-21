@@ -11,6 +11,12 @@ class WatermarkSettingController extends Controller
 {
     use FileUploadTrait;
 
+    public function __construct()
+    {
+        $this->middleware(['permission:watermark settings index,admin'])->only(['index']);
+        $this->middleware(['permission:watermark settings update,admin'])->only(['update']);
+    }
+
     /**
      * Display watermark settings
      */

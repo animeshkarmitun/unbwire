@@ -49,6 +49,8 @@ class SubscriptionPackageController extends Controller
             'access_images' => ['required', 'boolean'],
             'access_videos' => ['required', 'boolean'],
             'access_exclusive' => ['required', 'boolean'],
+            'access_bangla' => ['required', 'boolean'],
+            'access_english' => ['required', 'boolean'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
             'ad_free' => ['required', 'boolean'],
             'priority_support' => ['required', 'boolean'],
@@ -67,6 +69,8 @@ class SubscriptionPackageController extends Controller
         $package->access_images = (bool) $request->access_images;
         $package->access_videos = (bool) $request->access_videos;
         $package->access_exclusive = (bool) $request->access_exclusive;
+        $package->access_bangla = (bool) $request->access_bangla;
+        $package->access_english = (bool) $request->access_english;
         $package->max_articles_per_day = $request->max_articles_per_day;
         $package->ad_free = (bool) $request->ad_free;
         $package->priority_support = (bool) $request->priority_support;
@@ -103,6 +107,8 @@ class SubscriptionPackageController extends Controller
             'access_images' => ['required', 'boolean'],
             'access_videos' => ['required', 'boolean'],
             'access_exclusive' => ['required', 'boolean'],
+            'access_bangla' => ['required', 'boolean'],
+            'access_english' => ['required', 'boolean'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
             'ad_free' => ['required', 'boolean'],
             'priority_support' => ['required', 'boolean'],
@@ -121,6 +127,8 @@ class SubscriptionPackageController extends Controller
         $package->access_images = (bool) $request->access_images;
         $package->access_videos = (bool) $request->access_videos;
         $package->access_exclusive = (bool) $request->access_exclusive;
+        $package->access_bangla = (bool) $request->access_bangla;
+        $package->access_english = (bool) $request->access_english;
         $package->max_articles_per_day = $request->max_articles_per_day;
         $package->ad_free = (bool) $request->ad_free;
         $package->priority_support = (bool) $request->priority_support;

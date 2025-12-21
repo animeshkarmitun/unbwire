@@ -14,6 +14,12 @@ use RecursiveIteratorIterator;
 
 class LocalizationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['permission:localization index,admin'])->only(['adminIndex', 'frontnedIndex']);
+        $this->middleware(['permission:localization update,admin'])->only(['extractLocalizationStrings', 'updateLangString', 'translateString']);
+    }
+
     function adminIndex() : View {
         $languages = Language::all();
         return view('admin.localization.admin-index', compact('languages'));

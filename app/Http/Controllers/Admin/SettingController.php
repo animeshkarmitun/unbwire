@@ -12,6 +12,12 @@ class SettingController extends Controller
 {
     use FileUploadTrait;
 
+    public function __construct()
+    {
+        $this->middleware(['permission:setting index,admin'])->only(['index']);
+        $this->middleware(['permission:setting update,admin'])->only(['updateGeneralSetting', 'updateSeoSetting', 'updateAppearanceSetting', 'updateMicrosoftApiSetting', 'updateWatermarkSetting']);
+    }
+
     /**
      * Display a listing of the resource.
      */

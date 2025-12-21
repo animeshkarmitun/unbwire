@@ -296,16 +296,24 @@ class ActivityLogService
     /**
      * Get activity statistics
      */
-    public function getStatistics(int $days = 30): array
+    public function getStatistics(int $days = 30, ?string $userType = null): array
     {
         $startDate = now()->subDays($days);
+        $query = ActivityLog::where('created_at', '>=', $startDate);
+        
+        if ($userType) {
+            $query->where('user_type', $userType);
+        }
         
         return [
-            'total_activities' => ActivityLog::where('created_at', '>=', $startDate)->count(),
-            'created' => ActivityLog::where('created_at', '>=', $startDate)->where('action', 'created')->count(),
-            'updated' => ActivityLog::where('created_at', '>=', $startDate)->where('action', 'updated')->count(),
-            'deleted' => ActivityLog::where('created_at', '>=', $startDate)->where('action', 'deleted')->count(),
-            'by_model' => ActivityLog::where('created_at', '>=', $startDate)
+            'total_activities' => (clone $query)->count(),
+            'created' => (clone $query)->where('action', 'created')->count(),
+            'updated' => (clone $query)->where('action', 'updated')->count(),
+            'deleted' => (clone $query)->where('action', 'deleted')->count(),
+            'viewed' => (clone $query)->where('action', 'viewed')->count(),
+            'exported' => (clone $query)->where('action', 'exported')->count(),
+            'commented' => (clone $query)->where('action', 'commented')->count(),
+            'by_model' => (clone $query)
                 ->select('model_type', DB::raw('COUNT(*) as count'))
                 ->groupBy('model_type')
                 ->orderBy('count', 'desc')
@@ -314,6 +322,92 @@ class ActivityLogService
                     return [class_basename($item->model_type) => $item->count];
                 }),
         ];
+    }
+    
+    /**
+     * Get top viewed news with date filters
+     */
+    public function getTopViewedNews(?string $period = 'today', int $limit = 10): array
+    {
+        $query = ActivityLog::where('action', 'viewed')
+            ->where('model_type', \App\Models\News::class);
+        
+        // Apply date filter
+        switch ($period) {
+            case 'today':
+                $query->whereDate('created_at', today());
+                break;
+            case 'month':
+                $query->whereMonth('created_at', now()->month)
+                      ->whereYear('created_at', now()->year);
+                break;
+            case 'year':
+                $query->whereYear('created_at', now()->year);
+                break;
+            default:
+                // All time
+                break;
+        }
+        
+        return $query->select('model_id', DB::raw('COUNT(*) as view_count'))
+            ->whereNotNull('model_id')
+            ->groupBy('model_id')
+            ->orderBy('view_count', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($item) {
+                $news = \App\Models\News::find($item->model_id);
+                return [
+                    'id' => $item->model_id,
+                    'title' => $news ? $news->title : 'Deleted News',
+                    'slug' => $news ? $news->slug : null,
+                    'views' => $item->view_count,
+                ];
+            })
+            ->toArray();
+    }
+    
+    /**
+     * Get top exported news with date filters
+     */
+    public function getTopExportedNews(?string $period = 'today', int $limit = 10): array
+    {
+        $query = ActivityLog::where('action', 'exported')
+            ->where('model_type', \App\Models\News::class);
+        
+        // Apply date filter
+        switch ($period) {
+            case 'today':
+                $query->whereDate('created_at', today());
+                break;
+            case 'month':
+                $query->whereMonth('created_at', now()->month)
+                      ->whereYear('created_at', now()->year);
+                break;
+            case 'year':
+                $query->whereYear('created_at', now()->year);
+                break;
+            default:
+                // All time
+                break;
+        }
+        
+        return $query->select('model_id', DB::raw('COUNT(*) as export_count'))
+            ->whereNotNull('model_id')
+            ->groupBy('model_id')
+            ->orderBy('export_count', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($item) {
+                $news = \App\Models\News::find($item->model_id);
+                return [
+                    'id' => $item->model_id,
+                    'title' => $news ? $news->title : 'Deleted News',
+                    'slug' => $news ? $news->slug : null,
+                    'exports' => $item->export_count,
+                ];
+            })
+            ->toArray();
     }
 }
 

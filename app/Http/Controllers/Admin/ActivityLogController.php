@@ -134,6 +134,13 @@ class ActivityLogController extends Controller
         $adminStats = $this->activityLogService->getStatistics(30, 'admin');
         $userStats = $this->activityLogService->getStatistics(30, 'user');
         
+        // Get period filter for top news (today, month, year)
+        $period = $request->input('period', 'today');
+        
+        // Get top viewed and exported news
+        $topViewedNews = $this->activityLogService->getTopViewedNews($period, 10);
+        $topExportedNews = $this->activityLogService->getTopExportedNews($period, 10);
+        
         // Get available model types for filter
         $modelTypes = ActivityLog::select('model_type')
             ->distinct()
@@ -145,7 +152,7 @@ class ActivityLogController extends Controller
             ->unique()
             ->values();
         
-        return view('admin.activity-log.index', compact('logs', 'statistics', 'modelTypes', 'adminStats', 'userStats'));
+        return view('admin.activity-log.index', compact('logs', 'statistics', 'modelTypes', 'adminStats', 'userStats', 'topViewedNews', 'topExportedNews', 'period'));
     }
 
     /**

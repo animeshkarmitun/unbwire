@@ -21,6 +21,8 @@ class SubscriptionPackage extends Model
         'access_images',
         'access_videos',
         'access_exclusive',
+        'access_bangla',
+        'access_english',
         'max_articles_per_day',
         'ad_free',
         'priority_support',
@@ -34,6 +36,8 @@ class SubscriptionPackage extends Model
         'access_images' => 'boolean',
         'access_videos' => 'boolean',
         'access_exclusive' => 'boolean',
+        'access_bangla' => 'boolean',
+        'access_english' => 'boolean',
         'ad_free' => 'boolean',
         'priority_support' => 'boolean',
         'is_active' => 'boolean',
@@ -75,6 +79,8 @@ class SubscriptionPackage extends Model
             'images' => $this->access_images,
             'videos' => $this->access_videos,
             'exclusive' => $this->access_exclusive,
+            'bangla' => $this->access_bangla,
+            'english' => $this->access_english,
             default => false,
         };
     }

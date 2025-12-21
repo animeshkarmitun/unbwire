@@ -11,6 +11,14 @@ use Illuminate\Support\Str;
 
 class VideoGalleryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['permission:video gallery index,admin'])->only(['index', 'show']);
+        $this->middleware(['permission:video gallery create,admin'])->only(['create', 'store']);
+        $this->middleware(['permission:video gallery update,admin'])->only(['edit', 'update']);
+        $this->middleware(['permission:video gallery delete,admin'])->only(['destroy']);
+    }
+
     /**
      * Display a listing of video galleries.
      */

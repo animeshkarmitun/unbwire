@@ -150,6 +150,114 @@
             @endif
         </div>
 
+        <!-- Top Viewed and Exported News -->
+        <div class="row">
+            <div class="col-12 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Top News Analytics</h4>
+                        <div class="card-header-action">
+                            <div class="btn-group" role="group">
+                                <a href="{{ route('admin.activity-log.index', array_merge(request()->all(), ['period' => 'today'])) }}" 
+                                   class="btn {{ ($period ?? 'today') == 'today' ? 'btn-primary' : 'btn-outline-primary' }}">
+                                    Today
+                                </a>
+                                <a href="{{ route('admin.activity-log.index', array_merge(request()->all(), ['period' => 'month'])) }}" 
+                                   class="btn {{ ($period ?? 'today') == 'month' ? 'btn-primary' : 'btn-outline-primary' }}">
+                                    This Month
+                                </a>
+                                <a href="{{ route('admin.activity-log.index', array_merge(request()->all(), ['period' => 'year'])) }}" 
+                                   class="btn {{ ($period ?? 'today') == 'year' ? 'btn-primary' : 'btn-outline-primary' }}">
+                                    This Year
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Top Viewed News -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="fas fa-eye text-info"></i> Top Viewed News</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Title</th>
+                                                <th class="text-right">Views</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($topViewedNews ?? [] as $index => $news)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>
+                                                    @if($news['slug'])
+                                                        <a href="{{ route('admin.news.edit', $news['id']) }}" target="_blank">
+                                                            {{ Str::limit($news['title'], 50) }}
+                                                        </a>
+                                                    @else
+                                                        {{ Str::limit($news['title'], 50) }}
+                                                    @endif
+                                                </td>
+                                                <td class="text-right">
+                                                    <span class="badge badge-info">{{ $news['views'] }}</span>
+                                                </td>
+                                            </tr>
+                                            @empty
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">No viewed news found</td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Top Exported News -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="fas fa-download text-success"></i> Top Exported News</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Title</th>
+                                                <th class="text-right">Exports</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($topExportedNews ?? [] as $index => $news)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>
+                                                    @if($news['slug'])
+                                                        <a href="{{ route('admin.news.edit', $news['id']) }}" target="_blank">
+                                                            {{ Str::limit($news['title'], 50) }}
+                                                        </a>
+                                                    @else
+                                                        {{ Str::limit($news['title'], 50) }}
+                                                    @endif
+                                                </td>
+                                                <td class="text-right">
+                                                    <span class="badge badge-success">{{ $news['exports'] }}</span>
+                                                </td>
+                                            </tr>
+                                            @empty
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">No exported news found</td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Filters and Logs Table -->
         <div class="row">
             <div class="col-12">
