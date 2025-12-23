@@ -85,9 +85,15 @@ class VideoGalleryController extends Controller
      */
     public function store(Request $request)
     {
+        // Convert comma-separated string to array if needed
+        if ($request->has('media_ids') && is_string($request->media_ids)) {
+            $mediaIds = array_filter(array_map('trim', explode(',', $request->media_ids)));
+            $request->merge(['media_ids' => $mediaIds]);
+        }
+
         $request->validate([
             'source_type' => ['required', 'in:media,external'],
-            'media_ids' => ['required_if:source_type,media', 'array'],
+            'media_ids' => ['required_if:source_type,media', 'array', 'min:1'],
             'media_ids.*' => ['required_if:source_type,media', 'exists:media,id'],
             'video_urls' => ['required_if:source_type,external', 'array'],
             'video_urls.*' => ['required_if:source_type,external', 'url'],

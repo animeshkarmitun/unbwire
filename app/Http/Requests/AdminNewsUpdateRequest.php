@@ -42,12 +42,29 @@ class AdminNewsUpdateRequest extends FormRequest
      */
     public function withValidator($validator)
     {
-        $validator->sometimes('image', 'image|mimes:jpeg,png,jpg,gif,webp|max:5120', function ($input) {
-            return $input->hasFile('image');
-        });
-        
-        $validator->sometimes('image', 'string|max:500', function ($input) {
-            return !$input->hasFile('image') && $input->filled('image');
+        $validator->after(function ($validator) {
+            $hasFile = $this->hasFile('image');
+            $imagePath = $this->input('image');
+            $hasPath = !empty($imagePath) && is_string($imagePath) && trim($imagePath) !== '';
+            
+            // If it's a file upload, validate file properties
+            if ($hasFile) {
+                $file = $this->file('image');
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!in_array($file->getMimeType(), $allowedMimes)) {
+                    $validator->errors()->add('image', 'The image must be a file of type: jpeg, png, jpg, gif, webp.');
+                }
+                if ($file->getSize() > 5120 * 1024) { // 5MB in bytes
+                    $validator->errors()->add('image', 'The image may not be greater than 5MB.');
+                }
+            }
+            
+            // If image field is provided but not a file, it should be a valid string path
+            // Empty is allowed (keeping existing image)
+            if (!$hasFile && $hasPath) {
+                // Path from media library - just ensure it's a valid string
+                // No need to validate file existence as it might be from media library DB
+            }
         });
     }
 }

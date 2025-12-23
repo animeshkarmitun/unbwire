@@ -30,7 +30,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <input type="hidden" name="media_ids" id="mediaIds" value="">
+                            <div id="mediaIdsContainer"></div>
                             @error('media_ids')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
@@ -167,7 +167,7 @@
 
     function updateSelectedMediaDisplay() {
         const container = $('#selectedMediaContainer');
-        const mediaIdsInput = $('#mediaIds');
+        const mediaIdsContainer = $('#mediaIdsContainer');
 
         if (selectedMedia.length === 0) {
             container.html(`
@@ -178,7 +178,7 @@
                     </button>
                 </div>
             `);
-            mediaIdsInput.val('');
+            mediaIdsContainer.empty();
             return;
         }
 
@@ -201,7 +201,13 @@
         });
 
         container.html(html);
-        mediaIdsInput.val(selectedMedia.map(m => m.id).join(','));
+        
+        // Update hidden inputs for media_ids array
+        const container = $('#mediaIdsContainer');
+        container.empty();
+        selectedMedia.forEach((media) => {
+            container.append(`<input type="hidden" name="media_ids[]" value="${media.id}">`);
+        });
     }
 
     // Remove media from selection

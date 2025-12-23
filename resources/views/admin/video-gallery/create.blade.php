@@ -53,7 +53,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <input type="hidden" name="media_ids" id="mediaIds" value="">
+                                <div id="mediaIdsContainer"></div>
                                 @error('media_ids')
                                     <div class="text-danger">{{ $message }}</div>
                                 @enderror
@@ -177,12 +177,12 @@
         if (sourceType === 'media') {
             $('#mediaSourceSection').show();
             $('#externalSourceSection').hide();
-            $('#mediaIds').attr('required', true);
+            $('input[name="media_ids[]"]').attr('required', true);
             $('input[name="video_urls[]"]').removeAttr('required');
         } else {
             $('#mediaSourceSection').hide();
             $('#externalSourceSection').show();
-            $('#mediaIds').removeAttr('required');
+            $('input[name="media_ids[]"]').removeAttr('required');
             $('input[name="video_urls[]"]').attr('required', true);
         }
     }
@@ -241,7 +241,7 @@
 
     function updateSelectedMediaDisplay() {
         const container = $('#selectedMediaContainer');
-        const mediaIdsInput = $('#mediaIds');
+        const mediaIdsContainer = $('#mediaIdsContainer');
 
         if (selectedMedia.length === 0) {
             container.html(`
@@ -252,7 +252,7 @@
                     </button>
                 </div>
             `);
-            mediaIdsInput.val('');
+            mediaIdsContainer.empty();
             return;
         }
 
@@ -277,7 +277,12 @@
         });
 
         container.html(html);
-        mediaIdsInput.val(selectedMedia.map(m => m.id).join(','));
+        
+        // Update hidden inputs for media_ids array
+        mediaIdsContainer.empty();
+        selectedMedia.forEach((media) => {
+            mediaIdsContainer.append(`<input type="hidden" name="media_ids[]" value="${media.id}">`);
+        });
     }
 
     // Remove media from selection
