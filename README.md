@@ -1,21 +1,20 @@
-# 📰 Advanced Laravel News Portal
+# 📰 UNB News Portal - United News of Bangladesh
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Laravel-10.x-red?style=for-the-badge&logo=laravel" alt="Laravel Version">
-  <img src="https://img.shields.io/badge/PHP-8.1+-8892BF?style=for-the-badge&logo=php" alt="PHP Version">
+  <img src="https://img.shields.io/badge/Laravel-12.x-red?style=for-the-badge&logo=laravel" alt="Laravel Version">
+  <img src="https://img.shields.io/badge/PHP-8.2+-8892BF?style=for-the-badge&logo=php" alt="PHP Version">
   <img src="https://img.shields.io/badge/Bootstrap-5-7952B3?style=for-the-badge&logo=bootstrap" alt="Bootstrap Version">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
 </p>
 
 <p align="center">
-  <strong>A modern, full-featured News Portal built with Laravel 10.x</strong>
+  <strong>A comprehensive, feature-rich News Portal for United News of Bangladesh built with Laravel 12.x</strong>
 </p>
 
 <p align="center">
   <a href="#features">Features</a> •
   <a href="#tech-stack">Tech Stack</a> •
   <a href="#installation">Installation</a> •
-  <a href="#screenshots">Screenshots</a> •
   <a href="#contributing">Contributing</a>
 </p>
 
@@ -23,60 +22,126 @@
 
 ## 🌟 Overview
 
-Welcome to the **Advanced Laravel News Portal** - a robust, scalable, and feature-rich news publishing platform built with the latest web technologies. This project demonstrates best practices in Laravel development while providing a complete solution for online news publishing.
+**UNB News Portal** is a robust, scalable news publishing platform designed for United News of Bangladesh. This system provides comprehensive content management, subscription-based access control, advanced analytics, and a complete administrative interface for managing news, media, and user subscriptions.
 
 ### ✨ Key Highlights
 
-- 🏗️ **Modern Architecture**: Built with Laravel 10.x following MVC patterns
-- 👥 **Role-Based Access**: Multi-user system with distinct permissions
-- 🌍 **Multi-Language Support**: Fully localized interface
-- 📱 **Responsive Design**: Mobile-first approach with Bootstrap 5
-- 🔧 **Extensible**: Modular design for easy feature additions
+- 🏗️ **Modern Architecture**: Built with Laravel 12.x following MVC patterns
+- 💳 **Subscription System**: Multi-tier subscription packages with access control
+- 📊 **Advanced Analytics**: Visitor tracking, page views, and detailed reporting
+- 📝 **Activity Logging**: Complete audit trail for admin and user activities
+- 🎨 **Media Management**: Comprehensive media library with image and video galleries
+- 🌍 **Multi-Language**: Full support for Bangla and English content
+- 🔐 **Role-Based Access**: Granular permissions system using Spatie Permission
+- 🎫 **Support Tickets**: Complete customer support ticket management system
 
 ---
 
 ## 🚀 Features
 
-### 🔐 User Management
-- ✅ Multi-role system (Admin, Editor, Reporter, Reader)
-- ✅ Role-based permissions and access control
-- ✅ User registration, authentication, and profile management
-- ✅ Password reset and email verification
+### 🔐 User & Access Management
+
+- ✅ Multi-role system (Super Admin, Admin, Editor, etc.)
+- ✅ Role-based permissions with granular access control
+- ✅ Admin authentication and profile management
+- ✅ Password reset functionality
+- ✅ User subscription management
+
+### 💳 Subscription System
+
+- ✅ Multiple subscription packages (Lite, Pro, Ultra)
+- ✅ Access control for news, images, videos, and exclusive content
+- ✅ Language-based access (Bangla, English)
+- ✅ Subscription lifecycle management
+- ✅ User subscription tracking and approval
+- ✅ Ad-free and priority support features
 
 ### 📝 Content Management
-- ✅ Rich Text Editor for news publishing (CKEditor/TinyMCE)
-- ✅ Category & Tag Management with hierarchical structure
-- ✅ Breaking news & featured articles carousel
-- ✅ Scheduled news publishing with draft support
+
+- ✅ Rich Text Editor (Summernote) for news publishing
+- ✅ Category & Tag Management
+- ✅ Breaking news & featured articles
+- ✅ News sorting and organization
+- ✅ Pending news approval workflow
 - ✅ SEO-friendly URLs and meta tags
-- ✅ Image & media gallery with upload and management
+- ✅ News export (PDF, Excel, CSV, XML, JSON, TXT)
+- ✅ Archive system for deleted news
+
+### 🎨 Media Management
+
+- ✅ **Media Library**: Centralized media management
+  - Image, video, audio, and document support
+  - Metadata management (title, alt text, caption, description)
+  - File type filtering and search
+- ✅ **Image Gallery**: Create and manage image galleries
+  - Group images by gallery slug
+  - Exclusive content support
+- ✅ **Video Gallery**: Manage video content
+  - Support for media library videos
+  - External video URLs (YouTube, Vimeo, Facebook, etc.)
+- ✅ Watermark settings for images
+
+### 📊 Analytics & Tracking
+
+- ✅ Real-time visitor analytics
+- ✅ Page view tracking
+- ✅ Country-wise analytics
+- ✅ Organic traffic analysis
+- ✅ Repeater visitor tracking
+- ✅ Most visited pages and IPs
+- ✅ Bot activity detection
+- ✅ IP blocking functionality
+- ✅ Analytics export capabilities
+
+### 📋 Activity Logs
+
+- ✅ Complete activity logging system
+- ✅ Admin activity tracking (create, update, delete)
+- ✅ User activity tracking (view, comment, export)
+- ✅ Activity restoration for deleted items
+- ✅ Top viewed and exported news analytics
+- ✅ Filter by date, user type, action, and model
+
+### 🎫 Support Ticket System
+
+- ✅ Complete ticket management
+- ✅ Ticket categories and tags
+- ✅ Assignment to admins
+- ✅ Reply system with attachments
+- ✅ Internal notes
+- ✅ SLA tracking and logging
+- ✅ Status management (Open, In Progress, Resolved, Closed)
+- ✅ Priority levels (Low, Medium, High, Urgent)
 
 ### 🌐 Frontend Features
-- ✅ Advanced search & filter by keywords or category
-- ✅ Comment system with moderation capabilities
+
+- ✅ Subscription-based content access
+- ✅ Advanced search & filter by category
+- ✅ Comment system with moderation
 - ✅ Social media sharing integration
-- ✅ Newsletter subscription (Mailchimp or Laravel-based)
+- ✅ Newsletter subscription
 - ✅ Responsive and mobile-friendly design
+- ✅ Multi-language support (Bangla/English)
 
 ### 🛠 Administration
-- ✅ Comprehensive admin dashboard with analytics
-- ✅ Activity logs and audit trails
-- ✅ Soft deletes for content recovery
-- ✅ Custom admin panel with Filament/Voyager integration
-- ✅ Site settings and configuration management
 
-### 🔌 API & Integration
-- ✅ REST API for mobile or frontend apps
-- ✅ API authentication with Laravel Sanctum/Passport
-- ✅ Third-party integrations (Social login, Analytics, etc.)
+- ✅ Comprehensive admin dashboard
+- ✅ Analytics dashboard with statistics
+- ✅ Activity logs management
+- ✅ Role and permission management
+- ✅ Site settings and configuration
+- ✅ Footer management (3 grid sections)
+- ✅ Social links and counts
+- ✅ Advertisement management
+- ✅ Home section settings
+- ✅ Localization management
 
----
+### 📧 Communication
 
-## 📸 Screenshots
-
-> 📷 _Screenshots will be added here to showcase the application interface_
-
-
+- ✅ Contact form and message management
+- ✅ Newsletter subscribers
+- ✅ Email notifications
+- ✅ Support ticket email notifications
 
 ---
 
@@ -86,29 +151,30 @@ Welcome to the **Advanced Laravel News Portal** - a robust, scalable, and featur
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Backend** | Laravel 10.x | Main framework |
+| **Backend** | Laravel 12.x | Main framework |
 | **Frontend** | Blade, Bootstrap 5 | Template engine & styling |
-| **Database** | MySQL / PostgreSQL | Data persistence |
-| **Authentication** | Laravel Breeze | User authentication |
-| **API** | Laravel Sanctum | API authentication |
+| **Database** | MySQL | Data persistence |
+| **Authentication** | Laravel Sanctum | API authentication |
+| **Permissions** | Spatie Permission | Role-based access control |
+
+### 📦 Key Packages
+
+| Package | Purpose |
+|---------|---------|
+| **barryvdh/laravel-dompdf** | PDF generation for news export |
+| **maatwebsite/excel** | Excel export functionality |
+| **intervention/image** | Image processing and manipulation |
+| **spatie/laravel-permission** | Role and permission management |
+| **guzzlehttp/guzzle** | HTTP client for API integrations |
 
 ### 🎨 Frontend Libraries
 
 | Component | Technology | Description |
 |-----------|------------|-------------|
 | **UI Framework** | Bootstrap 5 | Responsive design |
-| **Rich Editor** | CKEditor / TinyMCE | Content editing |
-| **Charts** | Chart.js | Data visualization |
+| **Rich Editor** | Summernote | Content editing |
 | **Icons** | Font Awesome | Icon library |
-
-### 🔧 Development Tools
-
-| Tool | Purpose |
-|------|---------|
-| **Composer** | Dependency management |
-| **NPM** | Frontend asset management |
-| **PHPUnit** | Testing framework |
-| **GitHub Actions** | CI/CD pipeline |
+| **Build Tool** | Vite | Asset bundling |
 
 ---
 
@@ -116,36 +182,42 @@ Welcome to the **Advanced Laravel News Portal** - a robust, scalable, and featur
 
 ### 📋 Prerequisites
 
-- PHP >= 8.1
+- PHP >= 8.2
 - Composer
-- MySQL / PostgreSQL
-- Node.js & NPM
+- MySQL 5.7+ or MariaDB 10.3+
+- Node.js 18+ & NPM
 - Git
 
 ### 🚀 Quick Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/haile12michael12/laravel-news-portal.git
-cd laravel-news-portal
+git clone https://github.com/animeshkarmitun/unbwire.git
+cd unbwire
 
 # Install PHP dependencies
 composer install
 
 # Install Node dependencies
-npm install && npm run dev
+npm install && npm run build
 
 # Copy and configure environment file
 cp .env.example .env
 php artisan key:generate
 
-# Configure your .env file with database and mail credentials
+# Configure your .env file with:
+# - Database credentials
+# - Mail settings
+# - App URL
 
 # Run migrations and seed the database
 php artisan migrate --seed
 
 # Create symbolic link for storage
 php artisan storage:link
+
+# Set up permissions (optional, for production)
+php artisan permissions:update-all
 
 # Start the development server
 php artisan serve
@@ -155,13 +227,15 @@ php artisan serve
 
 - **Frontend**: `http://127.0.0.1:8000`
 - **Admin Panel**: `http://127.0.0.1:8000/admin`
-- **API Documentation**: `http://127.0.0.1:8000/docs`
+- **Default Admin**: Check `database/seeders/DatabaseSeeder.php` for credentials
+
+### 🔑 Default Credentials
+
+After seeding, check the `DatabaseSeeder.php` file for default admin credentials.
 
 ---
 
 ## 🧪 Testing
-
-Run automated tests to ensure everything works correctly:
 
 ```bash
 # Run all tests
@@ -171,26 +245,23 @@ php artisan test
 php artisan test --testsuite=Feature
 ```
 
-### 🧪 Test Coverage Includes:
-
-- ✅ User authentication and roles
-- ✅ News article CRUD operations
-- ✅ Comment system functionality
-- ✅ API endpoints validation
-- ✅ Newsletter subscription workflow
-
 ---
 
 ## 🧑‍💻 Usage & Development
 
-### 👥 User Roles
+### 👥 User Roles & Permissions
 
-| Role | Permissions |
-|------|-------------|
-| **Admin** | Full access to all features |
-| **Editor** | Manage news, categories, tags |
-| **Reporter** | Create and publish articles |
-| **Reader** | Browse and comment on articles |
+The system uses Spatie Permission package for role-based access control. Key permission groups include:
+
+- **News**: index, create, update, delete, all-access
+- **Category**: index, create, update, delete
+- **Subscription Package**: index, create, update, delete
+- **Analytics**: index, view, export
+- **Activity Log**: index, view, restore, export
+- **Support Tickets**: index, view, create, update, assign, delete
+- **Media Library**: index, create, update, delete
+- **Gallery**: image/video gallery permissions
+- And many more...
 
 ### 📊 Development Commands
 
@@ -206,22 +277,16 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Generate IDE helper files
-php artisan ide-helper:generate
+# Update permissions
+php artisan permissions:update-all
+
+# Remove old gallery permissions
+php artisan permissions:remove-old-gallery
 ```
 
 ---
 
 ## 🚀 Deployment
-
-You can deploy this project using various platforms:
-
-### ☁️ Supported Platforms
-
-- Laravel Forge
-- Render
-- Railway
-- VPS / Cloud providers (DigitalOcean, AWS, Linode)
 
 ### 🏭 Production Deployment Steps
 
@@ -239,6 +304,47 @@ php artisan view:cache
 
 # Optimize autoloader
 composer dump-autoload --optimize
+
+# Set up storage link
+php artisan storage:link
+
+# Set proper permissions
+chmod -R 755 storage bootstrap/cache
+```
+
+### ☁️ Supported Platforms
+
+- Laravel Forge
+- VPS / Cloud providers (DigitalOcean, AWS, Linode)
+- Shared hosting (with proper configuration)
+
+---
+
+## 📁 Project Structure
+
+```
+unbwire/
+├── app/
+│   ├── Console/Commands/     # Artisan commands
+│   ├── Http/Controllers/     # Application controllers
+│   │   ├── Admin/            # Admin panel controllers
+│   │   └── Frontend/         # Frontend controllers
+│   ├── Models/               # Eloquent models
+│   ├── Services/             # Business logic services
+│   └── Traits/               # Reusable traits
+├── database/
+│   ├── migrations/           # Database migrations
+│   └── seeders/              # Database seeders
+├── resources/
+│   ├── views/
+│   │   ├── admin/           # Admin panel views
+│   │   └── frontend/        # Frontend views
+│   └── js/                  # JavaScript assets
+├── routes/
+│   ├── admin.php            # Admin routes
+│   ├── web.php              # Web routes
+│   └── api.php              # API routes
+└── public/                  # Public assets
 ```
 
 ---
@@ -273,30 +379,28 @@ For major changes, please open an issue first to discuss your ideas. Include:
 
 ---
 
-## 🐳 Optional Enhancements
+## 📊 Key Features Breakdown
 
-Would you like to include these advanced features?
+### Subscription Packages
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| ✅ **CI/CD with GitHub Actions** | Available | Automated testing and deployment |
-| ✅ **Docker support** | Available | Containerized deployment |
-| ✅ **API documentation** | Available | Postman/Swagger integration |
-| ✅ **Admin panel integration** | Available | Filament/Voyager options |
-| ✅ **Multi-language localization** | ✅ Done | Full i18n support |
-| ✅ **Social login** | Available | Google, Facebook, Twitter |
-| ✅ **Real-time notifications** | Available | Laravel Echo & Pusher |
+- **Access Control**: News, Images, Videos, Exclusive content
+- **Language Access**: Bangla and English content permissions
+- **Features**: Ad-free, priority support, article limits
+- **Billing**: Monthly and yearly options
 
----
+### Analytics System
 
-## 📊 Project Statistics
+- **Visitor Tracking**: IP, location, device, browser
+- **Page Views**: Detailed page view analytics
+- **Reports**: Date-wise, country-wise, organic traffic
+- **Security**: Bot detection and IP blocking
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Files-150+-blue?style=flat-square" alt="Files">
-  <img src="https://img.shields.io/badge/Lines%20of%20Code-50K%2B-orange?style=flat-square" alt="Lines of Code">
-  <img src="https://img.shields.io/badge/Tests-100%2B-green?style=flat-square" alt="Tests">
-  <img src="https://img.shields.io/badge/Coverage-85%25-yellow?style=flat-square" alt="Coverage">
-</p>
+### Activity Logs
+
+- **Admin Activities**: Create, update, delete operations
+- **User Activities**: View, comment, export actions
+- **Top Analytics**: Most viewed and exported news
+- **Restoration**: Restore deleted items from logs
 
 ---
 
@@ -310,15 +414,16 @@ This project is open-source and available under the [MIT License](LICENSE).
 
 - [Laravel Team](https://laravel.com) for the amazing framework
 - [Bootstrap](https://getbootstrap.com) for the responsive design components
+- [Spatie](https://spatie.be) for the permission package
 - All contributors who have helped shape this project
 
 ---
 
 <p align="center">
-  <strong> Made with ❤️ using Laravel </strong>
+  <strong>Made with ❤️ for United News of Bangladesh</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/haile12michael12/laravel-news-portal/issues">Report Bug</a> •
-  <a href="https://github.com/haile12michael12/laravel-news-portal/issues">Request Feature</a>
+  <a href="https://github.com/animeshkarmitun/unbwire/issues">Report Bug</a> •
+  <a href="https://github.com/animeshkarmitun/unbwire/issues">Request Feature</a>
 </p>
