@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AboutController;
 use App\Http\Controllers\Admin\AdController;
 use App\Http\Controllers\Admin\AdminAuthenticationController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AuthorController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContactMessageController;
@@ -59,10 +60,24 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     Route::resource('language', LanguageController::class);
 
     /** Category Route */
-    Route::resource('category', CategoryController::class);
+    Route::get('category/create/{lang?}', [CategoryController::class, 'create'])->name('category.create');
+    Route::post('category', [CategoryController::class, 'store'])->name('category.store');
+    Route::get('category/{id}/edit', [CategoryController::class, 'edit'])->name('category.edit');
+    Route::put('category/{id}', [CategoryController::class, 'update'])->name('category.update');
+    Route::delete('category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
+    Route::get('category', [CategoryController::class, 'index'])->name('category.index');
+
+    /** Author Route */
+    Route::get('author/create/{lang?}', [AuthorController::class, 'create'])->name('author.create');
+    Route::post('author', [AuthorController::class, 'store'])->name('author.store');
+    Route::get('author/{id}/edit', [AuthorController::class, 'edit'])->name('author.edit');
+    Route::put('author/{id}', [AuthorController::class, 'update'])->name('author.update');
+    Route::delete('author/{id}', [AuthorController::class, 'destroy'])->name('author.destroy');
+    Route::get('author', [AuthorController::class, 'index'])->name('author.index');
 
     /** News Route */
     Route::get('fetch-news-category', [NewsController::class, 'fetchCategory'])->name('fetch-news-category');
+    Route::get('fetch-news-subcategories', [NewsController::class, 'fetchSubcategories'])->name('fetch-news-subcategories');
     Route::get('toggle-news-status', [NewsController::class, 'toggleNewsStatus'])->name('toggle-news-status');
     Route::post('update-news-order-position', [NewsController::class, 'updateOrderPosition'])->name('update-news-order-position');
     Route::get('news-copy/{id}', [NewsController::class, 'copyNews'])->name('news-copy');
@@ -78,7 +93,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::post('/remove-from-tab', [NewsController::class, 'removeNewsFromTab'])->name('remove-from-tab');
     });
 
-    Route::resource('news', NewsController::class);
+    // News routes with language-specific create
+    Route::get('news/create/{lang?}', [NewsController::class, 'create'])->name('news.create');
+    Route::post('news', [NewsController::class, 'store'])->name('news.store');
+    Route::get('news/{id}/edit', [NewsController::class, 'edit'])->name('news.edit');
+    Route::put('news/{id}', [NewsController::class, 'update'])->name('news.update');
+    Route::delete('news/{id}', [NewsController::class, 'destroy'])->name('news.destroy');
+    Route::get('news', [NewsController::class, 'index'])->name('news.index');
+    Route::get('news/{id}', [NewsController::class, 'show'])->name('news.show');
 
     /** Home Section Setting Route */
     Route::get('home-section-setting', [HomeSectionSettingController::class, 'index'])->name('home-section-setting.index');
@@ -113,6 +135,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     /** User Subscription Route */
     Route::get('user-subscription', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'index'])->name('user-subscription.index');
     Route::put('user-subscription/{id}', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'update'])->name('user-subscription.update');
+    Route::put('user-subscription/{id}/expiry-date', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'updateExpiryDate'])->name('user-subscription.update-expiry-date');
     Route::get('user-subscription/{id}/approve', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'approve'])->name('user-subscription.approve');
     Route::delete('user-subscription/{id}', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'destroy'])->name('user-subscription.destroy');
 

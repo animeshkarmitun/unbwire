@@ -3,7 +3,7 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>{{ __('admin.Social Count') }}</h1>
+            <h1>{{ __('admin.Social Media') }}</h1>
         </div>
 
         <div class="card card-primary">

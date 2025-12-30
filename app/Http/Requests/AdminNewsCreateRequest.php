@@ -23,7 +23,9 @@ class AdminNewsCreateRequest extends FormRequest
     {
         return [
             'language' => ['required', 'string'],
-            'category' => ['required', 'integer', 'exists:categories,id'],
+            'category' => ['required_without:subcategory', 'nullable', 'integer', 'exists:categories,id'],
+            'subcategory' => ['nullable', 'integer', 'exists:categories,id'],
+            'author_id' => ['nullable', 'integer', 'exists:authors,id'],
             'image' => ['nullable'], // Will be validated in withValidator
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],

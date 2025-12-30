@@ -138,29 +138,75 @@ class DatabaseSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $permissions = [
+            // News permissions
             'news index',
+            'news view',
+            'news view en',
+            'news view bn',
             'news create',
+            'news create en',
+            'news create bn',
             'news update',
+            'news update en',
+            'news update bn',
             'news delete',
+            'news delete en',
+            'news delete bn',
+            'news sorting',
+            'news sorting en',
+            'news sorting bn',
             'news all-access',
+            // Category permissions
+            'category index',
+            'category view',
+            'category view en',
+            'category view bn',
+            'category create',
+            'category create en',
+            'category create bn',
+            'category update',
+            'category update en',
+            'category update bn',
+            'category delete',
+            'category delete en',
+            'category delete bn',
+            // Footer permissions
             'footer index',
             'footer create',
             'footer update',
             'footer destroy',
-            'social count index',
-            'social count create',
-            'social count update',
-            'social count delete',
+            // Social media permissions
+            'social media index',
+            'social media create',
+            'social media update',
+            'social media delete',
+            // Access management
             'access management index',
             'access management create',
             'access management update',
             'access management destroy',
+            // Subscribers
             'subscribers index',
             'subscribers delete',
+            // Languages
             'languages index',
             'languages create',
             'languages update',
             'languages delete',
+            // Author permissions
+            'author index',
+            'author view',
+            'author view en',
+            'author view bn',
+            'author create',
+            'author create en',
+            'author create bn',
+            'author update',
+            'author update en',
+            'author update bn',
+            'author delete',
+            'author delete en',
+            'author delete bn',
             'about index',
             'about update',
             'contact index',
@@ -191,10 +237,37 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
+            $perm = Permission::firstOrCreate([
                 'name' => $permission,
                 'guard_name' => 'admin',
             ]);
+            
+            // Set group_name based on permission name
+            $parts = explode(' ', $permission);
+            $groupName = ucfirst($parts[0]);
+            
+            // Special handling for multi-word groups
+            if (isset($parts[1])) {
+                if ($parts[1] === 'media') {
+                    $groupName = 'Social Media';
+                } elseif ($parts[1] === 'log') {
+                    $groupName = 'Activity Log';
+                } elseif ($parts[1] === 'gallery') {
+                    $groupName = ucfirst($parts[1]) . ' ' . ucfirst($parts[0]);
+                } elseif ($parts[1] === 'package') {
+                    $groupName = 'Subscription Package';
+                } elseif ($parts[1] === 'management') {
+                    $groupName = 'Access Management';
+                } elseif ($parts[1] === 'message') {
+                    $groupName = 'Contact Message';
+                }
+            }
+            
+            // Update group_name if not set or different
+            if (!$perm->group_name || $perm->group_name !== $groupName) {
+                $perm->group_name = $groupName;
+                $perm->save();
+            }
         }
 
         $role = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'admin']);

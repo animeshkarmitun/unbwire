@@ -14,6 +14,7 @@ class News extends Model
         'language',
         'category_id',
         'auther_id',
+        'author_id',
         'image',
         'title',
         'slug',
@@ -159,6 +160,11 @@ class News extends Model
     public function auther()
     {
         return $this->belongsTo(Admin::class);
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(Author::class);
     }
 
     public function comments()

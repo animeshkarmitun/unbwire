@@ -17,9 +17,34 @@
                     <div class="card-body">
                         <!-- Language Tabs -->
                         <ul class="nav nav-tabs" id="languageTab" role="tablist">
+                            @php
+                                $activeTabIndex = 0;
+                                $tabIndex = 0;
+                            @endphp
                             @foreach ($languages as $language)
+                                @php
+                                    // Check if user can sort news for this language
+                                    $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+                                    $hasLanguagePermission = $language->lang === 'en' 
+                                        ? canAccess(['news sorting en']) 
+                                        : canAccess(['news sorting bn']);
+                                    $canSortLang = $hasGeneralPermission || $hasLanguagePermission;
+                                    
+                                    // Check if this should be the active tab
+                                    $isActive = false;
+                                    if ($canSortLang) {
+                                        if (isset($selectedLang) && $selectedLang === $language->lang) {
+                                            $isActive = true;
+                                            $activeTabIndex = $tabIndex;
+                                        } elseif (!isset($selectedLang) && $tabIndex === 0) {
+                                            $isActive = true;
+                                        }
+                                        $tabIndex++;
+                                    }
+                                @endphp
+                                @if($canSortLang)
                                 <li class="nav-item">
-                                    <a class="nav-link {{ $loop->index === 0 ? 'active' : '' }}" 
+                                    <a class="nav-link {{ $isActive ? 'active' : '' }}" 
                                        id="lang-{{ $language->lang }}-tab" 
                                        data-toggle="tab" 
                                        href="#lang-{{ $language->lang }}" 
@@ -28,13 +53,37 @@
                                         {{ $language->name }}
                                     </a>
                                 </li>
+                                @endif
                             @endforeach
                         </ul>
 
                         <!-- Tab Content -->
                         <div class="tab-content mt-4" id="languageTabContent">
+                            @php
+                                $paneIndex = 0;
+                            @endphp
                             @foreach ($languages as $language)
-                                <div class="tab-pane fade {{ $loop->index === 0 ? 'show active' : '' }}" 
+                                @php
+                                    // Check if user can sort news for this language
+                                    $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+                                    $hasLanguagePermission = $language->lang === 'en' 
+                                        ? canAccess(['news sorting en']) 
+                                        : canAccess(['news sorting bn']);
+                                    $canSortLang = $hasGeneralPermission || $hasLanguagePermission;
+                                    
+                                    // Check if this should be the active pane
+                                    $isPaneActive = false;
+                                    if ($canSortLang) {
+                                        if (isset($selectedLang) && $selectedLang === $language->lang) {
+                                            $isPaneActive = true;
+                                        } elseif (!isset($selectedLang) && $paneIndex === 0) {
+                                            $isPaneActive = true;
+                                        }
+                                        $paneIndex++;
+                                    }
+                                @endphp
+                                @if($canSortLang)
+                                <div class="tab-pane fade {{ $isPaneActive ? 'show active' : '' }}" 
                                      id="lang-{{ $language->lang }}" 
                                      role="tabpanel"
                                      data-lang="{{ $language->lang }}">
@@ -122,6 +171,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -139,9 +189,19 @@
                             <label>Select Language</label>
                             <select class="form-control" id="latestNewsLanguage">
                                 @foreach ($languages as $language)
-                                    <option value="{{ $language->lang }}" {{ $loop->index === 0 ? 'selected' : '' }}>
+                                    @php
+                                        // Check if user can sort news for this language
+                                        $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+                                        $hasLanguagePermission = $language->lang === 'en' 
+                                            ? canAccess(['news sorting en']) 
+                                            : canAccess(['news sorting bn']);
+                                        $canSortLang = $hasGeneralPermission || $hasLanguagePermission;
+                                    @endphp
+                                    @if($canSortLang)
+                                    <option value="{{ $language->lang }}" {{ (isset($selectedLang) && $selectedLang === $language->lang) ? 'selected' : (!$loop->first && !isset($selectedLang) ? '' : 'selected') }}>
                                         {{ $language->name }}
                                     </option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
@@ -328,11 +388,16 @@
     <script>
         $(document).ready(function() {
             let sortableInstances = {};
-            let currentLanguage = $('#languageTab .nav-link.active').data('lang') || '{{ $languages->first()->lang }}';
+            @if(isset($selectedLang))
+                let currentLanguage = '{{ $selectedLang }}';
+            @else
+                let currentLanguage = $('#languageTab .nav-link.active').data('lang') || '{{ $languages->first()->lang }}';
+            @endif
             let isSyncingLanguage = false; // Flag to prevent infinite loop
 
-            // Initialize latest news
-            loadLatestNews();
+            // Initialize - load news for the active language
+            loadLatestNews(currentLanguage);
+            loadNewsForAllTypes(currentLanguage);
 
             // Load news when language tab changes
             $('#languageTab a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -342,7 +407,7 @@
                 isSyncingLanguage = true;
                 $('#latestNewsLanguage').val(currentLanguage);
                 isSyncingLanguage = false;
-                loadLatestNews();
+                loadLatestNews(currentLanguage);
                 loadNewsForAllTypes(currentLanguage);
             });
 
@@ -362,12 +427,12 @@
                 isSyncingLanguage = true;
                 $('#languageTab a[data-lang="' + selectedLang + '"]').tab('show');
                 isSyncingLanguage = false;
-                loadLatestNews();
+                loadLatestNews(selectedLang);
             });
 
             // Latest news limit change
             $('#latestNewsLimit').on('change', function() {
-                loadLatestNews();
+                loadLatestNews(currentLanguage);
             });
 
             // Latest news search (with debounce)
@@ -376,7 +441,7 @@
                 clearTimeout(searchTimeout);
                 const searchTerm = $(this).val();
                 searchTimeout = setTimeout(function() {
-                    loadLatestNews();
+                    loadLatestNews(currentLanguage);
                 }, 500); // Wait 500ms after user stops typing
             });
 
@@ -390,6 +455,10 @@
             // Load news by type
             function loadNewsByType(type, lang) {
                 const container = $(`#sortable-${type}-${lang}`);
+                if (!container.length) {
+                    console.error('Container not found for type:', type, 'lang:', lang);
+                    return;
+                }
                 container.html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Loading...</p></div>');
 
                 $.ajax({
@@ -400,10 +469,22 @@
                         if (response.status === 'success') {
                             renderNewsList(container, response.data, type, lang);
                             initializeSortable(type, lang);
+                        } else {
+                            const errorMsg = response.message || 'Failed to load news';
+                            container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>' + errorMsg + '</p></div>');
                         }
                     },
-                    error: function() {
-                        container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load news</p></div>');
+                    error: function(xhr) {
+                        let errorMsg = 'Failed to load news';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.status === 403) {
+                            errorMsg = 'You do not have permission to access this content';
+                        } else if (xhr.status === 404) {
+                            errorMsg = 'Endpoint not found';
+                        }
+                        container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>' + errorMsg + '</p></div>');
+                        console.error('Error loading news:', xhr);
                     }
                 });
             }
@@ -484,19 +565,20 @@
                             newsIds.push($(item).data('id'));
                         });
                         
-                        updateOrder(newsIds, type);
+                        updateOrder(newsIds, type, lang);
                     }
                 });
             }
 
             // Update order via AJAX
-            function updateOrder(newsIds, type) {
+            function updateOrder(newsIds, type, lang) {
                 $.ajax({
                     url: "{{ route('admin.news-sorting.update-order') }}",
                     method: 'POST',
                     data: {
                         news_ids: newsIds,
                         type: type,
+                        language: lang,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
@@ -551,11 +633,21 @@
                         if (response.status === 'success') {
                             renderLatestNews(response.data);
                         } else {
-                            container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load news</p></div>');
+                            const errorMsg = response.message || 'Failed to load news';
+                            container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>' + errorMsg + '</p></div>');
                         }
                     },
-                    error: function() {
-                        container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load news</p></div>');
+                    error: function(xhr) {
+                        let errorMsg = 'Failed to load news';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.status === 403) {
+                            errorMsg = 'You do not have permission to access this content';
+                        } else if (xhr.status === 404) {
+                            errorMsg = 'Endpoint not found';
+                        }
+                        container.html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>' + errorMsg + '</p></div>');
+                        console.error('Error loading latest news:', xhr);
                     }
                 });
             }
@@ -615,7 +707,7 @@
                                 title: 'News added successfully'
                             });
                             loadNewsByType(type, lang);
-                            loadLatestNews();
+                            loadLatestNews(lang);
                         }
                     },
                     error: function(xhr) {
@@ -656,7 +748,7 @@
                                 title: 'News removed successfully'
                             });
                             loadNewsByType(type, lang);
-                            loadLatestNews();
+                            loadLatestNews(lang);
                         }
                     },
                     error: function(xhr) {

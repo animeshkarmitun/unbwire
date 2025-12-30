@@ -61,6 +61,12 @@
                         <span>{{ __('admin.Category') }}</span></a></li>
             @endif
 
+            @if (canAccess(['news index', 'news create', 'news update', 'news delete']))
+                <li class="{{ setSidebarActive(['admin.author.*']) }}"><a class="nav-link"
+                        href="{{ route('admin.author.index') }}"><i class="fas fa-user-edit"></i>
+                        <span>Manage Author</span></a></li>
+            @endif
+
             @if (canAccess(['news index']))
                 <li class="dropdown {{ setSidebarActive(['admin.news.*', 'admin.pending.news', 'admin.news-sorting.*']) }}">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-newspaper"></i>
@@ -96,10 +102,10 @@
                 </li>
             @endif
 
-            @if (canAccess(['social count index']))
+            @if (canAccess(['social media index']))
                 <li class="{{ setSidebarActive(['admin.social-count.*']) }}"><a class="nav-link"
                         href="{{ route('admin.social-count.index') }}"><i class="fas fa-hashtag"></i>
-                        <span>{{ __('admin.Social Count') }}</span></a></li>
+                        <span>{{ __('admin.Social Media') }}</span></a></li>
             @endif
 
             @if (canAccess(['contact message index']))

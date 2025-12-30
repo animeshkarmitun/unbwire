@@ -22,8 +22,12 @@ class NewsController extends Controller
 
     public function __construct()
     {
-        $this->middleware(['permission:news index,admin'])->only(['index', 'copyNews', 'newsSorting', 'getNewsByType', 'updateSortingOrder', 'addNewsToTab', 'removeNewsFromTab']);
-        $this->middleware(['permission:news create,admin'])->only(['create', 'store']);
+        // Check general permission in middleware, language-specific checks done in controller/view methods
+        $this->middleware(['permission:news index,admin'])->only(['index', 'copyNews']);
+        // Permission checks for newsSorting methods are done in the methods themselves to support language-specific permissions
+        // No middleware for getNewsByType, updateSortingOrder, addNewsToTab, removeNewsFromTab - handled in methods
+        // Permission check for create is done in the create() method to support language-specific permissions
+        $this->middleware(['permission:news create,admin'])->only(['store']);
         $this->middleware(['permission:news update,admin'])->only(['edit', 'update', 'updateOrderPosition']);
         $this->middleware(['permission:news delete,admin'])->only(['destroy']);
         $this->middleware(['permission:news all-access,admin'])->only(['toggleNewsStatus']);
@@ -47,12 +51,28 @@ class NewsController extends Controller
 
 
     /**
-     * Fetch category depending on language
+     * Fetch parent categories depending on language
      */
     public function fetchCategory(Request $request)
     {
-        $categories = Category::where('language', $request->lang)->get();
+        $categories = Category::where('language', $request->lang)
+            ->whereNull('parent_id')
+            ->orderBy('order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
         return $categories;
+    }
+
+    /**
+     * Fetch subcategories for a selected category
+     */
+    public function fetchSubcategories(Request $request)
+    {
+        $subcategories = Category::where('parent_id', $request->category_id)
+            ->orderBy('order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
+        return $subcategories;
     }
 
     function approveNews(Request $request): Response
@@ -67,10 +87,45 @@ class NewsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create($lang = null)
     {
+        // Validate language if provided
+        if ($lang && !in_array($lang, ['en', 'bn'])) {
+            abort(404);
+        }
+        
+        // Check permission for the specific language
+        if ($lang) {
+            $hasGeneralPermission = canAccess(['news create', 'news all-access']);
+            $hasLanguagePermission = $lang === 'en' 
+                ? canAccess(['news create en']) 
+                : canAccess(['news create bn']);
+            
+            if (!$hasGeneralPermission && !$hasLanguagePermission) {
+                $langName = $lang === 'en' ? 'English' : 'Bangla';
+                abort(403, "You do not have permission to create {$langName} news.");
+            }
+        } else {
+            // If no language specified, check if user has any create permission
+            $hasAnyPermission = canAccess(['news create', 'news create en', 'news create bn', 'news all-access']);
+            if (!$hasAnyPermission) {
+                abort(403, 'You do not have permission to create news.');
+            }
+        }
+        
         $languages = Language::all();
-        return view('admin.news.create', compact('languages'));
+        
+        // If language is provided, pre-select it
+        $selectedLanguage = $lang ? Language::where('lang', $lang)->first() : null;
+        
+        // Get authors for the selected language, or all if no language selected
+        $authorQuery = \App\Models\Author::active();
+        if (isset($selectedLanguage)) {
+            $authorQuery->where('language', $selectedLanguage->lang);
+        }
+        $authors = $authorQuery->orderBy('name')->get();
+        
+        return view('admin.news.create', compact('languages', 'authors', 'selectedLanguage'));
     }
 
     /**
@@ -78,6 +133,18 @@ class NewsController extends Controller
      */
     public function store(AdminNewsCreateRequest $request)
     {
+        // Check permission - general permission allows both languages, or language-specific permission
+        $language = $request->language;
+        $hasGeneralPermission = canAccess(['news create', 'news all-access']);
+        $hasLanguagePermission = $language === 'en' 
+            ? canAccess(['news create en']) 
+            : canAccess(['news create bn']);
+        
+        if (!$hasGeneralPermission && !$hasLanguagePermission) {
+            $langName = $language === 'en' ? 'English' : 'Bangla';
+            abort(403, "You do not have permission to create {$langName} news.");
+        }
+        
         /** Handle image - can be file upload or path from media library */
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -97,8 +164,10 @@ class NewsController extends Controller
 
         $news = new News();
         $news->language = $request->language;
-        $news->category_id = $request->category;
+        // Use subcategory if selected, otherwise use category
+        $news->category_id = $request->subcategory ? $request->subcategory : $request->category;
         $news->auther_id = Auth::guard('admin')->user()->id;
+        $news->author_id = $request->author_id;
         $news->image = $imagePath;
         $news->title = $request->title;
         $news->slug = \Str::slug($request->title);
@@ -239,9 +308,36 @@ class NewsController extends Controller
             }
         }
 
-        $categories = Category::where('language', $news->language)->get();
+        // Get parent categories for the news language
+        $categories = Category::where('language', $news->language)
+            ->whereNull('parent_id')
+            ->orderBy('order', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
+        
+        // Determine if news category is a subcategory or parent category
+        $newsCategory = Category::find($news->category_id);
+        $selectedCategory = null;
+        $selectedSubcategory = null;
+        
+        if ($newsCategory) {
+            if ($newsCategory->parent_id) {
+                // It's a subcategory
+                $selectedSubcategory = $newsCategory->id;
+                $selectedCategory = $newsCategory->parent_id;
+            } else {
+                // It's a parent category
+                $selectedCategory = $newsCategory->id;
+            }
+        }
+        
+        // Get authors for the news language
+        $authors = \App\Models\Author::active()
+            ->where('language', $news->language)
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.news.edit', compact('languages', 'news', 'categories'));
+        return view('admin.news.edit', compact('languages', 'news', 'categories', 'authors', 'selectedCategory', 'selectedSubcategory'));
     }
 
     /**
@@ -249,8 +345,19 @@ class NewsController extends Controller
      */
     public function update(AdminNewsUpdateRequest $request, string $id)
     {
-
         $news = News::findOrFail($id);
+        
+        // Check permission - general permission allows both languages, or language-specific permission
+        $language = $request->language ?? $news->language;
+        $hasGeneralPermission = canAccess(['news update', 'news all-access']);
+        $hasLanguagePermission = $language === 'en' 
+            ? canAccess(['news update en']) 
+            : canAccess(['news update bn']);
+        
+        if (!$hasGeneralPermission && !$hasLanguagePermission) {
+            $langName = $language === 'en' ? 'English' : 'Bangla';
+            abort(403, "You do not have permission to update {$langName} news.");
+        }
 
         if(!canAccess(['news all-access'])){
             if($news->auther_id != auth()->guard('admin')->user()->id){
@@ -269,7 +376,9 @@ class NewsController extends Controller
         }
 
         $news->language = $request->language;
-        $news->category_id = $request->category;
+        // Use subcategory if selected, otherwise use category
+        $news->category_id = $request->subcategory ? $request->subcategory : $request->category;
+        $news->author_id = $request->author_id;
         $news->image = !empty($imagePath) ? $imagePath : $news->image;
         $news->title = $request->title;
         $news->slug = \Str::slug($request->title);
@@ -318,6 +427,18 @@ class NewsController extends Controller
     {
         try {
             $news = News::with(['tags'])->findOrFail($id);
+            
+            // Check permission - general permission allows both languages, or language-specific permission
+            $language = $news->language;
+            $hasGeneralPermission = canAccess(['news delete', 'news all-access']);
+            $hasLanguagePermission = $language === 'en' 
+                ? canAccess(['news delete en']) 
+                : canAccess(['news delete bn']);
+            
+            if (!$hasGeneralPermission && !$hasLanguagePermission) {
+                $langName = $language === 'en' ? 'English' : 'Bangla';
+                abort(403, "You do not have permission to delete {$langName} news.");
+            }
             
             // Move image to archive folder
             $archivedImagePath = $this->moveFileToArchive($news->image);
@@ -391,7 +512,36 @@ class NewsController extends Controller
     public function newsSorting()
     {
         $languages = Language::all();
-        return view('admin.news-sorting.index', compact('languages'));
+        // Filter languages based on user's sorting permissions
+        $filteredLanguages = $languages->filter(function($language) {
+            $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+            $hasLanguagePermission = $language->lang === 'en' 
+                ? canAccess(['news sorting en']) 
+                : canAccess(['news sorting bn']);
+            return $hasGeneralPermission || $hasLanguagePermission;
+        });
+        
+        // Determine which language tab should be active
+        $selectedLang = null;
+        $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+        $hasEnglishPermission = canAccess(['news sorting en']);
+        $hasBanglaPermission = canAccess(['news sorting bn']);
+        
+        // If user has only one language permission, select that
+        if (!$hasGeneralPermission) {
+            if ($hasEnglishPermission && !$hasBanglaPermission) {
+                $selectedLang = 'en';
+            } elseif ($hasBanglaPermission && !$hasEnglishPermission) {
+                $selectedLang = 'bn';
+            }
+        }
+        
+        // If no specific selection, use first available language
+        if (!$selectedLang && $filteredLanguages->isNotEmpty()) {
+            $selectedLang = $filteredLanguages->first()->lang;
+        }
+        
+        return view('admin.news-sorting.index', compact('languages', 'filteredLanguages', 'selectedLang'));
     }
 
     /**
@@ -402,6 +552,18 @@ class NewsController extends Controller
         $request->validate([
             'language' => 'required|string'
         ]);
+
+        // Check permission for the specific language
+        $language = $request->language;
+        $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+        $hasLanguagePermission = $language === 'en' 
+            ? canAccess(['news sorting en']) 
+            : canAccess(['news sorting bn']);
+        
+        if (!$hasGeneralPermission && !$hasLanguagePermission) {
+            $langName = $language === 'en' ? 'English' : 'Bangla';
+            return response(['status' => 'error', 'message' => "You do not have permission to sort {$langName} news."], 403);
+        }
 
         $query = News::with(['category', 'auther'])
             ->where('language', $request->language)
@@ -467,8 +629,21 @@ class NewsController extends Controller
             $request->validate([
                 'news_ids' => 'required|array',
                 'news_ids.*' => 'required|exists:news,id',
-                'type' => 'required|in:breaking,slider,popular'
+                'type' => 'required|in:breaking,slider,popular',
+                'language' => 'required|string'
             ]);
+
+            // Check permission for the specific language
+            $language = $request->language;
+            $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+            $hasLanguagePermission = $language === 'en' 
+                ? canAccess(['news sorting en']) 
+                : canAccess(['news sorting bn']);
+            
+            if (!$hasGeneralPermission && !$hasLanguagePermission) {
+                $langName = $language === 'en' ? 'English' : 'Bangla';
+                return response(['status' => 'error', 'message' => "You do not have permission to sort {$langName} news."], 403);
+            }
 
             // Map type to specific order column
             $orderColumnMap = [
@@ -505,11 +680,16 @@ class NewsController extends Controller
 
             $news = News::findOrFail($request->news_id);
             
-            // Check permission
-            if(!canAccess(['news all-access'])){
-                if($news->auther_id != auth()->guard('admin')->user()->id){
-                    return response(['status' => 'error', 'message' => 'Unauthorized'], 403);
-                }
+            // Check permission for the specific language
+            $language = $news->language;
+            $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+            $hasLanguagePermission = $language === 'en' 
+                ? canAccess(['news sorting en']) 
+                : canAccess(['news sorting bn']);
+            
+            if (!$hasGeneralPermission && !$hasLanguagePermission) {
+                $langName = $language === 'en' ? 'English' : 'Bangla';
+                return response(['status' => 'error', 'message' => "You do not have permission to sort {$langName} news."], 403);
             }
 
             $fieldMap = [
@@ -558,11 +738,16 @@ class NewsController extends Controller
 
             $news = News::findOrFail($request->news_id);
             
-            // Check permission
-            if(!canAccess(['news all-access'])){
-                if($news->auther_id != auth()->guard('admin')->user()->id){
-                    return response(['status' => 'error', 'message' => 'Unauthorized'], 403);
-                }
+            // Check permission for the specific language
+            $language = $news->language;
+            $hasGeneralPermission = canAccess(['news sorting', 'news all-access']);
+            $hasLanguagePermission = $language === 'en' 
+                ? canAccess(['news sorting en']) 
+                : canAccess(['news sorting bn']);
+            
+            if (!$hasGeneralPermission && !$hasLanguagePermission) {
+                $langName = $language === 'en' ? 'English' : 'Bangla';
+                return response(['status' => 'error', 'message' => "You do not have permission to sort {$langName} news."], 403);
             }
 
             $fieldMap = [

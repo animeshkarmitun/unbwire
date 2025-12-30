@@ -59,8 +59,14 @@ class RoleUserController extends Controller
             /** assign the role to user */
             $user->assignRole($request->role);
 
-            /** send mail to the user */
-            Mail::to($request->email)->send(new RoleUserCreateMail($request->email, $request->password));
+            /** send mail to the user (if mail is configured) */
+            try {
+                Mail::to($request->email)->send(new RoleUserCreateMail($request->email, $request->password));
+            } catch (\Throwable $mailException) {
+                // Log the error but don't fail the user creation
+                \Log::warning('Failed to send role user creation email: ' . $mailException->getMessage());
+                // Continue with success message even if email fails
+            }
 
             toast(__('admin.Created Successfully!'), 'success');
 

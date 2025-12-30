@@ -29,7 +29,47 @@ class RolePermisionController extends Controller
 
     function create() : View
     {
-        $premissions = Permission::all()->groupBy('group_name');
+        $allPermissions = Permission::all();
+        
+        // Group permissions by group_name, or extract from name if not set
+        $premissions = $allPermissions->groupBy(function($permission) {
+            if ($permission->group_name) {
+                return $permission->group_name;
+            }
+            
+            // Fallback: extract group name from permission name
+            $parts = explode(' ', $permission->name);
+            $groupName = ucfirst($parts[0]);
+            
+            if (isset($parts[1])) {
+                if ($parts[1] === 'media') {
+                    $groupName = 'Social Media';
+                } elseif ($parts[1] === 'log') {
+                    $groupName = 'Activity Log';
+                } elseif ($parts[1] === 'gallery') {
+                    $groupName = ucfirst($parts[1]) . ' ' . ucfirst($parts[0]);
+                } elseif ($parts[1] === 'package') {
+                    $groupName = 'Subscription Package';
+                } elseif ($parts[1] === 'management') {
+                    $groupName = 'Access Management';
+                } elseif ($parts[1] === 'message') {
+                    $groupName = 'Contact Message';
+                }
+            }
+            
+            return $groupName;
+        });
+        
+        // Sort permissions within each group: general first, then language-specific
+        $premissions = $premissions->map(function($group) {
+            return $group->sortBy(function($perm) {
+                // General permissions (without en/bn) come first
+                if (preg_match('/\s(en|bn)$/', $perm->name)) {
+                    return 1; // Language-specific come after
+                }
+                return 0; // General come first
+            })->values();
+        });
 
         return view('admin.role.create', compact('premissions'));
     }
@@ -54,7 +94,48 @@ class RolePermisionController extends Controller
 
     function edit(string $id) : View
     {
-        $premissions = Permission::all()->groupBy('group_name');
+        $allPermissions = Permission::all();
+        
+        // Group permissions by group_name, or extract from name if not set
+        $premissions = $allPermissions->groupBy(function($permission) {
+            if ($permission->group_name) {
+                return $permission->group_name;
+            }
+            
+            // Fallback: extract group name from permission name
+            $parts = explode(' ', $permission->name);
+            $groupName = ucfirst($parts[0]);
+            
+            if (isset($parts[1])) {
+                if ($parts[1] === 'media') {
+                    $groupName = 'Social Media';
+                } elseif ($parts[1] === 'log') {
+                    $groupName = 'Activity Log';
+                } elseif ($parts[1] === 'gallery') {
+                    $groupName = ucfirst($parts[1]) . ' ' . ucfirst($parts[0]);
+                } elseif ($parts[1] === 'package') {
+                    $groupName = 'Subscription Package';
+                } elseif ($parts[1] === 'management') {
+                    $groupName = 'Access Management';
+                } elseif ($parts[1] === 'message') {
+                    $groupName = 'Contact Message';
+                }
+            }
+            
+            return $groupName;
+        });
+        
+        // Sort permissions within each group: general first, then language-specific
+        $premissions = $premissions->map(function($group) {
+            return $group->sortBy(function($perm) {
+                // General permissions (without en/bn) come first
+                if (preg_match('/\s(en|bn)$/', $perm->name)) {
+                    return 1; // Language-specific come after
+                }
+                return 0; // General come first
+            })->values();
+        });
+        
         $role = Role::findOrFail($id);
         $rolesPermissions = $role->permissions;
         $rolesPermissions = $rolesPermissions->pluck('name')->toArray();

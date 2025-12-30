@@ -10,9 +10,16 @@
             <div class="card-header">
                 <h4>{{ __('admin.All News') }}</h4>
                 <div class="card-header-action">
-                    <a href="{{ route('admin.news.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> {{ __('admin.Create new') }}
-                    </a>
+                    @if (canAccess(['news create en', 'news create', 'news all-access']))
+                        <a href="{{ route('admin.news.create', 'en') }}" class="btn btn-primary mr-2">
+                            <i class="fas fa-plus"></i> Create English
+                        </a>
+                    @endif
+                    @if (canAccess(['news create bn', 'news create', 'news all-access']))
+                        <a href="{{ route('admin.news.create', 'bn') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Create Bangla
+                        </a>
+                    @endif
                 </div>
             </div>
 
@@ -26,29 +33,58 @@
                             } else {
                                 $isActive = ($loop->index === 0);
                             }
+                            
+                            // Check if user can view this language's news
+                            $canViewLang = canAccess(['news all-access', 'news view', 'news view ' . $language->lang]);
                         @endphp
+                        @if($canViewLang)
                         <li class="nav-item">
                             <a class="nav-link {{ $isActive ? 'active' : '' }}" id="home-tab2" data-toggle="tab"
                                 href="#home-{{ $language->lang }}" role="tab" aria-controls="home"
                                 aria-selected="{{ $isActive ? 'true' : 'false' }}">{{ $language->name }}</a>
                         </li>
+                        @endif
                     @endforeach
 
                 </ul>
                 <div class="tab-content tab-bordered" id="myTab3Content">
                     @foreach ($languages as $language)
                         @php
-                            if(canAccess(['news all-access'])){
+                            // Check if user can view this language's news
+                            // Permissions are stored as: 'news view', 'news view en', 'news view bn'
+                            $canViewLang = canAccess(['news all-access', 'news view', 'news view ' . $language->lang]);
+                        @endphp
+                        @if($canViewLang)
+                        @php
+                            // Check if user can view all news for this language
+                            $canViewAll = canAccess(['news all-access', 'news view', 'news view ' . $language->lang]);
+                            
+                            if($canViewAll){
+                                // Users with view permissions see all approved news for this language
                                 $newsQuery = \App\Models\News::with('category')
                                 ->where('language', $language->lang)
                                 ->where('is_approved', 1)
                                 ->orderBy('id', 'DESC');
                                 $news = $newsQuery->get();
                             }else {
+                                // For editors without view permission, show only their own news (both approved and pending)
+                                $userId = auth()->guard('admin')->user()->id;
                                 $newsQuery = \App\Models\News::with('category')
                                 ->where('language', $language->lang)
-                                ->where('is_approved', 1)
-                                ->where('auther_id', auth()->guard('admin')->user()->id)
+                                ->where(function($query) use ($userId) {
+                                    $query->where(function($q) use ($userId) {
+                                        // Check new created_by column
+                                        $q->where('created_by', $userId)
+                                          ->where('created_by_type', 'admin');
+                                    })->orWhere(function($q) use ($userId) {
+                                        // Also check old auther_id column for backward compatibility
+                                        $q->where('auther_id', $userId)
+                                          ->where(function($subQ) {
+                                              $subQ->whereNull('created_by')
+                                                   ->orWhere('created_by_type', '!=', 'admin');
+                                          });
+                                    });
+                                })
                                 ->orderBy('id', 'DESC');
                                 $news = $newsQuery->get();
                             }
@@ -214,6 +250,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @endforeach
 
                 </div>

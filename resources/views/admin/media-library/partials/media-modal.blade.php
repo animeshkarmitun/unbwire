@@ -158,6 +158,16 @@ let selectionMode = 'editor'; // 'editor' or 'featured'
 window.currentFileForCropperUpload = null;
 window.useCroppedImageUpload = false;
 
+// Helper function to safely use Swal
+function safeSwalFire(title, message, icon) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire(title, message, icon);
+    } else {
+        // Fallback to alert if Swal is not available
+        alert(title + ': ' + message);
+    }
+}
+
 (function waitForjQuery(callback) {
     if (window.jQuery) {
         callback(window.jQuery);
@@ -259,6 +269,8 @@ $(document).ready(function() {
                     
                     if (selectionMode === 'featured') {
                         setFeaturedImage(media);
+                    } else if (selectionMode === 'author') {
+                        setAuthorPhoto(media);
                     } else {
                         insertMediaToEditor(media);
                     }
@@ -272,7 +284,7 @@ $(document).ready(function() {
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;
                 }
-                Swal.fire('{{ __('Error') }}', errorMessage, 'error');
+                safeSwalFire('{{ __('Error') }}', errorMessage, 'error');
                 $submitBtn.prop('disabled', false).html(originalText);
             }
         });
@@ -397,6 +409,9 @@ $(document).ready(function() {
                 } else if (selectionMode === 'featured') {
                     // Set featured image
                     setFeaturedImage(response);
+                } else if (selectionMode === 'author') {
+                    // Set author photo
+                    setAuthorPhoto(response);
                 } else {
                     // Insert into editor
                     insertMediaToEditor(response);
@@ -427,6 +442,29 @@ $(document).ready(function() {
         // Hide select button, show change button
         $('#select-featured-image').hide();
         $('#change-featured-image').show();
+    }
+
+    function setAuthorPhoto(media) {
+        if (!media || !media.file_url) return;
+        
+        // Use file_path if available, otherwise use file_url
+        var imagePath = media.file_path || media.file_url;
+        
+        // Set the hidden input value
+        $('#author-photo-path').val(imagePath);
+        
+        // Update preview
+        $('#author-photo-preview').css({
+            'background-image': 'url(' + media.file_url + ')',
+            'display': 'block'
+        });
+        
+        // Hide select button, show change button
+        $('#select-author-photo').hide();
+        $('#change-author-photo').show();
+        
+        // Trigger custom event for any additional listeners
+        $(document).trigger('mediaSelected', [media, 'author']);
     }
 
     function insertMediaToEditor(media) {

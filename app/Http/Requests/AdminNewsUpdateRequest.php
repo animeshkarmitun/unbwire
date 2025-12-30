@@ -23,7 +23,9 @@ class AdminNewsUpdateRequest extends FormRequest
     {
         return [
             'language' => ['required', 'string'],
-            'category' => ['required', 'integer', 'exists:categories,id'],
+            'category' => ['required_without:subcategory', 'nullable', 'integer', 'exists:categories,id'],
+            'subcategory' => ['nullable', 'integer', 'exists:categories,id'],
+            'author_id' => ['nullable', 'integer', 'exists:authors,id'],
             'image' => ['nullable'], // Can be file upload or path from media library
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],

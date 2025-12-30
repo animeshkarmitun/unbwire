@@ -8,41 +8,89 @@
 
         <div class="card card-primary">
             <div class="card-header">
-                <h4>{{ __('Create News') }}</h4>
-
+                <h4>{{ __('Create News') }} 
+                    @if(isset($selectedLanguage))
+                        <span class="badge badge-{{ $selectedLanguage->lang == 'en' ? 'primary' : 'success' }}">
+                            {{ $selectedLanguage->name }}
+                        </span>
+                    @endif
+                </h4>
             </div>
             <div class="card-body">
                 <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
                         <label for="">{{ __('Language') }}</label>
-                        <select name="language" id="language-select" class="form-control select2">
+                        <select name="language" id="language-select" class="form-control select2" {{ isset($selectedLanguage) ? 'readonly' : '' }}>
                             <option value="">--{{ __('Select') }}--</option>
                             @foreach ($languages as $lang)
-                                <option value="{{ $lang->lang }}" {{ old('language') == $lang->lang ? 'selected' : '' }}>
+                                <option value="{{ $lang->lang }}" 
+                                    {{ (old('language', isset($selectedLanguage) ? $selectedLanguage->lang : '') == $lang->lang) ? 'selected' : '' }}>
                                     {{ $lang->name }}
                                 </option>
                             @endforeach
                         </select>
+                        @if(isset($selectedLanguage))
+                            <input type="hidden" name="language" value="{{ $selectedLanguage->lang }}">
+                        @endif
                         @error('language')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="">{{ __('Category') }}</label>
+                                <select name="category" id="category" class="form-control select2">
+                                    <option value="">--{{ __('Select') }}---</option>
+                                    @if(old('category'))
+                                        @php
+                                            $oldCategory = \App\Models\Category::find(old('category'));
+                                        @endphp
+                                        @if($oldCategory && $oldCategory->parent_id === null)
+                                            <option value="{{ $oldCategory->id }}" selected>{{ $oldCategory->name }}</option>
+                                        @endif
+                                    @endif
+                                </select>
+                                @error('category')
+                                    <p class="text-danger">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="">{{ __('Sub-Category') }} <small class="text-muted">({{ __('Optional') }})</small></label>
+                                <select name="subcategory" id="subcategory" class="form-control select2" disabled>
+                                    <option value="">--{{ __('Select') }}--</option>
+                                    @if(old('subcategory'))
+                                        @php
+                                            $oldSubcategory = \App\Models\Category::find(old('subcategory'));
+                                        @endphp
+                                        @if($oldSubcategory)
+                                            <option value="{{ $oldSubcategory->id }}" selected>{{ $oldSubcategory->name }}</option>
+                                        @endif
+                                    @endif
+                                </select>
+                                @error('subcategory')
+                                    <p class="text-danger">{{ $message }}</p>
+                                @enderror
+                                <small class="form-text text-muted">{{ __('Please select a category first') }}</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label for="">{{ __('Category') }}</label>
-                        <select name="category" id="category" class="form-control select2">
-                            <option value="">--{{ __('Select') }}---</option>
-                            @if(old('category'))
-                                @php
-                                    $oldCategory = \App\Models\Category::find(old('category'));
-                                @endphp
-                                @if($oldCategory)
-                                    <option value="{{ $oldCategory->id }}" selected>{{ $oldCategory->name }}</option>
-                                @endif
-                            @endif
+                        <label for="">{{ __('Author') }}</label>
+                        <select name="author_id" id="author_id" class="form-control select2">
+                            <option value="">--{{ __('Select') }}--</option>
+                            @foreach($authors as $author)
+                                <option value="{{ $author->id }}" {{ old('author_id') == $author->id ? 'selected' : '' }}>
+                                    {{ $author->name }}@if($author->designation) - {{ $author->designation }}@endif
+                                </option>
+                            @endforeach
                         </select>
-                        @error('category')
+                        @error('author_id')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
                     </div>
@@ -222,12 +270,55 @@
                                 $('#category').append(
                                     `<option value="${data.id}" ${selected}>${data.name}</option>`)
                             })
+                            
+                            // Reset subcategory when language changes
+                            $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
 
                         },
                         error: function(error) {
                             console.log(error);
                         }
                     })
+                })
+
+                // Load subcategories when category is selected
+                $('#category').on('change', function() {
+                    let categoryId = $(this).val();
+                    let oldSubcategory = '{{ old("subcategory") }}';
+                    
+                    if (categoryId) {
+                        $.ajax({
+                            method: 'GET',
+                            url: "{{ route('admin.fetch-news-subcategories') }}",
+                            data: {
+                                category_id: categoryId
+                            },
+                            success: function(data) {
+                                $('#subcategory').html("");
+                                $('#subcategory').html(
+                                    `<option value="">--{{ __('Select') }}--</option>`);
+                                
+                                if (data.length > 0) {
+                                    $.each(data, function(index, subcategory) {
+                                        var selected = (oldSubcategory && oldSubcategory == subcategory.id) ? 'selected' : '';
+                                        $('#subcategory').append(
+                                            `<option value="${subcategory.id}" ${selected}>${subcategory.name}</option>`)
+                                    })
+                                    $('#subcategory').prop('disabled', false);
+                                } else {
+                                    $('#subcategory').prop('disabled', true);
+                                    $('#subcategory').html(
+                                        `<option value="">--{{ __('No subcategories available') }}--</option>`);
+                                }
+                            },
+                            error: function(error) {
+                                console.log(error);
+                                $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
+                            }
+                        })
+                    } else {
+                        $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
+                    }
                 })
 
                 // Featured image selection button

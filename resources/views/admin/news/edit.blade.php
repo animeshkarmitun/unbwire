@@ -29,16 +29,59 @@
                         @enderror
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="">{{ __('Category') }}</label>
+                                <select name="category" id="category" class="form-control select2">
+                                    <option value="">--{{ __('Select') }}---</option>
+                                    @foreach ($categories as $category)
+                                        <option {{ $category->id == $selectedCategory ? 'selected' : '' }}
+                                            value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('category')
+                                    <p class="text-danger">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="">{{ __('Sub-Category') }} <small class="text-muted">({{ __('Optional') }})</small></label>
+                                <select name="subcategory" id="subcategory" class="form-control select2" {{ $selectedCategory ? '' : 'disabled' }}>
+                                    <option value="">--{{ __('Select') }}--</option>
+                                    @if($selectedCategory)
+                                        @php
+                                            $subcategories = \App\Models\Category::where('parent_id', $selectedCategory)
+                                                ->orderBy('order', 'asc')
+                                                ->orderBy('name', 'asc')
+                                                ->get();
+                                        @endphp
+                                        @foreach($subcategories as $subcategory)
+                                            <option {{ $subcategory->id == $selectedSubcategory ? 'selected' : '' }}
+                                                value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                @error('subcategory')
+                                    <p class="text-danger">{{ $message }}</p>
+                                @enderror
+                                <small class="form-text text-muted">{{ __('Please select a category first') }}</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label for="">{{ __('Category') }}</label>
-                        <select name="category" id="category" class="form-control select2">
-                            <option value="">--{{ __('Select') }}---</option>
-                            @foreach ($categories as $category)
-                                <option {{ $category->id === $news->category_id ? 'selected' : '' }}
-                                    value="{{ $category->id }}">{{ $category->name }}</option>
+                        <label for="">{{ __('Author') }}</label>
+                        <select name="author_id" id="author_id" class="form-control select2">
+                            <option value="">--{{ __('Select') }}--</option>
+                            @foreach($authors as $author)
+                                <option value="{{ $author->id }}" {{ old('author_id', $news->author_id) == $author->id ? 'selected' : '' }}>
+                                    {{ $author->name }}@if($author->designation) - {{ $author->designation }}@endif
+                                </option>
                             @endforeach
                         </select>
-                        @error('category')
+                        @error('author_id')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
                     </div>
@@ -208,16 +251,69 @@
                                 `<option value="">---{{ __('Select') }}---</option>`);
 
                             $.each(data, function(index, data) {
+                                var selected = (data.id == {{ $selectedCategory ?? 'null' }}) ? 'selected' : '';
                                 $('#category').append(
-                                    `<option value="${data.id}">${data.name}</option>`)
+                                    `<option value="${data.id}" ${selected}>${data.name}</option>`)
                             })
-
+                            
+                            // Reset subcategory when language changes
+                            $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
+                            
+                            // If category was selected, trigger change to load subcategories
+                            if ($('#category').val()) {
+                                $('#category').trigger('change');
+                            }
                         },
                         error: function(error) {
                             console.log(error);
                         }
                     })
                 })
+
+                // Load subcategories when category is selected
+                $('#category').on('change', function() {
+                    let categoryId = $(this).val();
+                    let oldSubcategory = {{ $selectedSubcategory ?? 'null' }};
+                    
+                    if (categoryId) {
+                        $.ajax({
+                            method: 'GET',
+                            url: "{{ route('admin.fetch-news-subcategories') }}",
+                            data: {
+                                category_id: categoryId
+                            },
+                            success: function(data) {
+                                $('#subcategory').html("");
+                                $('#subcategory').html(
+                                    `<option value="">--{{ __('Select') }}--</option>`);
+                                
+                                if (data.length > 0) {
+                                    $.each(data, function(index, subcategory) {
+                                        var selected = (oldSubcategory && oldSubcategory == subcategory.id) ? 'selected' : '';
+                                        $('#subcategory').append(
+                                            `<option value="${subcategory.id}" ${selected}>${subcategory.name}</option>`)
+                                    })
+                                    $('#subcategory').prop('disabled', false);
+                                } else {
+                                    $('#subcategory').prop('disabled', true);
+                                    $('#subcategory').html(
+                                        `<option value="">--{{ __('No subcategories available') }}--</option>`);
+                                }
+                            },
+                            error: function(error) {
+                                console.log(error);
+                                $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
+                            }
+                        })
+                    } else {
+                        $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
+                    }
+                })
+                
+                // Trigger category change on page load if category is selected
+                @if($selectedCategory)
+                    $('#category').trigger('change');
+                @endif
                 
                 // Intercept picture button click to show media library
                 $(document).on('click', '.note-btn[data-event="showImageDialog"]', function(e) {

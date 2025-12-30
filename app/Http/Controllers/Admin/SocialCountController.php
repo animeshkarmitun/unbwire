@@ -13,10 +13,10 @@ class SocialCountController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['permission:social count index,admin'])->only(['index']);
-        $this->middleware(['permission:social count create,admin'])->only(['create', 'store']);
-        $this->middleware(['permission:social count update,admin'])->only(['edit', 'update']);
-        $this->middleware(['permission:social count delete,admin'])->only(['destroy']);
+        $this->middleware(['permission:social media index,admin'])->only(['index']);
+        $this->middleware(['permission:social media create,admin'])->only(['create', 'store']);
+        $this->middleware(['permission:social media update,admin'])->only(['edit', 'update']);
+        $this->middleware(['permission:social media delete,admin'])->only(['destroy']);
     }
 
     /**

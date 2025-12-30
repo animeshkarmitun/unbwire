@@ -8,24 +8,34 @@
 
         <div class="card card-primary">
             <div class="card-header">
-                <h4>{{ __('admin.Create Category') }}</h4>
-
+                <h4>{{ __('admin.Create Category') }}
+                    @if(isset($selectedLanguage))
+                        <span class="badge badge-{{ $selectedLanguage->lang == 'en' ? 'primary' : 'success' }}">
+                            {{ $selectedLanguage->name }}
+                        </span>
+                    @endif
+                </h4>
             </div>
             <div class="card-body">
                 <form action="{{ route('admin.category.store') }}" method="POST">
                     @csrf
                     <div class="form-group">
                         <label for="">{{ __('admin.Language') }}</label>
-                        <select name="language" id="language-select" class="form-control select2">
+                        <select name="language" id="language-select" class="form-control select2" {{ isset($selectedLanguage) ? 'readonly' : '' }}>
                             <option value="">--{{ __('admin.Select') }}--</option>
                             @foreach ($languages as $lang)
-                                <option value="{{ $lang->lang }}">{{ $lang->name }}</option>
+                                <option value="{{ $lang->lang }}" 
+                                    {{ (old('language', isset($selectedLanguage) ? $selectedLanguage->lang : '') == $lang->lang) ? 'selected' : '' }}>
+                                    {{ $lang->name }}
+                                </option>
                             @endforeach
                         </select>
+                        @if(isset($selectedLanguage))
+                            <input type="hidden" name="language" value="{{ $selectedLanguage->lang }}">
+                        @endif
                         @error('language')
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
-
                     </div>
                     <div class="form-group">
                         <label for="">{{ __('admin.Name') }}</label>

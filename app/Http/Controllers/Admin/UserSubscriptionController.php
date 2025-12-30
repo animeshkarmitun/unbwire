@@ -11,7 +11,7 @@ class UserSubscriptionController extends Controller
     public function __construct()
     {
         $this->middleware(['permission:subscription package index,admin'])->only(['index']);
-        $this->middleware(['permission:subscription package update,admin'])->only(['update', 'approve']);
+        $this->middleware(['permission:subscription package update,admin'])->only(['update', 'approve', 'updateExpiryDate']);
         $this->middleware(['permission:subscription package delete,admin'])->only(['destroy']);
     }
 
@@ -56,6 +56,24 @@ class UserSubscriptionController extends Controller
         $subscription->save();
 
         toast(__('admin.Updated Successfully!'), 'success')->width('350');
+
+        return redirect()->back();
+    }
+
+    /**
+     * Update subscription expiry date
+     */
+    public function updateExpiryDate(Request $request, $id)
+    {
+        $request->validate([
+            'expires_at' => ['required', 'date', 'after:today'],
+        ]);
+
+        $subscription = UserSubscription::findOrFail($id);
+        $subscription->expires_at = $request->expires_at;
+        $subscription->save();
+
+        toast(__('admin.Expiry date updated successfully!'), 'success')->width('350');
 
         return redirect()->back();
     }

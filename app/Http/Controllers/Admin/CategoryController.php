@@ -13,9 +13,12 @@ class CategoryController extends Controller
     public function __construct()
     {
         $this->middleware(['permission:news index,admin'])->only(['index']);
-        $this->middleware(['permission:news create,admin'])->only(['create', 'store']);
-        $this->middleware(['permission:news update,admin'])->only(['edit', 'update']);
-        $this->middleware(['permission:news delete,admin'])->only(['destroy']);
+        // Allow access to create form - permission check happens in store() method
+        // This allows users with language-specific permissions to access the form
+        $this->middleware(['permission:category create,admin|category create en,admin|category create bn,admin|news all-access,admin'])->only(['create']);
+        $this->middleware(['permission:category create,admin'])->only(['store']);
+        $this->middleware(['permission:category update,admin'])->only(['edit', 'update']);
+        $this->middleware(['permission:category delete,admin'])->only(['destroy']);
     }
 
     /**
@@ -30,14 +33,42 @@ class CategoryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create($lang = null)
     {
+        // Validate language if provided
+        if ($lang && !in_array($lang, ['en', 'bn'])) {
+            abort(404);
+        }
+        
+        // Check permission for the specific language
+        if ($lang) {
+            $hasGeneralPermission = canAccess(['category create', 'news all-access']);
+            $hasLanguagePermission = $lang === 'en' 
+                ? canAccess(['category create en']) 
+                : canAccess(['category create bn']);
+            
+            if (!$hasGeneralPermission && !$hasLanguagePermission) {
+                $langName = $lang === 'en' ? 'English' : 'Bangla';
+                abort(403, "You do not have permission to create {$langName} categories.");
+            }
+        } else {
+            // If no language specified, check if user has any create permission
+            $hasAnyPermission = canAccess(['category create', 'category create en', 'category create bn', 'news all-access']);
+            if (!$hasAnyPermission) {
+                abort(403, 'You do not have permission to create categories.');
+            }
+        }
+        
         $languages = Language::all();
         $parentCategories = Category::whereNull('parent_id')
             ->orderBy('order')
             ->orderBy('name')
             ->get();
-        return view('admin.category.create', compact('languages', 'parentCategories'));
+        
+        // If language is provided, pre-select it
+        $selectedLanguage = $lang ? Language::where('lang', $lang)->first() : null;
+        
+        return view('admin.category.create', compact('languages', 'parentCategories', 'selectedLanguage'));
     }
 
     /**
@@ -53,6 +84,15 @@ class CategoryController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'parent_id' => ['nullable', 'exists:categories,id'],
         ]);
+        
+        // Check language-specific permission
+        $language = $request->language;
+        if ($language === 'en' && !canAccess(['category create en', 'category create', 'news all-access'])) {
+            abort(403, 'You do not have permission to create English categories.');
+        }
+        if ($language === 'bn' && !canAccess(['category create bn', 'category create', 'news all-access'])) {
+            abort(403, 'You do not have permission to create Bangla categories.');
+        }
 
         // Prevent category from being its own parent
         if ($request->parent_id) {
@@ -98,6 +138,17 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $category = Category::findOrFail($id);
+        
+        // Check language-specific permission
+        $language = $request->language ?? $category->language;
+        if ($language === 'en' && !canAccess(['category update en', 'category update', 'news all-access'])) {
+            abort(403, 'You do not have permission to update English categories.');
+        }
+        if ($language === 'bn' && !canAccess(['category update bn', 'category update', 'news all-access'])) {
+            abort(403, 'You do not have permission to update Bangla categories.');
+        }
+        
         $request->validate([
             'language' => ['required', 'string'],
             'name' => ['required', 'string', 'max:255'],
@@ -106,8 +157,6 @@ class CategoryController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'parent_id' => ['nullable', 'exists:categories,id'],
         ]);
-
-        $category = Category::findOrFail($id);
 
         // Prevent category from being its own parent or parent of its parent
         if ($request->parent_id) {

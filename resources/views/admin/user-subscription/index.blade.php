@@ -157,6 +157,10 @@
                                                     </form>
                                                 @endif
                                                 <div class="dropdown-divider"></div>
+                                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#updateExpiryDateModal{{ $subscription->id }}">
+                                                    <i class="fas fa-calendar-alt text-info"></i> Update Expiry Date
+                                                </a>
+                                                <div class="dropdown-divider"></div>
                                                 <a href="{{ route('admin.user-subscription.destroy', $subscription->id) }}" 
                                                    class="dropdown-item text-danger delete-item">
                                                     <i class="fas fa-trash"></i> Delete
@@ -181,6 +185,58 @@
             </div>
         </div>
     </section>
+
+    <!-- Update Expiry Date Modals -->
+    @foreach($subscriptions as $subscription)
+        <div class="modal fade" id="updateExpiryDateModal{{ $subscription->id }}" tabindex="-1" role="dialog" aria-labelledby="updateExpiryDateModalLabel{{ $subscription->id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateExpiryDateModalLabel{{ $subscription->id }}">Update Expiry Date</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{{ route('admin.user-subscription.update-expiry-date', $subscription->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>User</label>
+                                <input type="text" class="form-control" value="{{ $subscription->user->name }} ({{ $subscription->user->email }})" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Package</label>
+                                <input type="text" class="form-control" value="{{ $subscription->package->name }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Expiry Date</label>
+                                <input type="text" class="form-control" value="{{ $subscription->expires_at->format('M d, Y') }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="expires_at{{ $subscription->id }}">New Expiry Date <span class="text-danger">*</span></label>
+                                <input type="date" 
+                                       class="form-control @error('expires_at') is-invalid @enderror" 
+                                       id="expires_at{{ $subscription->id }}" 
+                                       name="expires_at" 
+                                       value="{{ old('expires_at', $subscription->expires_at->format('Y-m-d')) }}" 
+                                       min="{{ date('Y-m-d', strtotime('+1 day')) }}" 
+                                       required>
+                                @error('expires_at')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Please select a future date.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Expiry Date</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection
 
 @push('scripts')
