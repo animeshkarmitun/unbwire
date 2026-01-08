@@ -203,6 +203,25 @@
                             </div>
                         @endif
 
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class="control-label">
+                                    <i class="fas fa-envelope"></i> {{ __('Send Email to Subscribers') }}
+                                    @php
+                                        $subscriberCount = \App\Models\Subscriber::where('email_notifications_enabled', true)->count();
+                                    @endphp
+                                    <small class="text-muted d-block">({{ $subscriberCount }} active subscribers)</small>
+                                </div>
+                                <label class="custom-switch mt-2">
+                                    <input value="1" type="checkbox" name="send_email_to_subscribers" 
+                                        class="custom-switch-input" 
+                                        {{ old('send_email_to_subscribers', getSetting('notification_email_enabled', '1')) == '1' ? 'checked' : '' }}>
+                                    <span class="custom-switch-indicator"></span>
+                                </label>
+                                <small class="form-text text-muted">Send email notification when this news is published</small>
+                            </div>
+                        </div>
+
                     </div>
 
                     <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>

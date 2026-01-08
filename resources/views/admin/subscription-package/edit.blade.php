@@ -136,6 +136,7 @@
                                     <input type="checkbox" name="access_bangla" value="1" class="custom-control-input" id="access_bangla" {{ old('access_bangla', $package->access_bangla ?? false) ? 'checked' : '' }}>
                                     <label class="custom-control-label" for="access_bangla">Access Bangla</label>
                                 </div>
+                                <small class="form-text text-muted">Enable to allow access to Bangla content. If disabled, Bangla content will be restricted.</small>
                             </div>
                         </div>
 
@@ -145,6 +146,7 @@
                                     <input type="checkbox" name="access_english" value="1" class="custom-control-input" id="access_english" {{ old('access_english', $package->access_english ?? false) ? 'checked' : '' }}>
                                     <label class="custom-control-label" for="access_english">Access English</label>
                                 </div>
+                                <small class="form-text text-muted">Enable to allow access to English content. If disabled, English content will be restricted.</small>
                             </div>
                         </div>
                     </div>

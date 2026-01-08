@@ -181,6 +181,29 @@
                 </li>
             @endif
 
+            @if (canAccess(['subscribers index']) || canAccess(['setting index']))
+                <li class="dropdown {{ setSidebarActive(['admin.subscriber.*', 'admin.subscriber-notification-settings.*', 'admin.email-report.*']) }}">
+                    <a href="#" class="nav-link has-dropdown"><i class="fas fa-bell"></i>
+                        <span>Notifications & Email</span></a>
+                    <ul class="dropdown-menu">
+                        @if (canAccess(['subscribers index']))
+                            <li class="{{ setSidebarActive(['admin.subscriber.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.subscriber.index') }}"><i class="fas fa-users"></i> Subscribers</a></li>
+                        @endif
+                        @if (canAccess(['setting index']))
+                            <li class="{{ setSidebarActive(['admin.subscriber-notification-settings.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.subscriber-notification-settings.index') }}"><i class="fas fa-cog"></i> Settings</a></li>
+                        @endif
+                        @if (canAccess(['subscribers index']))
+                            <li class="{{ setSidebarActive(['admin.email-report.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.email-report.index') }}"><i class="fas fa-envelope"></i> Email Reports</a></li>
+                            <li class="{{ setSidebarActive(['admin.email-report.pending']) }}"><a class="nav-link"
+                                    href="{{ route('admin.email-report.pending') }}"><i class="fas fa-clock"></i> Pending Emails</a></li>
+                        @endif
+                    </ul>
+                </li>
+            @endif
+
             @if (canAccess(['footer index']))
                 <li
                     class="dropdown

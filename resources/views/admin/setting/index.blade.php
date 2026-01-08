@@ -28,6 +28,9 @@
                         <li class="nav-item">
                           <a class="nav-link" id="watermark-tab4" data-toggle="tab" href="#watermark4" role="tab" aria-controls="watermark" aria-selected="false">{{ __('admin.Watermark Settings') }}</a>
                         </li>
+                        <li class="nav-item">
+                          <a class="nav-link" id="email-tab4" data-toggle="tab" href="#email4" role="tab" aria-controls="email" aria-selected="false">Email Settings</a>
+                        </li>
                       </ul>
                     </div>
                     <div class="col-12 col-sm-12 col-md-10">
@@ -43,6 +46,9 @@
                         </div>
                         <div class="tab-pane fade" id="watermark4" role="tabpanel" aria-labelledby="watermark-tab4">
                             @include('admin.setting.cards.watermark-setting')
+                        </div>
+                        <div class="tab-pane fade" id="email4" role="tabpanel" aria-labelledby="email-tab4">
+                            @include('admin.setting.cards.email-setting')
                         </div>
                       </div>
                     </div>

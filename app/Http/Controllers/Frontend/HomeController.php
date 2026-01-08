@@ -640,14 +640,33 @@ class HomeController extends Controller
     public function SubscribeNewsLetter(Request $request)
     {
        $request->validate([
-        'email' => ['required', 'email', 'max:255', 'unique:subscribers,email']
-       ],[
-        'email.unique' => __('frontend.Email is already subscribed!')
+        'email' => ['required', 'email', 'max:255']
        ]);
 
-       $subscriber = new Subscriber();
-       $subscriber->email = $request->email;
-       $subscriber->save();
+       // Check if user with this email exists
+       $user = \App\Models\User::where('email', $request->email)->first();
+       
+       if ($user) {
+           // User exists, ensure email notifications are enabled
+           if (!$user->email_notifications_enabled) {
+               $user->email_notifications_enabled = true;
+               $user->save();
+           }
+       } else {
+           // Create a new user account for newsletter subscription
+           $user = \App\Models\User::create([
+               'name' => explode('@', $request->email)[0], // Use email prefix as name
+               'email' => $request->email,
+               'password' => \Hash::make(\Str::random(32)), // Random password
+               'email_notifications_enabled' => true,
+           ]);
+       }
+       
+       // Ensure unsubscribe token exists
+       if (!$user->unsubscribe_token) {
+           $user->unsubscribe_token = \Str::random(64);
+           $user->save();
+       }
 
        return response(['status' => 'success', 'message' => __('frontend.Subscribed successfully!')]);
 

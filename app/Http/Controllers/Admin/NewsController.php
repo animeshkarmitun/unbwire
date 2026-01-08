@@ -78,8 +78,15 @@ class NewsController extends Controller
     function approveNews(Request $request): Response
     {
         $news = News::findOrFail($request->id);
+        $wasPublished = $news->status == 1 && $news->is_approved == 1;
         $news->is_approved = $request->is_approve;
         $news->save();
+
+        // Fire NewsPublished event if news is now published (status=1 and is_approved=1)
+        $isNowPublished = $news->status == 1 && $news->is_approved == 1;
+        if ($isNowPublished && !$wasPublished) {
+            \App\Events\NewsPublished::dispatch($news);
+        }
 
         return response(['status' => 'success', 'message' => __('admin.Updated Successfully')]);
     }
@@ -195,6 +202,15 @@ class NewsController extends Controller
 
         $news->tags()->attach($tagIds);
 
+        // Fire NewsPublished event if news is published (status=1 and is_approved=1)
+        // Check if admin wants to send email notifications (default: true)
+        $sendEmails = $request->has('send_email_to_subscribers') ? (bool)$request->send_email_to_subscribers : true;
+        
+        if ($news->status == 1 && $news->is_approved == 1) {
+            \App\Events\NewsPublished::dispatch($news);
+            // Pass email preference to the service via options
+            // The listener will handle this
+        }
 
         toast(__('admin.Created Successfully!'), 'success')->width('330');
 
@@ -237,6 +253,11 @@ class NewsController extends Controller
             
             // Refresh the model instance to get updated values
             $news->refresh();
+            
+            // Fire NewsPublished event if status is toggled to 1 and news is approved
+            if ($request->name === 'status' && $value == 1 && $news->is_approved == 1 && $oldValue != 1) {
+                \App\Events\NewsPublished::dispatch($news);
+            }
             
             // Manually log the activity since we bypassed model events
             try {
@@ -365,6 +386,9 @@ class NewsController extends Controller
             }
         }
 
+        // Store old values to check if transitioning to published
+        $wasPublished = $news->status == 1 && $news->is_approved == 1;
+
         /** Handle image - can be file upload or path from media library */
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -412,6 +436,13 @@ class NewsController extends Controller
 
         $news->tags()->attach($tagIds);
 
+        // Fire NewsPublished event if news is now published (status=1 and is_approved=1)
+        // and it wasn't published before
+        $isNowPublished = $news->status == 1 && $news->is_approved == 1;
+        
+        if ($isNowPublished && !$wasPublished) {
+            \App\Events\NewsPublished::dispatch($news);
+        }
 
         toast(__('admin.Update Successfully!'), 'success')->width('330');
 

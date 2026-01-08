@@ -13,9 +13,8 @@ class CategoryController extends Controller
     public function __construct()
     {
         $this->middleware(['permission:news index,admin'])->only(['index']);
-        // Allow access to create form - permission check happens in store() method
+        // Allow access to create form - permission check happens in create() method
         // This allows users with language-specific permissions to access the form
-        $this->middleware(['permission:category create,admin|category create en,admin|category create bn,admin|news all-access,admin'])->only(['create']);
         $this->middleware(['permission:category create,admin'])->only(['store']);
         $this->middleware(['permission:category update,admin'])->only(['edit', 'update']);
         $this->middleware(['permission:category delete,admin'])->only(['destroy']);
@@ -60,7 +59,16 @@ class CategoryController extends Controller
         }
         
         $languages = Language::all();
-        $parentCategories = Category::whereNull('parent_id')
+        
+        // Fetch parent categories - filter by language if provided
+        $parentCategoriesQuery = Category::whereNull('parent_id');
+        
+        if ($lang) {
+            // Only show categories of the same language
+            $parentCategoriesQuery->where('language', $lang);
+        }
+        
+        $parentCategories = $parentCategoriesQuery
             ->orderBy('order')
             ->orderBy('name')
             ->get();

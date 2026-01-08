@@ -7,6 +7,8 @@ use App\Models\Setting;
 use App\Models\WatermarkSetting;
 use App\Traits\FileUploadTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SettingController extends Controller
 {
@@ -15,7 +17,7 @@ class SettingController extends Controller
     public function __construct()
     {
         $this->middleware(['permission:setting index,admin'])->only(['index']);
-        $this->middleware(['permission:setting update,admin'])->only(['updateGeneralSetting', 'updateSeoSetting', 'updateAppearanceSetting', 'updateMicrosoftApiSetting', 'updateWatermarkSetting']);
+        $this->middleware(['permission:setting update,admin'])->only(['updateGeneralSetting', 'updateSeoSetting', 'updateAppearanceSetting', 'updateMicrosoftApiSetting', 'updateWatermarkSetting', 'updateEmailSetting', 'testEmailSetting']);
     }
 
     /**
@@ -196,6 +198,145 @@ class SettingController extends Controller
         toast(__('admin.Updated Successfully'), 'success')->width('350');
 
         return redirect()->route('admin.setting.index');
+    }
+
+    /**
+     * Update email settings
+     */
+    public function updateEmailSetting(Request $request)
+    {
+        $request->validate([
+            'mail_mailer' => ['required', 'string', 'in:smtp,sendmail,mailgun,ses,postmark,log'],
+            'mail_host' => ['required_if:mail_mailer,smtp', 'nullable', 'string', 'max:255'],
+            'mail_port' => ['required_if:mail_mailer,smtp', 'nullable', 'integer', 'min:1', 'max:65535'],
+            'mail_encryption' => ['nullable', 'string', 'in:tls,ssl,'],
+            'mail_username' => ['required_if:mail_mailer,smtp', 'nullable', 'string', 'max:255'],
+            'mail_password' => ['nullable', 'string', 'max:255'],
+            'mail_from_address' => ['required', 'email', 'max:255'],
+            'mail_from_name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $settings = [
+            'mail_mailer' => $request->mail_mailer,
+            'mail_from_address' => $request->mail_from_address,
+            'mail_from_name' => $request->mail_from_name,
+        ];
+
+        // Only save SMTP settings if SMTP is selected
+        if ($request->mail_mailer === 'smtp') {
+            $settings['mail_host'] = $request->mail_host;
+            $settings['mail_port'] = $request->mail_port;
+            $settings['mail_encryption'] = $request->mail_encryption ?? '';
+            $settings['mail_username'] = $request->mail_username;
+            
+            // Only update password if provided (don't overwrite with empty)
+            if ($request->filled('mail_password')) {
+                $settings['mail_password'] = $request->mail_password;
+            }
+        }
+
+        foreach ($settings as $key => $value) {
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
+        }
+
+        toast(__('admin.Updated Successfully'), 'success')->width('350');
+
+        return redirect()->route('admin.setting.index');
+    }
+
+    /**
+     * Test email configuration
+     */
+    public function testEmailSetting(Request $request)
+    {
+        $request->validate([
+            'mail_mailer' => ['required', 'string', 'in:smtp,sendmail,mailgun,ses,postmark,log'],
+            'mail_host' => ['required_if:mail_mailer,smtp', 'nullable', 'string', 'max:255'],
+            'mail_port' => ['required_if:mail_mailer,smtp', 'nullable', 'integer', 'min:1', 'max:65535'],
+            'mail_encryption' => ['nullable', 'string', 'in:tls,ssl,'],
+            'mail_username' => ['required_if:mail_mailer,smtp', 'nullable', 'string', 'max:255'],
+            'mail_password' => ['nullable', 'string', 'max:255'],
+            'mail_from_address' => ['required', 'email', 'max:255'],
+            'mail_from_name' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            // Temporarily configure mail with test settings
+            config([
+                'mail.default' => $request->mail_mailer,
+                'mail.mailers.smtp.host' => $request->mail_host ?? config('mail.mailers.smtp.host'),
+                'mail.mailers.smtp.port' => $request->mail_port ?? config('mail.mailers.smtp.port'),
+                'mail.mailers.smtp.encryption' => $request->mail_encryption ?? config('mail.mailers.smtp.encryption'),
+                'mail.mailers.smtp.username' => $request->mail_username ?? config('mail.mailers.smtp.username'),
+                'mail.mailers.smtp.password' => $request->mail_password ?? config('mail.mailers.smtp.password'),
+                'mail.from.address' => $request->mail_from_address,
+                'mail.from.name' => $request->mail_from_name,
+            ]);
+
+            // Get admin email for testing
+            $adminEmail = auth('admin')->user()->email ?? config('mail.from.address');
+
+            if (!$adminEmail) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Admin email not found. Please ensure you are logged in.'
+                ], 400);
+            }
+
+            // Send test email
+            Mail::raw('This is a test email from UNB News. Your email configuration is working correctly!', function ($message) use ($request, $adminEmail) {
+                $message->to($adminEmail)
+                        ->subject('Test Email - UNB News Email Configuration');
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Test email sent successfully to ' . $adminEmail . '. Please check your inbox (and spam folder).'
+            ]);
+        } catch (\Exception $e) {
+            // Handle different types of email errors
+            $errorMessage = 'Failed to send test email. ';
+            
+            $errorClass = get_class($e);
+            $errorMsg = $e->getMessage();
+            
+            // Check for common SMTP errors
+            if (str_contains($errorMsg, 'Connection could not be established') || 
+                str_contains($errorMsg, 'Connection timed out')) {
+                $errorMessage = 'Cannot connect to SMTP server. Please check: ';
+                $errorMessage .= 'SMTP Host: ' . ($request->mail_host ?? 'Not set') . ', ';
+                $errorMessage .= 'SMTP Port: ' . ($request->mail_port ?? 'Not set') . ', ';
+                $errorMessage .= 'Encryption: ' . ($request->mail_encryption ?? 'Not set') . '. ';
+                $errorMessage .= 'Also check firewall/network settings.';
+            } elseif (str_contains($errorMsg, 'Authentication failed') || 
+                      str_contains($errorMsg, 'Invalid login') ||
+                      str_contains($errorMsg, 'Username and Password not accepted')) {
+                $errorMessage = 'Authentication failed. Please check: ';
+                $errorMessage .= 'SMTP Username (email): ' . ($request->mail_username ?? 'Not set') . ', ';
+                $errorMessage .= 'SMTP Password (use App Password for Gmail).';
+            } elseif (str_contains($errorMsg, 'Could not authenticate')) {
+                $errorMessage = 'Could not authenticate with SMTP server. Please verify your credentials.';
+            } else {
+                $errorMessage .= $errorMsg;
+            }
+            
+            Log::error('Email test failed', [
+                'error' => $errorMsg,
+                'class' => $errorClass,
+                'mailer' => $request->mail_mailer,
+                'host' => $request->mail_host,
+                'port' => $request->mail_port,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => $errorMessage
+            ], 500);
+        }
     }
 }
 

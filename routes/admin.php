@@ -176,6 +176,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     Route::put('seo-setting', [SettingController::class, 'updateSeoSetting'])->name('seo-setting.update');
     Route::put('appearance-setting', [SettingController::class, 'updateAppearanceSetting'])->name('appearance-setting.update');
     Route::put('watermark-setting', [SettingController::class, 'updateWatermarkSetting'])->name('watermark-setting.update');
+    Route::put('email-setting', [SettingController::class, 'updateEmailSetting'])->name('email-setting.update');
+    Route::post('email-setting/test', [SettingController::class, 'testEmailSetting'])->name('email-setting.test');
 
     /** Role and Permissions Routes */
     Route::get('role', [RolePermisionController::class, 'index'])->name('role.index');
@@ -243,6 +245,25 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     /** Watermark Settings Routes */
     Route::get('watermark-settings', [\App\Http\Controllers\Admin\WatermarkSettingController::class, 'index'])->name('watermark-settings.index');
     Route::put('watermark-settings', [\App\Http\Controllers\Admin\WatermarkSettingController::class, 'update'])->name('watermark-settings.update');
+
+    /** Subscriber Routes */
+    Route::prefix('subscriber')->name('subscriber.')->group(function() {
+        Route::get('/', [\App\Http\Controllers\Admin\SubscriberController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\Admin\SubscriberController::class, 'export'])->name('export');
+        Route::post('/{id}/toggle-email', [\App\Http\Controllers\Admin\SubscriberController::class, 'toggleEmailNotifications'])->name('toggle-email');
+        Route::post('/{id}/toggle-full-news', [\App\Http\Controllers\Admin\SubscriberController::class, 'toggleFullNewsEmail'])->name('toggle-full-news');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\SubscriberController::class, 'destroy'])->name('destroy');
+    });
+
+    /** Subscriber Notification Settings Routes */
+    Route::get('subscriber-notification-settings', [\App\Http\Controllers\Admin\SubscriberNotificationSettingsController::class, 'index'])->name('subscriber-notification-settings.index');
+    Route::put('subscriber-notification-settings', [\App\Http\Controllers\Admin\SubscriberNotificationSettingsController::class, 'update'])->name('subscriber-notification-settings.update');
+
+    /** Email Reports Routes */
+    Route::prefix('email-report')->name('email-report.')->group(function() {
+        Route::get('/', [\App\Http\Controllers\Admin\EmailReportController::class, 'index'])->name('index');
+        Route::get('/pending', [\App\Http\Controllers\Admin\EmailReportController::class, 'pending'])->name('pending');
+    });
 
 });
 

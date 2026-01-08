@@ -19,24 +19,32 @@
             <div class="card-body">
                 <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <div class="form-group">
-                        <label for="">{{ __('Language') }}</label>
-                        <select name="language" id="language-select" class="form-control select2" {{ isset($selectedLanguage) ? 'readonly' : '' }}>
-                            <option value="">--{{ __('Select') }}--</option>
-                            @foreach ($languages as $lang)
-                                <option value="{{ $lang->lang }}" 
-                                    {{ (old('language', isset($selectedLanguage) ? $selectedLanguage->lang : '') == $lang->lang) ? 'selected' : '' }}>
-                                    {{ $lang->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @if(isset($selectedLanguage))
+                    @if(isset($selectedLanguage))
+                        {{-- Language is pre-selected from URL, show as read-only display --}}
+                        <div class="form-group">
+                            <label for="">{{ __('Language') }}</label>
+                            <input type="text" class="form-control" value="{{ $selectedLanguage->name }}" readonly>
                             <input type="hidden" name="language" value="{{ $selectedLanguage->lang }}">
-                        @endif
-                        @error('language')
-                            <p class="text-danger">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            <small class="form-text text-muted">{{ __('Language is automatically set based on the URL') }}</small>
+                        </div>
+                    @else
+                        {{-- No language in URL, allow user to select --}}
+                        <div class="form-group">
+                            <label for="">{{ __('Language') }}</label>
+                            <select name="language" id="language-select" class="form-control select2">
+                                <option value="">--{{ __('Select') }}--</option>
+                                @foreach ($languages as $lang)
+                                    <option value="{{ $lang->lang }}" 
+                                        {{ old('language') == $lang->lang ? 'selected' : '' }}>
+                                        {{ $lang->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('language')
+                                <p class="text-danger">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
 
                     <div class="row">
                         <div class="col-md-6">
@@ -240,20 +248,15 @@
                     $('#change-featured-image').show();
                 }
 
-                // Restore category if old category exists
+                // Load categories on page load if language is pre-selected
+                var selectedLanguage = '{{ $selectedLanguage->lang ?? "" }}';
                 var oldCategory = '{{ old("category") }}';
                 var oldLanguage = '{{ old("language") }}';
-                if (oldLanguage && oldCategory) {
-                    // Trigger category load for the selected language
-                    $('#language-select').trigger('change');
-                    // Wait a bit for categories to load, then select the old category
-                    setTimeout(function() {
-                        $('#category').val(oldCategory).trigger('change');
-                    }, 500);
-                }
-
-                $('#language-select').on('change', function() {
-                    let lang = $(this).val();
+                
+                // Function to load categories for a given language
+                function loadCategoriesForLanguage(lang, callback) {
+                    if (!lang) return;
+                    
                     $.ajax({
                         method: 'GET',
                         url: "{{ route('admin.fetch-news-category') }}",
@@ -273,13 +276,41 @@
                             
                             // Reset subcategory when language changes
                             $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
-
+                            
+                            if (callback) callback();
                         },
                         error: function(error) {
-                            console.log(error);
+                            console.error('Error loading categories:', error);
                         }
-                    })
-                })
+                    });
+                }
+                
+                // Load categories on page load if language is pre-selected from URL
+                if (selectedLanguage) {
+                    // Language is set from URL, load categories immediately
+                    loadCategoriesForLanguage(selectedLanguage, function() {
+                        // If old category exists, select it
+                        if (oldCategory) {
+                            $('#category').val(oldCategory).trigger('change');
+                        }
+                    });
+                } else if (oldLanguage && oldCategory) {
+                    // Trigger category load for the selected language (from form validation error)
+                    loadCategoriesForLanguage(oldLanguage, function() {
+                        // Wait a bit for categories to load, then select the old category
+                        setTimeout(function() {
+                            $('#category').val(oldCategory).trigger('change');
+                        }, 500);
+                    });
+                }
+
+                // Only attach language change handler if language dropdown exists (not pre-selected)
+                if ($('#language-select').length > 0) {
+                    $('#language-select').on('change', function() {
+                        let lang = $(this).val();
+                        loadCategoriesForLanguage(lang);
+                    });
+                }
 
                 // Load subcategories when category is selected
                 $('#category').on('change', function() {

@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'email_notifications_enabled',
+        'send_full_news_email',
+        'language_preference',
+        'last_notified_at',
+        'unsubscribe_token',
     ];
 
     /**
@@ -40,6 +45,9 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'email_notifications_enabled' => 'boolean',
+        'send_full_news_email' => 'boolean',
+        'last_notified_at' => 'datetime',
     ];
 
     /**
@@ -97,28 +105,87 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user can access a news article based on subscription
+     * Check if user can access a news article based on subscription package permissions
      */
     public function canAccessNews($news): bool
     {
         $package = $this->currentPackage();
         
-        // Free users can only access free content
+        // Free users (no package) can only access free content that is not exclusive
         if (!$package) {
-            return $news->subscription_required === 'free' && !$news->is_exclusive;
+            return strtolower($news->subscription_required ?? 'free') === 'free' && !$news->is_exclusive;
         }
 
-        $packageTier = $package->getTierLevel();
-        $requiredTier = match($news->subscription_required) {
-            'free' => 0,
-            'lite' => 1,
-            'pro' => 2,
-            'ultra' => 3,
-            default => 0,
-        };
+        // Check if package has access to news feature
+        if (!$package->hasAccess('news')) {
+            return false;
+        }
 
-        // User's package tier must be >= required tier
-        return $packageTier >= $requiredTier;
+        // Check language access based on package permissions
+        // Logic: 
+        // - If package has language permissions enabled (at least one true), only allow those languages
+        // - If both are false, allow all languages (no restrictions)
+        if ($news->language) {
+            $newsLang = strtolower(trim($news->language));
+            
+            // Get package permissions - reload from database to avoid caching issues
+            $packageId = $package->id;
+            $freshPackage = \App\Models\SubscriptionPackage::find($packageId);
+            
+            if (!$freshPackage) {
+                return false; // Package not found
+            }
+            
+            // Get package permissions directly from fresh database record
+            $hasBanglaAccess = (bool) $freshPackage->access_bangla;
+            $hasEnglishAccess = (bool) $freshPackage->access_english;
+            
+            // If package has at least one language permission enabled, check restrictions
+            if ($hasBanglaAccess || $hasEnglishAccess) {
+                // Package has language restrictions - only allow enabled languages
+                $langAllowed = match($newsLang) {
+                    'bn', 'bangla' => $hasBanglaAccess,
+                    'en', 'english' => $hasEnglishAccess,
+                    default => false, // Unknown language - deny if restrictions exist
+                };
+                
+                if (!$langAllowed) {
+                    return false; // Package doesn't allow this language
+                }
+            }
+            // If both language permissions are false, allow all languages (no restrictions)
+        }
+
+        // Check subscription_required level
+        $subscriptionRequired = strtolower($news->subscription_required ?? 'free');
+        
+        // Free news - check if package allows it
+        if ($subscriptionRequired === 'free') {
+            // Free news is accessible if package has news access
+            // But exclusive free news requires exclusive permission
+            if ($news->is_exclusive) {
+                return $package->hasAccess('exclusive');
+            }
+            return true; // Regular free news is accessible
+        }
+
+        // For non-free news, check if package has appropriate access
+        // This is a fallback - ideally subscription_required should match package permissions
+        // But we check package permissions directly
+        if ($subscriptionRequired !== 'free') {
+            // If news requires subscription, ensure package has news access
+            if (!$package->hasAccess('news')) {
+                return false;
+            }
+        }
+
+        // Exclusive content requires exclusive permission
+        if ($news->is_exclusive) {
+            return $package->hasAccess('exclusive');
+        }
+
+        // If we get here, user has news access and content is not exclusive
+        return true;
     }
 
     /**
@@ -128,5 +195,47 @@ class User extends Authenticatable
     {
         $package = $this->currentPackage();
         return $package && $package->ad_free === true;
+    }
+
+    /**
+     * Get all notifications for this user
+     */
+    public function notifications()
+    {
+        return $this->hasMany(UserNotification::class);
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->where('is_read', false)->count();
+    }
+
+    /**
+     * Check if user should receive email notifications
+     */
+    public function shouldReceiveEmail(): bool
+    {
+        return $this->email_notifications_enabled ?? true;
+    }
+
+    /**
+     * Get subscription tier level for email content filtering
+     */
+    public function getSubscriptionTierLevel(): int
+    {
+        $package = $this->currentPackage();
+        return $package ? $package->getTierLevel() : 0; // 0 = free tier
+    }
+
+    /**
+     * Get subscription tier slug
+     */
+    public function getSubscriptionTier(): string
+    {
+        $package = $this->currentPackage();
+        return $package ? $package->slug : 'free';
     }
 }

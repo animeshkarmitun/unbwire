@@ -39,6 +39,24 @@
                 </div>
                 <div class="col-sm-6 col-md-4">
                     <div class="list-unstyled topbar-right d-flex align-items-center justify-content-end">
+                        @if(auth()->check())
+                            @php
+                                $unreadCount = auth()->user()->unreadNotificationsCount();
+                            @endphp
+                            <div class="notification-icon-wrapper" style="margin-right: 15px; position: relative;">
+                                <a href="{{ route('notifications.index') }}" 
+                                   class="notification-link" 
+                                   title="{{ $unreadCount > 0 ? $unreadCount . ' unread notifications' : 'No new notifications' }}"
+                                   style="color: #333; font-size: 18px; text-decoration: none; position: relative; display: inline-block; transition: color 0.3s ease;"
+                                   onmouseover="this.style.color='#dc3545'" 
+                                   onmouseout="this.style.color='#333'">
+                                    <i class="fas fa-bell"></i>
+                                    @if($unreadCount > 0)
+                                        <span class="notification-badge" style="position: absolute; top: -8px; right: -8px; background-color: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                                    @endif
+                                </a>
+                            </div>
+                        @endif
                         <div class="topbar_language">
                             <select id="site-language">
                                 @foreach ($languages as $language)

@@ -44,6 +44,9 @@ Route::middleware(['auth', 'require.subscription'])->group(function () {
 // Newsletter Subscription (Public)
 Route::post('/subscribe', [HomeController::class, 'SubscribeNewsLetter'])->name('subscribe-newsletter');
 
+// User Notifications (Public unsubscribe, authenticated for viewing)
+Route::match(['get', 'post'], '/unsubscribe', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'unsubscribe'])->name('user.unsubscribe');
+
 // Subscription Routes
 Route::get('/subscription/plans', [\App\Http\Controllers\Frontend\SubscriptionController::class, 'plans'])->name('subscription.plans');
 Route::middleware('auth')->group(function () {
@@ -63,6 +66,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/rating', [\App\Http\Controllers\Frontend\SupportTicketController::class, 'submitRating'])->name('rating');
     });
     Route::resource('support-tickets', \App\Http\Controllers\Frontend\SupportTicketController::class);
+    
+    // Subscriber Notification Routes
+    Route::prefix('notifications')->name('notifications.')->group(function() {
+        Route::get('/', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'index'])->name('index');
+        Route::get('/{id}/view', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'view'])->name('view');
+        Route::post('/{id}/mark-read', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::get('/unread-count', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'getUnreadCount'])->name('unread-count');
+    });
 });
 
 require __DIR__.'/auth.php';

@@ -49,8 +49,8 @@ class SubscriptionPackageController extends Controller
             'access_images' => ['required', 'boolean'],
             'access_videos' => ['required', 'boolean'],
             'access_exclusive' => ['required', 'boolean'],
-            'access_bangla' => ['required', 'boolean'],
-            'access_english' => ['required', 'boolean'],
+            'access_bangla' => ['nullable', 'in:0,1'],
+            'access_english' => ['nullable', 'in:0,1'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
             'ad_free' => ['required', 'boolean'],
             'priority_support' => ['required', 'boolean'],
@@ -65,16 +65,22 @@ class SubscriptionPackageController extends Controller
         $package->price = $request->price;
         $package->currency = $request->currency;
         $package->billing_period = $request->billing_period;
-        $package->access_news = (bool) $request->access_news;
-        $package->access_images = (bool) $request->access_images;
-        $package->access_videos = (bool) $request->access_videos;
-        $package->access_exclusive = (bool) $request->access_exclusive;
-        $package->access_bangla = (bool) $request->access_bangla;
-        $package->access_english = (bool) $request->access_english;
+        // Helper function to get checkbox value
+        // If checkbox is checked, it sends '1', if unchecked, field is not present
+        $getCheckboxValue = function($field) use ($request) {
+            return $request->has($field) && $request->input($field) == '1';
+        };
+        
+        $package->access_news = $getCheckboxValue('access_news');
+        $package->access_images = $getCheckboxValue('access_images');
+        $package->access_videos = $getCheckboxValue('access_videos');
+        $package->access_exclusive = $getCheckboxValue('access_exclusive');
+        $package->access_bangla = $getCheckboxValue('access_bangla');
+        $package->access_english = $getCheckboxValue('access_english');
         $package->max_articles_per_day = $request->max_articles_per_day;
-        $package->ad_free = (bool) $request->ad_free;
-        $package->priority_support = (bool) $request->priority_support;
-        $package->is_active = (bool) $request->is_active;
+        $package->ad_free = $getCheckboxValue('ad_free');
+        $package->priority_support = $getCheckboxValue('priority_support');
+        $package->is_active = $getCheckboxValue('is_active');
         $package->sort_order = $request->sort_order ?? 0;
         $package->save();
 
@@ -107,8 +113,8 @@ class SubscriptionPackageController extends Controller
             'access_images' => ['required', 'boolean'],
             'access_videos' => ['required', 'boolean'],
             'access_exclusive' => ['required', 'boolean'],
-            'access_bangla' => ['required', 'boolean'],
-            'access_english' => ['required', 'boolean'],
+            'access_bangla' => ['nullable', 'in:0,1'],
+            'access_english' => ['nullable', 'in:0,1'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
             'ad_free' => ['required', 'boolean'],
             'priority_support' => ['required', 'boolean'],
@@ -116,6 +122,12 @@ class SubscriptionPackageController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
 
+        // Helper function to get checkbox value
+        // If checkbox is checked, it sends '1', if unchecked, field is not present
+        $getCheckboxValue = function($field) use ($request) {
+            return $request->has($field) && $request->input($field) == '1';
+        };
+        
         $package = SubscriptionPackage::findOrFail($id);
         $package->name = $request->name;
         $package->slug = Str::slug($request->name);
@@ -123,16 +135,16 @@ class SubscriptionPackageController extends Controller
         $package->price = $request->price;
         $package->currency = $request->currency;
         $package->billing_period = $request->billing_period;
-        $package->access_news = (bool) $request->access_news;
-        $package->access_images = (bool) $request->access_images;
-        $package->access_videos = (bool) $request->access_videos;
-        $package->access_exclusive = (bool) $request->access_exclusive;
-        $package->access_bangla = (bool) $request->access_bangla;
-        $package->access_english = (bool) $request->access_english;
+        $package->access_news = $getCheckboxValue('access_news');
+        $package->access_images = $getCheckboxValue('access_images');
+        $package->access_videos = $getCheckboxValue('access_videos');
+        $package->access_exclusive = $getCheckboxValue('access_exclusive');
+        $package->access_bangla = $getCheckboxValue('access_bangla');
+        $package->access_english = $getCheckboxValue('access_english');
         $package->max_articles_per_day = $request->max_articles_per_day;
-        $package->ad_free = (bool) $request->ad_free;
-        $package->priority_support = (bool) $request->priority_support;
-        $package->is_active = (bool) $request->is_active;
+        $package->ad_free = $getCheckboxValue('ad_free');
+        $package->priority_support = $getCheckboxValue('priority_support');
+        $package->is_active = $getCheckboxValue('is_active');
         $package->sort_order = $request->sort_order ?? 0;
         $package->save();
 

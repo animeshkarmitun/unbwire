@@ -132,18 +132,20 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" name="access_bangla" value="1" class="custom-control-input" id="access_bangla">
+                                    <input type="checkbox" name="access_bangla" value="1" class="custom-control-input" id="access_bangla" {{ old('access_bangla') ? 'checked' : '' }}>
                                     <label class="custom-control-label" for="access_bangla">Access Bangla</label>
                                 </div>
+                                <small class="form-text text-muted">Enable to allow access to Bangla content. If disabled, Bangla content will be restricted.</small>
                             </div>
                         </div>
 
                         <div class="col-md-3">
                             <div class="form-group">
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" name="access_english" value="1" class="custom-control-input" id="access_english">
+                                    <input type="checkbox" name="access_english" value="1" class="custom-control-input" id="access_english" {{ old('access_english') ? 'checked' : '' }}>
                                     <label class="custom-control-label" for="access_english">Access English</label>
                                 </div>
+                                <small class="form-text text-muted">Enable to allow access to English content. If disabled, English content will be restricted.</small>
                             </div>
                         </div>
                     </div>
