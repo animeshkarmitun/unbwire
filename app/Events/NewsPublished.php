@@ -11,12 +11,14 @@ class NewsPublished
     use Dispatchable, SerializesModels;
 
     public News $news;
+    public array $options;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(News $news)
+    public function __construct(News $news, array $options = [])
     {
         $this->news = $news;
+        $this->options = $options;
     }
 }

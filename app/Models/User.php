@@ -182,6 +182,21 @@ class User extends Authenticatable
             return $package->hasAccess('exclusive');
         }
 
+        // Check for specific content types
+        // If news has video, user must have video access
+        if (!empty($news->video_url) || !empty($news->video_gallery_id)) {
+            if (!$package->hasAccess('videos')) {
+                return false;
+            }
+        }
+
+        // If news is primarily an image gallery, user must have image access
+        if (!empty($news->image_gallery_id)) {
+            if (!$package->hasAccess('images')) {
+                return false;
+            }
+        }
+
         // If we get here, user has news access and content is not exclusive
         return true;
     }

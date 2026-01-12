@@ -80,6 +80,11 @@ class UserSubscriptionController extends Controller
             
             $user->name = $request->name;
             $user->email = $request->email;
+            
+            // Handle boolean toggles (unchecked = false, so use boolean())
+            $user->email_notifications_enabled = $request->boolean('email_notifications_enabled');
+            $user->send_full_news_email = $request->boolean('send_full_news_email');
+            
             $user->save();
         }
 

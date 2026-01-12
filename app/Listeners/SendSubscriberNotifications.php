@@ -29,8 +29,14 @@ class SendSubscriberNotifications implements ShouldQueue
         // Check global email notification setting
         $globalEmailEnabled = getSetting('notification_email_enabled', '1') === '1';
         
-        $this->notificationService->notifyUsers($event->news, [
-            'send_emails' => $globalEmailEnabled,
-        ]);
+        // Merge options from event with defaults
+        $options = $event->options ?? [];
+        
+        // If 'send_emails' is not explicitly set in event options, use global setting
+        if (!isset($options['send_emails'])) {
+            $options['send_emails'] = $globalEmailEnabled;
+        }
+        
+        $this->notificationService->notifyUsers($event->news, $options);
     }
 }

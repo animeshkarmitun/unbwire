@@ -57,9 +57,6 @@ class SendUserNotificationJob implements ShouldQueue
                     $notification->save();
                 }
                 Log::info("Email sent to user: {$this->user->email} for news: {$this->news->title}");
-            } else {
-                Log::info("User {$this->user->email} opted out of email notifications.");
-            }
         } catch (\Exception $e) {
             Log::error("Failed to send email to user {$this->user->email} for news {$this->news->title}: " . $e->getMessage());
             // Optionally re-throw or handle retry logic

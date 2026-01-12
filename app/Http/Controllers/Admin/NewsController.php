@@ -85,6 +85,7 @@ class NewsController extends Controller
         // Fire NewsPublished event if news is now published (status=1 and is_approved=1)
         $isNowPublished = $news->status == 1 && $news->is_approved == 1;
         if ($isNowPublished && !$wasPublished) {
+            \Log::info("NewsController::approveNews - Dispatching NewsPublished for News ID: {$news->id}");
             \App\Events\NewsPublished::dispatch($news);
         }
 
@@ -207,7 +208,8 @@ class NewsController extends Controller
         $sendEmails = $request->has('send_email_to_subscribers') ? (bool)$request->send_email_to_subscribers : true;
         
         if ($news->status == 1 && $news->is_approved == 1) {
-            \App\Events\NewsPublished::dispatch($news);
+            \Log::info("NewsController::store - Dispatching NewsPublished for News ID: {$news->id}, SendEmails: " . ($sendEmails ? 'Yes' : 'No'));
+            \App\Events\NewsPublished::dispatch($news, ['send_emails' => $sendEmails]);
             // Pass email preference to the service via options
             // The listener will handle this
         }
@@ -256,6 +258,7 @@ class NewsController extends Controller
             
             // Fire NewsPublished event if status is toggled to 1 and news is approved
             if ($request->name === 'status' && $value == 1 && $news->is_approved == 1 && $oldValue != 1) {
+                \Log::info("NewsController::toggleNewsStatus - Dispatching NewsPublished for News ID: {$news->id}");
                 \App\Events\NewsPublished::dispatch($news);
             }
             
@@ -441,6 +444,7 @@ class NewsController extends Controller
         $isNowPublished = $news->status == 1 && $news->is_approved == 1;
         
         if ($isNowPublished && !$wasPublished) {
+            \Log::info("NewsController::update - Dispatching NewsPublished for News ID: {$news->id}");
             \App\Events\NewsPublished::dispatch($news);
         }
 

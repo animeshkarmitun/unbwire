@@ -147,7 +147,12 @@
 
             @if(($templateSettings['include_image'] ?? true) && $news->image)
                 @if($contentOptions['includeImages'])
-                    <img src="{{ asset($news->image) }}" alt="{{ $news->title }}" class="news-image" />
+                    @if(file_exists(public_path($news->image)))
+                        <img src="{{ $message->embed(public_path($news->image)) }}" alt="{{ $news->title }}" class="news-image" />
+                    @else
+                        <!-- Fallback to URL if local file not found or accessible -->
+                        <img src="{{ asset($news->image) }}" alt="{{ $news->title }}" class="news-image" />
+                    @endif
                 @else
                     <div class="image-placeholder">
                         <p>📷 Image available with subscription</p>

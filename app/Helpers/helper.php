@@ -156,9 +156,9 @@ function setSidebarActive(array $routes): ?string
 
 /** get Setting */
 
-function getSetting($key){
+function getSetting($key, $default = null){
     $data = Setting::where('key', $key)->first();
-    return $data ? $data->value : null;
+    return $data ? $data->value : $default;
 }
 
 /** check permission */

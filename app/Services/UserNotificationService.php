@@ -16,19 +16,28 @@ class UserNotificationService
      */
     public function notifyUsers(News $news, array $options = []): void
     {
-        // Check global email notification setting
-        $globalEmailEnabled = getSetting('notification_email_enabled', '1') === '1';
+        Log::info("Starting notifyUsers for News ID: {$news->id}");
+
+        // Check if "Send to All" is enabled (Master Switch for automation)
+        // Check if "Send to All" is enabled (Master Switch for automation)
+        $sendToAll = getSetting('notification_send_to_all', '1') === '1';
         
-        // Check if admin wants to send notifications (default: true, or use global setting)
-        $sendNotifications = $options['send_notifications'] ?? $globalEmailEnabled;
+        // Allow overriding via options (e.g. for manual sends), otherwise use global setting
+        $shouldSend = $options['force_send'] ?? $sendToAll;
         
-        if (!$sendNotifications) {
-            Log::info("Notifications disabled by admin settings for news ID: {$news->id}");
+        Log::info("Notification Master Switch: SendToAll=" . ($sendToAll ? 'ON' : 'OFF') . ", ForceSend=" . ($options['force_send'] ?? 'null') . ", ShouldSend=" . ($shouldSend ? 'YES' : 'NO'));
+
+        if (!$shouldSend) {
+            Log::info("Automated notifications disabled (notification_send_to_all is off) for news ID: {$news->id}");
             return;
         }
 
+        // Check global email notification setting
+        $globalEmailEnabled = getSetting('notification_email_enabled', '1') === '1';
+
         // Get eligible users based on subscription access
         $users = $this->getEligibleUsers($news, $options);
+        Log::info("Found " . $users->count() . " eligible users.");
 
         if ($users->isEmpty()) {
             Log::info("No eligible users found for news ID: {$news->id}");
@@ -40,8 +49,9 @@ class UserNotificationService
             $this->createNotification($user, $news);
         }
 
-        // Queue email jobs in batches
-        $sendEmails = $options['send_emails'] ?? true;
+        // Queue email jobs in batches IF global email setting is enabled AND valid
+        $sendEmails = $options['send_emails'] ?? $globalEmailEnabled;
+        
         if ($sendEmails) {
             $this->queueEmailNotifications($users, $news);
         }
@@ -53,12 +63,18 @@ class UserNotificationService
     public function getEligibleUsers(News $news, array $filters = []): Collection
     {
         $query = User::where('email_notifications_enabled', true);
+        $totalUsers = $query->count();
+        Log::info("Total users with active email notifications: $totalUsers");
 
         // Get all and filter by subscription access
         $users = $query->get();
 
         return $users->filter(function($user) use ($news) {
-            return $user->canAccessNews($news);
+            $access = $user->canAccessNews($news);
+            if (!$access) {
+                // Log::info("User ID {$user->id} denied access to News {$news->id}");
+            }
+            return $access;
         });
     }
 

@@ -36,6 +36,25 @@
                 </div>
 
                 <div class="form-group row mb-4">
+                    <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">{{ __('Email Notifications') }}</label>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="control-label">{{ __('System Emails') }}</div>
+                        <label class="custom-switch mt-2 pl-0">
+                            <input type="checkbox" name="email_notifications_enabled" class="custom-switch-input" {{ $subscription->user->email_notifications_enabled ? 'checked' : '' }}>
+                            <span class="custom-switch-indicator"></span>
+                            <span class="custom-switch-description">{{ __('Receive automated emails') }}</span>
+                        </label>
+                        
+                        <div class="control-label mt-3">{{ __('Content Preference') }}</div>
+                        <label class="custom-switch mt-2 pl-0">
+                            <input type="checkbox" name="send_full_news_email" class="custom-switch-input" {{ $subscription->user->send_full_news_email ? 'checked' : '' }}>
+                            <span class="custom-switch-indicator"></span>
+                            <span class="custom-switch-description">{{ __('Send Full News Content') }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group row mb-4">
                     <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">{{ __('Package') }}</label>
                     <div class="col-sm-12 col-md-7">
                         <select class="form-control select2" name="package_id">

@@ -127,6 +127,7 @@
                                 <th>Email</th>
                                 <th>Name</th>
                                 <th>Subscription</th>
+                                <th>Email Notif.</th>
                                 <th>Send Full News</th>
                                 <th>Language</th>
                                 <th>Registered</th>
@@ -147,6 +148,17 @@
                                     </td>
                                     <td>
                                         <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input toggle-email-notifications" 
+                                                   id="toggle-email-notifications-{{ $user->id }}" 
+                                                   data-id="{{ $user->id }}"
+                                                   {{ ($user->email_notifications_enabled ?? true) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="toggle-email-notifications-{{ $user->id }}">
+                                                {{ ($user->email_notifications_enabled ?? true) ? 'Enabled' : 'Disabled' }}
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch">
                                             <input type="checkbox" class="custom-control-input toggle-full-news" 
                                                    id="toggle-full-news-{{ $user->id }}" 
                                                    data-id="{{ $user->id }}"
@@ -159,6 +171,13 @@
                                     <td>{{ $user->language_preference ?? 'All' }}</td>
                                     <td>{{ $user->created_at->format('M d, Y') }}</td>
                                     <td>
+                                        @if(canAccess(['subscribers update']) || canAccess(['subscription package update']))
+                                            @if($user->activeSubscription)
+                                                <a href="{{ route('admin.user-subscription.edit', $user->activeSubscription->id) }}" class="btn btn-primary btn-sm mr-1">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endif
+                                        @endif
                                         @if(canAccess(['subscribers delete']))
                                             <button type="button" class="btn btn-danger btn-sm delete-subscriber" 
                                                     data-id="{{ $user->id }}">
@@ -208,6 +227,29 @@
                 },
                 error: function(xhr) {
                     toastr.error('Failed to update send full news email setting');
+                }
+            });
+        });
+
+        // Toggle email notifications
+        $('.toggle-email-notifications').on('change', function() {
+            const userId = $(this).data('id');
+            const enabled = $(this).is(':checked');
+            
+            $.ajax({
+                url: '{{ url("admin/subscriber") }}/' + userId + '/toggle-email',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    status: enabled
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        toastr.success(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    toastr.error('Failed to update email notification setting');
                 }
             });
         });
