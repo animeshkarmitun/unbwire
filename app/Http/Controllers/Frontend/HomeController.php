@@ -27,6 +27,11 @@ use App\Exports\NewsExport;
 
 class HomeController extends Controller
 {
+    public function __construct(protected \App\Services\NewsCacheService $newsCacheService)
+    {
+        // Construct
+    }
+
     public function index()
     {
         // Require authentication and subscription
@@ -47,48 +52,61 @@ class HomeController extends Controller
 
         $currentPackage = $user->currentPackage();
         $subscriptionTier = $currentPackage ? $currentPackage->slug : 'free';
+        $lang = getLangauge();
 
         // Filter news based on subscription tier
-        $breakingNews = News::where(['is_breaking_news' => 1,])
-            ->activeEntries()->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->forUserLanguage($user)
-            ->orderBy('breaking_order', 'ASC')
-            ->orderBy('created_at', 'DESC')
-            ->take(10)->get();
-            
-        $heroSlider = News::with(['category', 'auther'])
-            ->where('show_at_slider', 1)
-            ->activeEntries()
-            ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->forUserLanguage($user)
-            ->orderBy('slider_order', 'ASC')
-            ->orderBy('created_at', 'DESC')
-            ->take(7)
-            ->get();
+        // Cache keys include language and tier
+        $cacheSuffix = "{$lang}:{$subscriptionTier}";
 
-        $recentNews = News::with(['category', 'auther'])
-            ->activeEntries()
-            ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->forUserLanguage($user)
-            ->orderBy('order_position', 'ASC')
-            ->orderBy('created_at', 'DESC')
-            ->take(6)->get();
+        $breakingNews = $this->newsCacheService->getHeadlines("breaking:{$cacheSuffix}", function() use ($subscriptionTier, $user) {
+            return News::where(['is_breaking_news' => 1,])
+                ->activeEntries()->withLocalize()
+                ->forSubscriptionTier($subscriptionTier)
+                ->forUserLanguage($user)
+                ->orderBy('breaking_order', 'ASC')
+                ->orderBy('created_at', 'DESC')
+                ->take(10)->get();
+        });
             
-        $popularNews = News::with(['category', 'auther'])
-            ->where('show_at_popular', 1)
-            ->activeEntries()
-            ->withLocalize()
-            ->forSubscriptionTier($subscriptionTier)
-            ->forUserLanguage($user)
-            ->orderBy('popular_order', 'ASC')
-            ->orderBy('created_at', 'DESC')
-            ->take(4)->get();
+        $heroSlider = $this->newsCacheService->getHeadlines("slider:{$cacheSuffix}", function() use ($subscriptionTier, $user) {
+            return News::with(['category', 'auther'])
+                ->where('show_at_slider', 1)
+                ->activeEntries()
+                ->withLocalize()
+                ->forSubscriptionTier($subscriptionTier)
+                ->forUserLanguage($user)
+                ->orderBy('slider_order', 'ASC')
+                ->orderBy('created_at', 'DESC')
+                ->take(7)
+                ->get();
+        });
+
+        $recentNews = $this->newsCacheService->getHeadlines("recent:{$cacheSuffix}", function() use ($subscriptionTier, $user) {
+            return News::with(['category', 'auther'])
+                ->activeEntries()
+                ->withLocalize()
+                ->forSubscriptionTier($subscriptionTier)
+                ->forUserLanguage($user)
+                ->orderBy('order_position', 'ASC')
+                ->orderBy('created_at', 'DESC')
+                ->take(6)->get();
+        });
+            
+        $popularNews = $this->newsCacheService->getHeadlines("popular:{$cacheSuffix}", function() use ($subscriptionTier, $user) {
+            return News::with(['category', 'auther'])
+                ->where('show_at_popular', 1)
+                ->activeEntries()
+                ->withLocalize()
+                ->forSubscriptionTier($subscriptionTier)
+                ->forUserLanguage($user)
+                ->orderBy('popular_order', 'ASC')
+                ->orderBy('created_at', 'DESC')
+                ->take(4)->get();
+        });
 
         $HomeSectionSetting = HomeSectionSetting::where('language', getLangauge())->first();
 
+        // Note: Category sections could also be cached, but sticking to main ones for now to simple integration
         if($HomeSectionSetting){
             $categorySectionOne = News::where('category_id', $HomeSectionSetting->category_section_one)
                 ->activeEntries()->withLocalize()
@@ -181,10 +199,23 @@ class HomeController extends Controller
                 ->with('error', 'You need to subscribe to access news content. Please choose a subscription plan.');
         }
 
-        $news = News::with(['auther', 'tags', 'comments'])->where('slug', $slug)
-        ->activeEntries()->withLocalize()
-        ->first();
+        // Light query to get ID
+        $newsId = News::where('slug', $slug)
+            ->activeEntries()->withLocalize()
+            ->value('id');
 
+        if (!$newsId) {
+            abort(404);
+        }
+
+        // Fetch full object from cache
+        $news = $this->newsCacheService->getArticle($newsId, function() use ($newsId) {
+            return News::with(['auther', 'tags', 'comments'])
+                ->activeEntries() // Ensure we still apply scopes in the fetch
+                ->find($newsId);
+        });
+        
+        // Double check existence (if cache somehow returned null)
         if (!$news) {
             abort(404);
         }
@@ -200,6 +231,9 @@ class HomeController extends Controller
         
         // Log user activity - viewing news
         if (Auth::check()) {
+            // Activity logging should probably be outside cache logic or handled carefully
+            // The model instance from Cache might be generic array if not serializing properly?
+            // Laravel Cache serializes objects so methods should work.
             $news->logActivity('viewed', null, ['news_id' => $news->id, 'slug' => $news->slug]);
         }
 
@@ -229,7 +263,7 @@ class HomeController extends Controller
 
         $ad = $this->getAdSettings();
 
-       return view('frontend.news-details', compact('news', 'recentNews', 'mostCommonTags', 'nextPost', 'previousPost', 'relatedPosts', 'socialCounts', 'ad'));
+        return view('frontend.news-details', compact('news', 'recentNews', 'mostCommonTags', 'nextPost', 'previousPost', 'relatedPosts', 'socialCounts', 'ad'));
     }
 
     /**

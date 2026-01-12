@@ -20,7 +20,7 @@ class NewsController extends Controller
 {
     use FileUploadTrait;
 
-    public function __construct()
+    public function __construct(protected \App\Services\NewsCacheService $newsCacheService)
     {
         // Check general permission in middleware, language-specific checks done in controller/view methods
         $this->middleware(['permission:news index,admin'])->only(['index', 'copyNews']);
@@ -214,6 +214,9 @@ class NewsController extends Controller
             // The listener will handle this
         }
 
+        // Invalidate cache for new article and headlines
+        $this->newsCacheService->invalidateArticleWithContext($news);
+
         toast(__('admin.Created Successfully!'), 'success')->width('330');
 
         // Redirect to the appropriate language tab
@@ -261,6 +264,9 @@ class NewsController extends Controller
                 \Log::info("NewsController::toggleNewsStatus - Dispatching NewsPublished for News ID: {$news->id}");
                 \App\Events\NewsPublished::dispatch($news);
             }
+            
+            // Invalidate cache
+            $this->newsCacheService->invalidateArticleWithContext($news);
             
             // Manually log the activity since we bypassed model events
             try {
@@ -448,6 +454,9 @@ class NewsController extends Controller
             \App\Events\NewsPublished::dispatch($news);
         }
 
+        // Invalidate cache
+        $this->newsCacheService->invalidateArticleWithContext($news);
+
         toast(__('admin.Update Successfully!'), 'success')->width('330');
 
         // Redirect to the appropriate language tab
@@ -519,6 +528,9 @@ class NewsController extends Controller
             
             // Delete the original news article
             $news->delete();
+            
+            // Invalidate cache (should be done before delete or using the object from memory, which we have)
+            $this->newsCacheService->invalidateArticleWithContext($news);
 
             return response(['status' => 'success', 'message' => __('admin.News archived successfully!')]);
         } catch (\Exception $e) {

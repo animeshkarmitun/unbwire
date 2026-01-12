@@ -1,0 +1,10 @@
+{
+    "cache": {
+        "article": {
+            "ttl": 600
+        },
+        "headlines": {
+            "ttl": 3600
+        }
+    }
+}
