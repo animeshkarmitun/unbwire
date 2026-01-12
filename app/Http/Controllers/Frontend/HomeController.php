@@ -52,6 +52,7 @@ class HomeController extends Controller
         $breakingNews = News::where(['is_breaking_news' => 1,])
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('breaking_order', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(10)->get();
@@ -61,6 +62,7 @@ class HomeController extends Controller
             ->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('slider_order', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(7)
@@ -70,6 +72,7 @@ class HomeController extends Controller
             ->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(6)->get();
@@ -79,6 +82,7 @@ class HomeController extends Controller
             ->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('popular_order', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(4)->get();
@@ -89,6 +93,7 @@ class HomeController extends Controller
             $categorySectionOne = News::where('category_id', $HomeSectionSetting->category_section_one)
                 ->activeEntries()->withLocalize()
                 ->forSubscriptionTier($subscriptionTier)
+                ->forUserLanguage($user)
                 ->orderBy('order_position', 'ASC')
                 ->orderBy('created_at', 'DESC')
                 ->take(8)
@@ -97,6 +102,7 @@ class HomeController extends Controller
         $categorySectionTwo = News::where('category_id', $HomeSectionSetting->category_section_two)
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(8)
@@ -105,6 +111,7 @@ class HomeController extends Controller
         $categorySectionThree = News::where('category_id', $HomeSectionSetting->category_section_three)
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(6)
@@ -113,6 +120,7 @@ class HomeController extends Controller
         $categorySectionFour = News::where('category_id', $HomeSectionSetting->category_section_four)
             ->activeEntries()->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(4)
@@ -128,6 +136,7 @@ class HomeController extends Controller
         $mostViewedPosts = News::activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('views', 'DESC')
             ->take(3)
             ->get();
@@ -519,6 +528,7 @@ class HomeController extends Controller
         $news = $news->activeEntries()
             ->withLocalize()
             ->forSubscriptionTier($subscriptionTier)
+            ->forUserLanguage($user)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->paginate(20);
@@ -527,6 +537,7 @@ class HomeController extends Controller
         $recentNews = News::with(['category', 'auther'])
             ->activeEntries()
             ->withLocalize()
+            ->forUserLanguage($user)
             ->orderBy('order_position', 'ASC')
             ->orderBy('created_at', 'DESC')
             ->take(4)->get();

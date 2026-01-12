@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Web middleware group
         $middleware->web(append: [
+            \App\Http\Middleware\CheckSubscriptionLanguage::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\BlockBlockedIps::class, // Block blocked IPs first
             \App\Http\Middleware\TrackVisitor::class,

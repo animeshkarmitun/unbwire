@@ -122,6 +122,9 @@
                                                 <i class="fas fa-cog"></i> Actions
                                             </button>
                                             <div class="dropdown-menu">
+                                                <a href="{{ route('admin.user-subscription.edit', $subscription->id) }}" class="dropdown-item has-icon">
+                                                    <i class="fas fa-edit text-primary"></i> Edit Details
+                                                </a>
                                                 @if($subscription->status != 'active')
                                                     <form action="{{ route('admin.user-subscription.update', $subscription->id) }}" method="POST" class="d-inline">
                                                         @csrf

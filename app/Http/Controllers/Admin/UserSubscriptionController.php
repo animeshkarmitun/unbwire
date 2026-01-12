@@ -11,7 +11,7 @@ class UserSubscriptionController extends Controller
     public function __construct()
     {
         $this->middleware(['permission:subscription package index,admin'])->only(['index']);
-        $this->middleware(['permission:subscription package update,admin'])->only(['update', 'approve', 'updateExpiryDate']);
+        $this->middleware(['permission:subscription package update,admin'])->only(['update', 'approve', 'updateExpiryDate', 'edit']);
         $this->middleware(['permission:subscription package delete,admin'])->only(['destroy']);
     }
 
@@ -43,21 +43,55 @@ class UserSubscriptionController extends Controller
     }
 
     /**
-     * Update subscription status
+     * Show the form for editing the specified subscription.
+     */
+    public function edit(string $id)
+    {
+        $subscription = UserSubscription::with('user')->findOrFail($id);
+        $packages = \App\Models\SubscriptionPackage::active()->get();
+        return view('admin.user-subscription.edit', compact('subscription', 'packages'));
+    }
+
+    /**
+     * Update subscription status and details
      */
     public function update(Request $request, $id)
     {
         $request->validate([
             'status' => ['required', 'in:active,expired,cancelled,pending'],
+            'package_id' => ['required', 'exists:subscription_packages,id'],
+            'expires_at' => ['required', 'date'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
         ]);
 
-        $subscription = UserSubscription::findOrFail($id);
+        $subscription = UserSubscription::with('user')->findOrFail($id);
+        
+        // Update User Profile
+        if ($subscription->user) {
+            $user = $subscription->user;
+            
+            // Check email uniqueness if email changed
+            if ($user->email !== $request->email) {
+                 $request->validate([
+                     'email' => ['unique:users,email'],
+                 ]);
+            }
+            
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->save();
+        }
+
+        // Update Subscription
         $subscription->status = $request->status;
+        $subscription->subscription_package_id = $request->package_id;
+        $subscription->expires_at = $request->expires_at;
         $subscription->save();
 
-        toast(__('admin.Updated Successfully!'), 'success')->width('350');
+        toast(__('Updated Successfully!'), 'success')->width('350');
 
-        return redirect()->back();
+        return redirect()->route('admin.user-subscription.index');
     }
 
     /**

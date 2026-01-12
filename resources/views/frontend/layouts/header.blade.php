@@ -66,8 +66,20 @@
                                             'bn' => 'বাংলা',
                                             default => $language->name,
                                         };
+                                        
+                                        // Check access permissions
+                                        $canShow = true;
+                                        if(auth()->check()) {
+                                            $package = auth()->user()->currentPackage();
+                                            if($package) {
+                                                if($language->lang == 'en' && !$package->access_english) $canShow = false;
+                                                if(($language->lang == 'bn' || $language->lang == 'bangla') && !$package->access_bangla) $canShow = false;
+                                            }
+                                        }
                                     @endphp
+                                    @if($canShow)
                                     <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $displayName }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>

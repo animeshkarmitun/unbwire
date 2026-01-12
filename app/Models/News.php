@@ -220,4 +220,54 @@ class News extends Model
                 $q->where('is_exclusive', false);
             });
     }
+    /**
+     * Scope for filtering news based on user's language permissions
+     */
+    public function scopeForUserLanguage($query, $user = null)
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        if (!$user) {
+            return $query; // Guest users - let other scopes handle access (e.g. valid free content)
+        }
+
+        // Admins can see everything
+        if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
+            return $query;
+        }
+
+        $package = $user->currentPackage();
+        
+        if (!$package) {
+            // No package? Fallback to other scopes, but techincally no language restriction applied here
+            // because "Free" users might just see free content in any language? 
+            // Ideally we assume free users can see everything labeled 'free'. 
+            // Or maybe Free users are unrestricted by language?
+            // User request implies "Subscription user" restriction.
+            return $query;
+        }
+
+        $hasBangla = (bool) $package->access_bangla;
+        $hasEnglish = (bool) $package->access_english;
+
+        // Optimized filtering
+        if ($hasBangla && $hasEnglish) {
+            return $query; // Allow all
+        }
+
+        if ($hasBangla) {
+             // Allow Bangla AND any content with no specific language set (if that's a thing), or strictly 'bn'/'bangla'
+             // Usually Language is required.
+             return $query->whereIn('language', ['bn', 'bangla']);
+        }
+
+        if ($hasEnglish) {
+            return $query->whereIn('language', ['en', 'english']);
+        }
+
+        // If neither allowed, block all (or return empty)
+        return $query->whereRaw('1 = 0');
+    }
 }

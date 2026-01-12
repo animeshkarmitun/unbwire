@@ -134,6 +134,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
 
     /** User Subscription Route */
     Route::get('user-subscription', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'index'])->name('user-subscription.index');
+    Route::get('user-subscription/{id}/edit', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'edit'])->name('user-subscription.edit');
     Route::put('user-subscription/{id}', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'update'])->name('user-subscription.update');
     Route::put('user-subscription/{id}/expiry-date', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'updateExpiryDate'])->name('user-subscription.update-expiry-date');
     Route::get('user-subscription/{id}/approve', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'approve'])->name('user-subscription.approve');

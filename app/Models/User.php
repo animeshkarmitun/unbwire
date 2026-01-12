@@ -140,20 +140,18 @@ class User extends Authenticatable
             $hasBanglaAccess = (bool) $freshPackage->access_bangla;
             $hasEnglishAccess = (bool) $freshPackage->access_english;
             
-            // If package has at least one language permission enabled, check restrictions
-            if ($hasBanglaAccess || $hasEnglishAccess) {
-                // Package has language restrictions - only allow enabled languages
-                $langAllowed = match($newsLang) {
-                    'bn', 'bangla' => $hasBanglaAccess,
-                    'en', 'english' => $hasEnglishAccess,
-                    default => false, // Unknown language - deny if restrictions exist
-                };
-                
-                if (!$langAllowed) {
-                    return false; // Package doesn't allow this language
-                }
+            // Check restrictions - Enforce strict language access
+            // If a language is disabled in the package, access to that language content is denied.
+            // If both are disabled, access to any language content is denied.
+            $langAllowed = match($newsLang) {
+                'bn', 'bangla' => $hasBanglaAccess,
+                'en', 'english' => $hasEnglishAccess,
+                default => false, // Unknown language - deny
+            };
+            
+            if (!$langAllowed) {
+                return false; // Package doesn't allow this language
             }
-            // If both language permissions are false, allow all languages (no restrictions)
         }
 
         // Check subscription_required level
