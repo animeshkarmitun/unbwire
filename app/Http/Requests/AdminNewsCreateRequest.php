@@ -49,9 +49,8 @@ class AdminNewsCreateRequest extends FormRequest
             $imagePath = $this->input('image');
             $hasPath = !empty($imagePath) && is_string($imagePath) && trim($imagePath) !== '';
             
-            // Image is required - either file upload or media library path
+            // Image is not required
             if (!$hasFile && !$hasPath) {
-                $validator->errors()->add('image', 'The image field is required. Please select an image from media library or upload a file.');
                 return;
             }
             

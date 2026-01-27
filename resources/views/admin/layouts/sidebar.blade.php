@@ -61,7 +61,7 @@
                         <span>{{ __('admin.Category') }}</span></a></li>
             @endif
 
-            @if (canAccess(['news index', 'news create', 'news update', 'news delete']))
+            @if (canAccess(['author index', 'author create', 'author update', 'author delete']))
                 <li class="{{ setSidebarActive(['admin.author.*']) }}"><a class="nav-link"
                         href="{{ route('admin.author.index') }}"><i class="fas fa-user-edit"></i>
                         <span>Manage Author</span></a></li>

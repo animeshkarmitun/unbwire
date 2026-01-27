@@ -27,9 +27,8 @@ class NewsController extends Controller
         // Permission checks for newsSorting methods are done in the methods themselves to support language-specific permissions
         // No middleware for getNewsByType, updateSortingOrder, addNewsToTab, removeNewsFromTab - handled in methods
         // Permission check for create is done in the create() method to support language-specific permissions
-        $this->middleware(['permission:news create,admin'])->only(['store']);
-        $this->middleware(['permission:news update,admin'])->only(['edit', 'update', 'updateOrderPosition']);
-        $this->middleware(['permission:news delete,admin'])->only(['destroy']);
+        // Permission checks for store, edit, update, destroy are handled in the methods to support language-specific permissions
+        $this->middleware(['permission:news update,admin'])->only(['updateOrderPosition']);
         $this->middleware(['permission:news all-access,admin'])->only(['toggleNewsStatus']);
     }
 
@@ -163,12 +162,8 @@ class NewsController extends Controller
             $imagePath = trim($request->input('image'));
         }
         
-        // If still no image, return with error
-        if (empty($imagePath)) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['image' => 'Please select an image from media library or upload a file.']);
-        }
+        // If no image, it's allowed (nullable in DB)
+
 
         $news = new News();
         $news->language = $request->language;
