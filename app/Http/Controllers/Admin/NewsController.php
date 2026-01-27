@@ -142,11 +142,12 @@ class NewsController extends Controller
     {
         // Check permission - general permission allows both languages, or language-specific permission
         $language = $request->language;
+        
         $hasGeneralPermission = canAccess(['news create', 'news all-access']);
         $hasLanguagePermission = $language === 'en' 
             ? canAccess(['news create en']) 
             : canAccess(['news create bn']);
-        
+
         if (!$hasGeneralPermission && !$hasLanguagePermission) {
             $langName = $language === 'en' ? 'English' : 'Bangla';
             abort(403, "You do not have permission to create {$langName} news.");
@@ -498,7 +499,8 @@ class NewsController extends Controller
                 'language' => $news->language,
                 'category_id' => $news->category_id,
                 'auther_id' => $news->auther_id,
-                'image' => $finalImagePath,
+                'image' => $finalImagePath, // This is now nullable in DB
+
                 'title' => $news->title,
                 'slug' => $news->slug,
                 'content' => $news->content,

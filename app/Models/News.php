@@ -50,6 +50,21 @@ class News extends Model
     ];
 
     /**
+     * Get the news image.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getImageAttribute($value)
+    {
+        if (empty($value)) {
+            return 'frontend/images/placeholder.webp';
+        }
+        
+        return $value;
+    }
+
+    /**
      * Get the admin who created this news (explicit relationship)
      */
     public function createdByAdmin()

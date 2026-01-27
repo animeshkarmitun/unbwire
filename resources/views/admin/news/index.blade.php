@@ -60,10 +60,14 @@
                             $canViewAll = canAccess(['news all-access', 'news view', 'news view ' . $language->lang]);
                             
                             if($canViewAll){
-                                // Users with view permissions see all approved news for this language
+                                // Users with view permissions see all approved news for this language AND their own pending news
                                 $newsQuery = \App\Models\News::with('category')
                                 ->where('language', $language->lang)
-                                ->where('is_approved', 1)
+                                ->where(function($q) {
+                                    $q->where('is_approved', 1)
+                                      ->orWhere('auther_id', auth()->guard('admin')->id())
+                                      ->orWhere('created_by', auth()->guard('admin')->id());
+                                })
                                 ->orderBy('id', 'DESC');
                                 $news = $newsQuery->get();
                             }else {
