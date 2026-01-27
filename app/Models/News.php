@@ -58,7 +58,7 @@ class News extends Model
     public function getImageAttribute($value)
     {
         if (empty($value)) {
-            return 'frontend/images/placeholder.webp';
+            return 'frontend/assets/images/placeholder.webp';
         }
         
         return $value;
