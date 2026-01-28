@@ -42,6 +42,14 @@ class NewsController extends Controller
         return view('admin.news.index', compact('languages', 'selectedLang'));
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        return redirect()->route('admin.news.index');
+    }
+
     public function pendingNews(): View
     {
         $languages = Language::all();

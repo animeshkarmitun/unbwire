@@ -19,9 +19,11 @@
                     <i class="far fa-user"></i> {{ __('admin.Profile') }}
                 </a>
 
+                @if (canAccess(['setting index']))
                 <a href="{{ route('admin.setting.index') }}" class="dropdown-item has-icon">
                     <i class="fas fa-cog"></i> {{ __('admin.Settings') }}
                 </a>
+                @endif
                 <div class="dropdown-divider"></div>
 
                 <!-- Authentication -->
