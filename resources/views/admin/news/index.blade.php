@@ -233,6 +233,7 @@
                                                     </td>
                                                     @endif
                                                     <td>
+                                                        <a href="{{ route('news-details', $item->slug) }}" target="_blank" class="btn btn-success mr-1" title="View News"><i class="fas fa-eye"></i></a>
                                                         <a href="{{ route('admin.news.edit', $item->id) }}"
                                                             class="btn btn-primary"><i class="fas fa-edit"></i></a>
                                                         <a href="{{ route('admin.news.destroy', $item->id) }}"
