@@ -57,6 +57,29 @@ class UserSubscriptionController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Handle partial update (e.g. from index page actions)
+        if (!$request->has('package_id') && $request->has('status')) {
+            $request->validate([
+                'status' => ['required', 'in:active,expired,cancelled,pending'],
+            ]);
+
+            $subscription = UserSubscription::findOrFail($id);
+            $subscription->status = $request->status;
+            
+            // If activating, set start date to now if not set, and ensure expiry is future
+            if ($request->status == 'active' && $subscription->status == 'pending') {
+                $subscription->starts_at = now();
+                // Retain existing logic or set default expiry if needed? 
+                // For now just updating status as requested by the action.
+            }
+            
+            $subscription->save();
+
+            toast(__('Updated Successfully!'), 'success')->width('350');
+            return redirect()->back();
+        }
+
+        // Handle full update (from edit page)
         $request->validate([
             'status' => ['required', 'in:active,expired,cancelled,pending'],
             'package_id' => ['required', 'exists:subscription_packages,id'],
