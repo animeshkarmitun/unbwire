@@ -577,6 +577,10 @@ class HomeController extends Controller
             ->take(4)->get();
         $mostCommonTags = $this->mostCommonTags();
 
+        if ($request->ajax()) {
+            return view('frontend.partials.news-items', compact('news'));
+        }
+
         // Get categories ordered to match menu: nav categories first by order, then non-nav by order
         $categories = Category::where(['status' => 1, 'language' => getLangauge()])
             ->orderBy('show_at_nav', 'desc') // Show nav categories first (1 before 0)

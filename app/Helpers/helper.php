@@ -45,7 +45,7 @@ function setLanguage(string $code): void
 
 function truncate(string $text, int $limit = 45): String
 {
-   return \Str::limit($text, $limit, '...');
+   return \Str::limit(strip_tags($text), $limit, '...');
 }
 
 /** Convert English numerals to Bangla numerals */

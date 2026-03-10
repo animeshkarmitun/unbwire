@@ -54,60 +54,33 @@
                     <h4 class="border_section">{{ __('frontend.Category') }}: {{ $categoryName }}</h4>
                     @endif
 
-                    <div class="row">
-                        @foreach ($news as $post)
-                        <div class="col-lg-6">
-                            <!-- Post Article -->
-                            <div class="article__entry">
-                                <div class="article__image">
-                                    <a href="{{ route('news-details', $post->slug) }}">
-                                        <img src="{{ asset($post->image) }}" alt="" class="img-fluid" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
-                                    </a>
-                                </div>
-                                <div class="article__content">
-                                    <div class="article__category">
-                                        {{ $post->category->name }}
-                                    </div>
-                                    <ul class="list-inline">
-                                        <li class="list-inline-item">
-                                            <span class="text-primary">
-                                                {{ __('frontend.by') }} {{ $post->auther->name }}
-                                            </span>
-                                        </li>
-                                        <li class="list-inline-item">
-                                            <span class="text-dark text-capitalize">
-                                                {{ formatDate($post->created_at) }}
-                                            </span>
-                                        </li>
+                    <div class="row" id="news-container">
+                        @include('frontend.partials.news-items')
+                    </div>
 
-                                    </ul>
-                                    <h5>
-                                        <a href="{{ route('news-details', $post->slug) }}">
-                                            {!! truncate($post->title) !!}
-                                        </a>
-                                    </h5>
-                                    <p>
-                                        {!! truncate($post->content, 100) !!}
-                                    </p>
-                                    <a href="{{ route('news-details', $post->slug) }}" class="btn btn-outline-primary mb-4 text-capitalize"> {{ __('frontend.read more') }}</a>
-                                </div>
-                            </div>
+                    @if (count($news) === 0)
+                        <div class="text-center w-100" id="no-news-found">
+                            <h4>{{ __('frontend.No News Found') }} :(</h4>
                         </div>
-                        @endforeach
-                        @if (count($news) === 0)
-                            <div class="text-center w-100" >
-                                <h4 >{{ __('frontend.No News Found') }} :(</h4>
-                            </div>
-                        @endif
+                    @endif
+
+                    <div id="loading-spinner" class="text-center my-4" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div id="no-more-news" class="text-center my-4" style="display: none;">
+                        <p class="text-muted">{{ __('frontend.No more news found') }}</p>
                     </div>
 
                 </aside>
-                <div class="text-center" style="display: flex;
-                justify-content: center;">
-                    <!-- Pagination -->
+                <div class="text-center" style="display: none; justify-content: center;">
+                    <!-- Pagination (Hidden but kept for SEO and backup) -->
                     {{ $news->appends(request()->query())->links() }}
                 </div>
-            </div>
+            </div>{{-- end col-md-8 --}}
+
             <div class="col-md-4">
                 <div class="sidebar-sticky">
                     <aside class="wrapper__list__article ">
@@ -267,3 +240,84 @@
     @endif
 </section>
 @endsection
+
+@push('content')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let container = document.getElementById('news-container');
+        let spinner = document.getElementById('loading-spinner');
+        let noMoreNews = document.getElementById('no-more-news');
+        let loading = false;
+        let nextPageUrl = null;
+
+        // Function to get next page URL from the hidden element
+        function updateNextPageUrl() {
+            let urlElement = document.getElementById('next-page-url');
+            if (urlElement) {
+                nextPageUrl = urlElement.getAttribute('data-url');
+                urlElement.remove(); // Remove it after reading
+            } else {
+                nextPageUrl = null;
+            }
+        }
+
+        updateNextPageUrl();
+
+        if (!nextPageUrl) return;
+
+        let observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !loading && nextPageUrl) {
+                loadMoreNews();
+            }
+        }, {
+            threshold: 0.1
+        });
+
+        observer.observe(spinner);
+        spinner.style.display = 'block';
+
+        function loadMoreNews() {
+            loading = true;
+            spinner.style.display = 'block';
+
+            fetch(nextPageUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === '') {
+                        nextPageUrl = null;
+                        spinner.style.display = 'none';
+                        noMoreNews.style.display = 'block';
+                        return;
+                    }
+
+                    // Append new items
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data;
+                    
+                    // Append all children to container
+                    while (tempDiv.firstChild) {
+                        container.appendChild(tempDiv.firstChild);
+                    }
+
+                    updateNextPageUrl();
+                    loading = false;
+
+                    if (!nextPageUrl) {
+                        spinner.style.display = 'none';
+                        noMoreNews.style.display = 'block';
+                        observer.unobserve(spinner);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading more news:', error);
+                    loading = false;
+                    spinner.style.display = 'none';
+                });
+        }
+    });
+</script>
+@endpush
