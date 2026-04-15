@@ -75,6 +75,17 @@
                         <li class="{{ setSidebarActive(['admin.news.*']) }}"><a class="nav-link"
                                 href="{{ route('admin.news.index') }}">{{ __('admin.All News') }}</a></li>
 
+                        @if (canAccess(['news create en', 'news create', 'news all-access']))
+                            <li class="{{ setSidebarActive(['admin.news.create']) }}">
+                                <a class="nav-link" href="{{ route('admin.news.create', 'en') }}">Create English</a>
+                            </li>
+                        @endif
+                        @if (canAccess(['news create bn', 'news create', 'news all-access']))
+                            <li class="{{ setSidebarActive(['admin.news.create']) }}">
+                                <a class="nav-link" href="{{ route('admin.news.create', 'bn') }}">Create Bangla</a>
+                            </li>
+                        @endif
+
                         <li class="{{ setSidebarActive(['admin.pending.news']) }}"><a class="nav-link"
                                 href="{{ route('admin.pending.news') }}">{{ __('admin.Pending News') }}</a></li>
 

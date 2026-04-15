@@ -12,7 +12,7 @@
         </div>
 
         <div class="card-body">
-            <form action="{{ route('admin.video-gallery.store') }}" method="POST" id="videoGalleryForm">
+            <form action="{{ route('admin.video-gallery.store') }}" method="POST" enctype="multipart/form-data" id="videoGalleryForm">
                 @csrf
 
                 <!-- Source Type Selection -->
@@ -55,6 +55,20 @@
                                 </div>
                                 <div id="mediaIdsContainer"></div>
                                 @error('media_ids')
+                                    <div class="text-danger">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label>Or Upload Videos (Multiple)</label>
+                                <input type="file" name="uploaded_files[]" class="form-control" multiple accept="video/*">
+                                <small class="form-text text-muted">
+                                    You can upload multiple video files directly here.
+                                </small>
+                                @error('uploaded_files')
+                                    <div class="text-danger">{{ $message }}</div>
+                                @enderror
+                                @error('uploaded_files.*')
                                     <div class="text-danger">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -147,6 +161,17 @@
                                     </option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-control" required>
+                                <option value="UNB" {{ old('category', 'UNB') === 'UNB' ? 'selected' : '' }}>UNB</option>
+                                <option value="AP" {{ old('category') === 'AP' ? 'selected' : '' }}>AP</option>
+                            </select>
+                            @error('category')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -295,10 +320,12 @@
     // Form validation
     $('#videoGalleryForm').on('submit', function(e) {
         const sourceType = $('input[name="source_type"]:checked').val();
+        const uploadedFilesInput = $('input[name="uploaded_files[]"]')[0];
+        const uploadedFilesCount = uploadedFilesInput && uploadedFilesInput.files ? uploadedFilesInput.files.length : 0;
         
-        if (sourceType === 'media' && selectedMedia.length === 0) {
+        if (sourceType === 'media' && selectedMedia.length === 0 && uploadedFilesCount === 0) {
             e.preventDefault();
-            Swal.fire('Error', 'Please select at least one video from media library', 'error');
+            Swal.fire('Error', 'Please select at least one video from media library or upload video files.', 'error');
             return false;
         }
         

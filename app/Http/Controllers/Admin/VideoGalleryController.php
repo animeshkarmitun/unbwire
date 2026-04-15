@@ -40,6 +40,11 @@ class VideoGalleryController extends Controller
             }
         }
 
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
@@ -93,8 +98,10 @@ class VideoGalleryController extends Controller
 
         $request->validate([
             'source_type' => ['required', 'in:media,external'],
-            'media_ids' => ['required_if:source_type,media', 'array', 'min:1'],
+            'media_ids' => ['nullable', 'array', 'min:1'],
             'media_ids.*' => ['required_if:source_type,media', 'exists:media,id'],
+            'uploaded_files' => ['nullable', 'array', 'min:1'],
+            'uploaded_files.*' => ['file', 'mimes:mp4,webm,ogg,mov', 'max:51200'],
             'video_urls' => ['required_if:source_type,external', 'array'],
             'video_urls.*' => ['required_if:source_type,external', 'url'],
             'gallery_slug' => ['nullable', 'string', 'max:255'],
@@ -103,14 +110,33 @@ class VideoGalleryController extends Controller
             'is_exclusive' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'boolean'],
             'language' => ['nullable', 'string', 'max:10'],
+            'category' => ['required', 'in:UNB,AP'],
         ]);
 
         $gallerySlug = $request->gallery_slug ?: 'gallery-' . Str::random(8);
         $sortOrder = 0;
 
         if ($request->source_type === 'media') {
+            $mediaIds = is_array($request->media_ids) ? $request->media_ids : [];
+
+            if ($request->hasFile('uploaded_files')) {
+                foreach ($request->file('uploaded_files') as $uploadedFile) {
+                    $media = $this->createMediaFromUpload($uploadedFile, 'video');
+                    if ($media) {
+                        $mediaIds[] = $media->id;
+                    }
+                }
+            }
+
+            $mediaIds = array_values(array_unique($mediaIds));
+            if (count($mediaIds) === 0) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['media_ids' => 'Please select or upload at least one video.']);
+            }
+
             // From media library
-            foreach ($request->media_ids as $mediaId) {
+            foreach ($mediaIds as $mediaId) {
                 $media = Media::findOrFail($mediaId);
                 
                 // Ensure it's a video
@@ -120,6 +146,7 @@ class VideoGalleryController extends Controller
 
                 Gallery::create([
                     'type' => 'video',
+                    'category' => $request->category,
                     'media_id' => $mediaId,
                     'title' => $request->title ?: $media->title,
                     'description' => $request->description ?: $media->description,
@@ -140,6 +167,7 @@ class VideoGalleryController extends Controller
                 
                 Gallery::create([
                     'type' => 'video',
+                    'category' => $request->category,
                     'video_url' => $videoUrl,
                     'video_platform' => $videoInfo['platform'],
                     'video_id' => $videoInfo['video_id'],
@@ -197,6 +225,7 @@ class VideoGalleryController extends Controller
             'is_exclusive' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'boolean'],
             'language' => ['nullable', 'string', 'max:10'],
+            'category' => ['required', 'in:UNB,AP'],
         ]);
 
         if ($request->source_type === 'media') {
@@ -236,6 +265,7 @@ class VideoGalleryController extends Controller
         $gallery->is_exclusive = $request->boolean('is_exclusive', $gallery->is_exclusive);
         $gallery->status = $request->boolean('status', $gallery->status);
         $gallery->language = $request->language ?? $gallery->language;
+        $gallery->category = $request->category;
         $gallery->save();
 
         toast(__('admin.Updated Successfully'), 'success')->width('400');
@@ -252,5 +282,34 @@ class VideoGalleryController extends Controller
 
         toast(__('admin.Deleted Successfully'), 'success')->width('400');
         return redirect()->route('admin.video-gallery.index');
+    }
+
+    private function createMediaFromUpload($file, string $expectedType): ?Media
+    {
+        if (!$file || !$file->isValid()) {
+            return null;
+        }
+
+        $mimeType = $file->getMimeType();
+        if (!str_starts_with((string) $mimeType, 'video/')) {
+            return null;
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = Str::random(40) . '.' . $extension;
+        $storedPath = $file->storeAs('uploads/media', $filename, 'public');
+
+        return Media::create([
+            'filename' => $filename,
+            'original_filename' => $file->getClientOriginalName(),
+            'file_path' => 'storage/' . $storedPath,
+            'file_url' => asset('storage/' . $storedPath),
+            'file_type' => $expectedType,
+            'mime_type' => $mimeType,
+            'file_size' => $file->getSize(),
+            'title' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            'uploaded_by' => Auth::guard('admin')->id(),
+            'uploaded_by_type' => 'App\Models\Admin',
+        ]);
     }
 }

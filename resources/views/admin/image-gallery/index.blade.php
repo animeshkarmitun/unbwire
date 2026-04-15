@@ -50,7 +50,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control" onchange="window.location.href=this.value">
@@ -59,6 +59,18 @@
                                     {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
                             <option value="{{ route('admin.image-gallery.index', ['status' => 0]) }}" 
                                     {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select class="form-control" onchange="window.location.href=this.value">
+                            <option value="{{ route('admin.image-gallery.index') }}">All Categories</option>
+                            <option value="{{ route('admin.image-gallery.index', ['category' => 'UNB']) }}"
+                                    {{ request('category') == 'UNB' ? 'selected' : '' }}>UNB</option>
+                            <option value="{{ route('admin.image-gallery.index', ['category' => 'AP']) }}"
+                                    {{ request('category') == 'AP' ? 'selected' : '' }}>AP</option>
                         </select>
                     </div>
                 </div>
@@ -72,6 +84,7 @@
                             <th>Image</th>
                             <th>Title</th>
                             <th>Gallery Group</th>
+                            <th>Category</th>
                             <th>Source</th>
                             <th>Status</th>
                             <th>Order</th>
@@ -101,6 +114,9 @@
                                 </td>
                                 <td>
                                     <span class="badge badge-info">{{ $gallery->gallery_slug ?: 'Ungrouped' }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">{{ $gallery->category ?? 'UNB' }}</span>
                                 </td>
                                 <td>
                                     @if($gallery->isFromMediaLibrary())
@@ -140,7 +156,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center">
+                                <td colspan="8" class="text-center">
                                     <p class="text-muted">No image galleries found.</p>
                                     <a href="{{ route('admin.image-gallery.create') }}" class="btn btn-primary">
                                         <i class="fas fa-plus"></i> Create First Gallery

@@ -13,6 +13,7 @@ use App\Traits\FileUploadTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +40,134 @@ class NewsController extends Controller
     {
         $languages = Language::all();
         $selectedLang = $request->get('lang');
-        return view('admin.news.index', compact('languages', 'selectedLang'));
+        $request->validate(
+            [
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                'preset' => 'nullable|in:today,last_3_days,last_7_days,this_month,custom',
+            ]
+        );
+
+        $preset = $request->get('preset', 'last_3_days');
+        $hasCustomDates = $request->filled('start_date') || $request->filled('end_date');
+
+        if ($hasCustomDates) {
+            $filterStartDate = $request->get('start_date');
+            $filterEndDate = $request->get('end_date');
+            $preset = 'custom';
+
+            if (empty($filterStartDate) && !empty($filterEndDate)) {
+                $filterStartDate = Carbon::parse($filterEndDate)->toDateString();
+            }
+            if (empty($filterEndDate) && !empty($filterStartDate)) {
+                $filterEndDate = Carbon::parse($filterStartDate)->toDateString();
+            }
+        } else {
+            $today = now();
+            switch ($preset) {
+                case 'today':
+                    $filterStartDate = $today->copy()->toDateString();
+                    $filterEndDate = $today->copy()->toDateString();
+                    break;
+                case 'last_7_days':
+                    $filterStartDate = $today->copy()->subDays(6)->toDateString();
+                    $filterEndDate = $today->copy()->toDateString();
+                    break;
+                case 'this_month':
+                    $filterStartDate = $today->copy()->startOfMonth()->toDateString();
+                    $filterEndDate = $today->copy()->toDateString();
+                    break;
+                case 'last_3_days':
+                default:
+                    $filterStartDate = $today->copy()->subDays(2)->toDateString();
+                    $filterEndDate = $today->copy()->toDateString();
+                    $preset = 'last_3_days';
+                    break;
+            }
+        }
+
+        $rangeStart = Carbon::parse($filterStartDate)->startOfDay();
+        $rangeEnd = Carbon::parse($filterEndDate)->endOfDay();
+
+        $authAdminId = auth()->guard('admin')->id();
+        $newsByLanguage = [];
+        $adminsByLanguage = [];
+
+        foreach ($languages as $language) {
+            $languageCode = $language->lang;
+            $canViewLang = canAccess(['news all-access', 'news view', 'news view ' . $languageCode]);
+
+            if (!$canViewLang) {
+                continue;
+            }
+
+            $canViewAll = canAccess(['news all-access', 'news view', 'news view ' . $languageCode]);
+
+            if ($canViewAll) {
+                // Users with view permissions see all approved news for this language and their own pending news.
+                $newsQuery = News::with('category')
+                    ->where('language', $languageCode)
+                    ->where(function ($q) use ($authAdminId) {
+                        $q->where('is_approved', 1)
+                            ->orWhere('auther_id', $authAdminId)
+                            ->orWhere('created_by', $authAdminId);
+                    });
+            } else {
+                // Editors without view permission can see only their own news.
+                $newsQuery = News::with('category')
+                    ->where('language', $languageCode)
+                    ->where(function ($query) use ($authAdminId) {
+                        $query->where(function ($q) use ($authAdminId) {
+                            // Check new created_by column.
+                            $q->where('created_by', $authAdminId)
+                                ->where('created_by_type', 'admin');
+                        })->orWhere(function ($q) use ($authAdminId) {
+                            // Backward compatibility for old auther_id column.
+                            $q->where('auther_id', $authAdminId)
+                                ->where(function ($subQ) {
+                                    $subQ->whereNull('created_by')
+                                        ->orWhere('created_by_type', '!=', 'admin');
+                                });
+                        });
+                    });
+            }
+
+            $news = $newsQuery
+                ->whereBetween('created_at', [$rangeStart, $rangeEnd])
+                ->orderBy('id', 'DESC')
+                ->get();
+
+            $adminIds = $news->filter(function ($item) {
+                return $item->created_by && $item->created_by_type === 'admin';
+            })->pluck('created_by')->unique()->values();
+
+            $admins = collect();
+            if ($adminIds->isNotEmpty()) {
+                $admins = \App\Models\Admin::with('roles')
+                    ->whereIn('id', $adminIds)
+                    ->get()
+                    ->keyBy('id');
+            }
+
+            foreach ($news as $item) {
+                if ($item->created_by && $item->created_by_type === 'admin') {
+                    $item->setRelation('createdByUser', $admins->get($item->created_by));
+                }
+            }
+
+            $newsByLanguage[$languageCode] = $news;
+            $adminsByLanguage[$languageCode] = $admins;
+        }
+
+        return view('admin.news.index', compact(
+            'languages',
+            'selectedLang',
+            'filterStartDate',
+            'filterEndDate',
+            'preset',
+            'newsByLanguage',
+            'adminsByLanguage'
+        ));
     }
 
     /**
@@ -47,7 +175,23 @@ class NewsController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->route('admin.news.index');
+        $news = News::with(['category', 'tags', 'author', 'auther'])->findOrFail($id);
+
+        $hasGeneralViewPermission = canAccess(['news all-access', 'news view']);
+        $hasLanguageViewPermission = canAccess(['news view ' . $news->language]);
+        $canViewAll = $hasGeneralViewPermission || $hasLanguageViewPermission;
+
+        if (!$canViewAll) {
+            $adminId = auth()->guard('admin')->id();
+            $isOwnNews = (int) $news->auther_id === (int) $adminId
+                || ((int) $news->created_by === (int) $adminId && $news->created_by_type === 'admin');
+
+            if (!$isOwnNews) {
+                abort(403, 'You do not have permission to view this news.');
+            }
+        }
+
+        return view('admin.news.show', compact('news'));
     }
 
     public function pendingNews(): View
@@ -182,6 +326,7 @@ class NewsController extends Controller
         $news->author_id = $request->author_id;
         $news->image = $imagePath;
         $news->title = $request->title;
+        $news->subtitle = $request->subtitle;
         $news->slug = \Str::slug($request->title);
         $news->content = $request->content;
         $news->meta_title = $request->meta_title;
@@ -418,6 +563,7 @@ class NewsController extends Controller
         $news->author_id = $request->author_id;
         $news->image = !empty($imagePath) ? $imagePath : $news->image;
         $news->title = $request->title;
+        $news->subtitle = $request->subtitle;
         $news->slug = \Str::slug($request->title);
         $news->content = $request->content;
         $news->meta_title = $request->meta_title;

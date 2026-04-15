@@ -130,7 +130,7 @@
                         <span class="navbar-toggler-icon"></span>
                     </div>
                 </div>
-                <figure class="mb-0 mx-auto">
+                <figure class="mb-0 mx-auto py-2">
                     <a href="{{ url('/') }}">
                         <img src="{{ asset($settings['site_logo']) }}" alt="" class="img-fluid logo">
                     </a>

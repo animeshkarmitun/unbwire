@@ -24,6 +24,41 @@
             </div>
 
             <div class="card-body">
+                <form method="GET" action="{{ route('admin.news.index') }}" class="mb-4">
+                    <input type="hidden" name="lang" id="filter-lang" value="{{ $selectedLang }}">
+                    <input type="hidden" name="preset" id="filter-preset" value="{{ $preset }}">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="start_date">Start Date</label>
+                            <input type="date" id="start_date" name="start_date" class="form-control"
+                                value="{{ $filterStartDate }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date">End Date</label>
+                            <input type="date" id="end_date" name="end_date" class="form-control"
+                                value="{{ $filterEndDate }}">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary mr-2">Search</button>
+                            <a href="{{ route('admin.news.index', ['lang' => $selectedLang, 'preset' => 'last_3_days']) }}" class="btn btn-light">
+                                Reset
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <a href="{{ route('admin.news.index', ['lang' => $selectedLang, 'preset' => 'today']) }}"
+                                class="btn btn-sm {{ $preset === 'today' ? 'btn-primary' : 'btn-outline-primary' }} mr-2">Today</a>
+                            <a href="{{ route('admin.news.index', ['lang' => $selectedLang, 'preset' => 'last_3_days']) }}"
+                                class="btn btn-sm {{ $preset === 'last_3_days' ? 'btn-primary' : 'btn-outline-primary' }} mr-2">Last 3 Days</a>
+                            <a href="{{ route('admin.news.index', ['lang' => $selectedLang, 'preset' => 'last_7_days']) }}"
+                                class="btn btn-sm {{ $preset === 'last_7_days' ? 'btn-primary' : 'btn-outline-primary' }} mr-2">Last 7 Days</a>
+                            <a href="{{ route('admin.news.index', ['lang' => $selectedLang, 'preset' => 'this_month']) }}"
+                                class="btn btn-sm {{ $preset === 'this_month' ? 'btn-primary' : 'btn-outline-primary' }}">This Month</a>
+                        </div>
+                    </div>
+                </form>
+
                 <ul class="nav nav-tabs" id="myTab2" role="tablist">
                     @foreach ($languages as $language)
                         @php
@@ -56,64 +91,7 @@
                         @endphp
                         @if($canViewLang)
                         @php
-                            // Check if user can view all news for this language
-                            $canViewAll = canAccess(['news all-access', 'news view', 'news view ' . $language->lang]);
-                            
-                            if($canViewAll){
-                                // Users with view permissions see all approved news for this language AND their own pending news
-                                $newsQuery = \App\Models\News::with('category')
-                                ->where('language', $language->lang)
-                                ->where(function($q) {
-                                    $q->where('is_approved', 1)
-                                      ->orWhere('auther_id', auth()->guard('admin')->id())
-                                      ->orWhere('created_by', auth()->guard('admin')->id());
-                                })
-                                ->orderBy('id', 'DESC');
-                                $news = $newsQuery->get();
-                            }else {
-                                // For editors without view permission, show only their own news (both approved and pending)
-                                $userId = auth()->guard('admin')->user()->id;
-                                $newsQuery = \App\Models\News::with('category')
-                                ->where('language', $language->lang)
-                                ->where(function($query) use ($userId) {
-                                    $query->where(function($q) use ($userId) {
-                                        // Check new created_by column
-                                        $q->where('created_by', $userId)
-                                          ->where('created_by_type', 'admin');
-                                    })->orWhere(function($q) use ($userId) {
-                                        // Also check old auther_id column for backward compatibility
-                                        $q->where('auther_id', $userId)
-                                          ->where(function($subQ) {
-                                              $subQ->whereNull('created_by')
-                                                   ->orWhere('created_by_type', '!=', 'admin');
-                                          });
-                                    });
-                                })
-                                ->orderBy('id', 'DESC');
-                                $news = $newsQuery->get();
-                            }
-                            
-                            // Collect admin IDs for creators (where type is 'admin')
-                            $adminIds = collect();
-                            foreach ($news as $item) {
-                                if ($item->created_by && $item->created_by_type === 'admin') {
-                                    $adminIds->push($item->created_by);
-                                }
-                            }
-                            $adminIds = $adminIds->unique()->filter();
-                            
-                            // Load all admins with roles
-                            $admins = collect();
-                            if ($adminIds->isNotEmpty()) {
-                                $admins = \App\Models\Admin::with('roles')->whereIn('id', $adminIds)->get()->keyBy('id');
-                            }
-                            
-                            // Set the correct relationships for each news item
-                            foreach ($news as $item) {
-                                if ($item->created_by && $item->created_by_type === 'admin') {
-                                    $item->setRelation('createdByUser', $admins->get($item->created_by));
-                                }
-                            }
+                            $news = $newsByLanguage[$language->lang] ?? collect();
                         @endphp
                         @php
                             $isPaneActive = false;
@@ -233,7 +211,7 @@
                                                     </td>
                                                     @endif
                                                     <td>
-                                                        <a href="{{ route('news-details', $item->slug) }}" target="_blank" class="btn btn-success mr-1" title="View News"><i class="fas fa-eye"></i></a>
+                                                        <a href="{{ route('admin.news.show', $item->id) }}" class="btn btn-success mr-1" title="View News"><i class="fas fa-eye"></i></a>
                                                         <a href="{{ route('admin.news.edit', $item->id) }}"
                                                             class="btn btn-primary"><i class="fas fa-edit"></i></a>
                                                         <a href="{{ route('admin.news.destroy', $item->id) }}"
@@ -283,12 +261,24 @@
         @endforeach
 
         $(document).ready(function(){
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+                let target = $(e.target).attr('href') || '';
+                let selectedLang = target.replace('#home-', '');
+                $('#filter-lang').val(selectedLang);
+            });
+
             // Switch to the correct language tab if lang parameter is present
             @if(isset($selectedLang) && $selectedLang)
                 var selectedLang = '{{ $selectedLang }}';
                 var $tabLink = $('a[href="#home-' + selectedLang + '"]');
                 if ($tabLink.length) {
                     $tabLink.tab('show');
+                    $('#filter-lang').val(selectedLang);
+                }
+            @else
+                var initialLang = $('.nav-tabs a.active').attr('href');
+                if (initialLang) {
+                    $('#filter-lang').val(initialLang.replace('#home-', ''));
                 }
             @endif
 

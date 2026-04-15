@@ -9,6 +9,7 @@ class Gallery extends Model
 {
     protected $fillable = [
         'type',
+        'category',
         'title',
         'description',
         'alt_text',

@@ -130,6 +130,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="">{{ __('Subtitle') }} <small class="text-muted">({{ __('Optional') }})</small></label>
+                        <input name="subtitle" type="text" class="form-control" value="{{ old('subtitle', '') }}">
+                        @error('subtitle')
+                            <p class="text-danger">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
                         <label for="">{{ __('Content') }}</label>
                         <textarea name="content" class="summernote-simple">{{ old('content', '') }}</textarea>
                         @error('content')

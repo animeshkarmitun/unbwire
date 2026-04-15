@@ -127,6 +127,17 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="form-group">
+                            <label>Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-control" required>
+                                <option value="UNB" {{ old('category', $gallery->category ?? 'UNB') === 'UNB' ? 'selected' : '' }}>UNB</option>
+                                <option value="AP" {{ old('category', $gallery->category) === 'AP' ? 'selected' : '' }}>AP</option>
+                            </select>
+                            @error('category')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 

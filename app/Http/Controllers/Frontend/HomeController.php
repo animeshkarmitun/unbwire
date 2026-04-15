@@ -534,6 +534,18 @@ class HomeController extends Controller
 
         $news = News::query();
 
+        // Filter by date range or default to last 3 days
+        if ($request->filled('from_date') || $request->filled('to_date')) {
+            if ($request->filled('from_date')) {
+                $news->whereDate('created_at', '>=', $request->from_date);
+            }
+            if ($request->filled('to_date')) {
+                $news->whereDate('created_at', '<=', $request->to_date);
+            }
+        } else {
+            $news->where('created_at', '>=', now()->subDays(3));
+        }
+
         $news->when($request->has('tag'), function($query) use ($request){
             $query->whereHas('tags', function($query) use ($request){
                 $query->where('name', $request->tag);

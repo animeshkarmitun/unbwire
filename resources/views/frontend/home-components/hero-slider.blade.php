@@ -1,4 +1,4 @@
-<section>
+<section class="mb-5">
     <!-- Popular news  header-->
     <div class="popular__news-header">
         <div class="container">

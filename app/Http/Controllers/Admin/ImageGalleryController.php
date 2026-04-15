@@ -31,6 +31,11 @@ class ImageGalleryController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
@@ -82,18 +87,38 @@ class ImageGalleryController extends Controller
         }
 
         $request->validate([
-            'media_ids' => ['required', 'array', 'min:1'],
+            'media_ids' => ['nullable', 'array', 'min:1'],
             'media_ids.*' => ['required', 'exists:media,id'],
+            'uploaded_files' => ['nullable', 'array', 'min:1'],
+            'uploaded_files.*' => ['file', 'mimes:jpg,jpeg,png,gif,webp,svg', 'max:10240'],
             'gallery_slug' => ['nullable', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'is_exclusive' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'boolean'],
             'language' => ['nullable', 'string', 'max:10'],
+            'category' => ['required', 'in:UNB,AP'],
         ]);
 
         $gallerySlug = $request->gallery_slug ?: 'gallery-' . Str::random(8);
-        $mediaIds = $request->media_ids;
+        $mediaIds = is_array($request->media_ids) ? $request->media_ids : [];
+
+        if ($request->hasFile('uploaded_files')) {
+            foreach ($request->file('uploaded_files') as $uploadedFile) {
+                $media = $this->createMediaFromUpload($uploadedFile, 'image');
+                if ($media) {
+                    $mediaIds[] = $media->id;
+                }
+            }
+        }
+
+        $mediaIds = array_values(array_unique($mediaIds));
+        if (count($mediaIds) === 0) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['media_ids' => 'Please select or upload at least one image.']);
+        }
+
         $sortOrder = 0;
 
         foreach ($mediaIds as $mediaId) {
@@ -106,6 +131,7 @@ class ImageGalleryController extends Controller
 
             Gallery::create([
                 'type' => 'image',
+                'category' => $request->category,
                 'media_id' => $mediaId,
                 'title' => $request->title ?: $media->title,
                 'description' => $request->description ?: $media->description,
@@ -159,6 +185,7 @@ class ImageGalleryController extends Controller
             'is_exclusive' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'boolean'],
             'language' => ['nullable', 'string', 'max:10'],
+            'category' => ['required', 'in:UNB,AP'],
         ]);
 
         // If media_id is provided, validate it's an image
@@ -183,6 +210,7 @@ class ImageGalleryController extends Controller
         $gallery->is_exclusive = $request->boolean('is_exclusive', $gallery->is_exclusive);
         $gallery->status = $request->boolean('status', $gallery->status);
         $gallery->language = $request->language ?? $gallery->language;
+        $gallery->category = $request->category;
         $gallery->save();
 
         toast(__('admin.Updated Successfully'), 'success')->width('400');
@@ -199,5 +227,44 @@ class ImageGalleryController extends Controller
 
         toast(__('admin.Deleted Successfully'), 'success')->width('400');
         return redirect()->route('admin.image-gallery.index');
+    }
+
+    private function createMediaFromUpload($file, string $expectedType): ?Media
+    {
+        if (!$file || !$file->isValid()) {
+            return null;
+        }
+
+        $mimeType = $file->getMimeType();
+        if (!str_starts_with((string) $mimeType, 'image/')) {
+            return null;
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = Str::random(40) . '.' . $extension;
+        $storedPath = $file->storeAs('uploads/media', $filename, 'public');
+
+        $width = null;
+        $height = null;
+        $imageInfo = @getimagesize($file->getRealPath());
+        if ($imageInfo) {
+            $width = $imageInfo[0];
+            $height = $imageInfo[1];
+        }
+
+        return Media::create([
+            'filename' => $filename,
+            'original_filename' => $file->getClientOriginalName(),
+            'file_path' => 'storage/' . $storedPath,
+            'file_url' => asset('storage/' . $storedPath),
+            'file_type' => $expectedType,
+            'mime_type' => $mimeType,
+            'file_size' => $file->getSize(),
+            'width' => $width,
+            'height' => $height,
+            'title' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            'uploaded_by' => Auth::guard('admin')->id(),
+            'uploaded_by_type' => 'App\Models\Admin',
+        ]);
     }
 }

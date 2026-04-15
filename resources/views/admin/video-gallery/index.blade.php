@@ -74,6 +74,18 @@
                         </select>
                     </div>
                 </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select class="form-control" onchange="window.location.href=this.value">
+                            <option value="{{ route('admin.video-gallery.index') }}">All Categories</option>
+                            <option value="{{ route('admin.video-gallery.index', ['category' => 'UNB']) }}"
+                                    {{ request('category') == 'UNB' ? 'selected' : '' }}>UNB</option>
+                            <option value="{{ route('admin.video-gallery.index', ['category' => 'AP']) }}"
+                                    {{ request('category') == 'AP' ? 'selected' : '' }}>AP</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <!-- Video Gallery Grid -->
@@ -86,6 +98,7 @@
                             <th>Source</th>
                             <th>Platform</th>
                             <th>Gallery Group</th>
+                            <th>Category</th>
                             <th>Status</th>
                             <th>Order</th>
                             <th>Action</th>
@@ -136,6 +149,9 @@
                                     <span class="badge badge-info">{{ $gallery->gallery_slug ?: 'Ungrouped' }}</span>
                                 </td>
                                 <td>
+                                    <span class="badge badge-secondary">{{ $gallery->category ?? 'UNB' }}</span>
+                                </td>
+                                <td>
                                     @if($gallery->status)
                                         <span class="badge badge-success">Active</span>
                                     @else
@@ -166,7 +182,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center">
+                                <td colspan="9" class="text-center">
                                     <p class="text-muted">No video galleries found.</p>
                                     <a href="{{ route('admin.video-gallery.create') }}" class="btn btn-primary">
                                         <i class="fas fa-plus"></i> Create First Gallery

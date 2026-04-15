@@ -12,7 +12,7 @@
         </div>
 
         <div class="card-body">
-            <form action="{{ route('admin.image-gallery.store') }}" method="POST" id="galleryForm">
+            <form action="{{ route('admin.image-gallery.store') }}" method="POST" enctype="multipart/form-data" id="galleryForm">
                 @csrf
 
                 <div class="row">
@@ -32,6 +32,20 @@
                             </div>
                             <div id="mediaIdsContainer"></div>
                             @error('media_ids')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label>Or Upload Images (Multiple)</label>
+                            <input type="file" name="uploaded_files[]" class="form-control" multiple accept="image/*">
+                            <small class="form-text text-muted">
+                                You can upload multiple image files directly here.
+                            </small>
+                            @error('uploaded_files')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                            @error('uploaded_files.*')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
@@ -99,6 +113,17 @@
                                     </option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-control" required>
+                                <option value="UNB" {{ old('category', 'UNB') === 'UNB' ? 'selected' : '' }}>UNB</option>
+                                <option value="AP" {{ old('category') === 'AP' ? 'selected' : '' }}>AP</option>
+                            </select>
+                            @error('category')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -203,10 +228,9 @@
         container.html(html);
         
         // Update hidden inputs for media_ids array
-        const container = $('#mediaIdsContainer');
-        container.empty();
+        mediaIdsContainer.empty();
         selectedMedia.forEach((media) => {
-            container.append(`<input type="hidden" name="media_ids[]" value="${media.id}">`);
+            mediaIdsContainer.append(`<input type="hidden" name="media_ids[]" value="${media.id}">`);
         });
     }
 
@@ -219,9 +243,14 @@
 
     // Form validation
     $('#galleryForm').on('submit', function(e) {
-        if (selectedMedia.length === 0) {
+        const uploadedFilesInput = $('input[name="uploaded_files[]"]')[0];
+        const uploadedFilesCount = uploadedFilesInput && uploadedFilesInput.files ? uploadedFilesInput.files.length : 0;
+        const hasMediaLibrarySelection = selectedMedia.length > 0;
+        const hasDirectUpload = uploadedFilesCount > 0;
+
+        if (!hasMediaLibrarySelection && !hasDirectUpload) {
             e.preventDefault();
-            Swal.fire('Error', 'Please select at least one image from media library', 'error');
+            Swal.fire('Error', 'Please select at least one image from media library or upload image files.', 'error');
             return false;
         }
     });

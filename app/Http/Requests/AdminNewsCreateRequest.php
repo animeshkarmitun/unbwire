@@ -28,6 +28,7 @@ class AdminNewsCreateRequest extends FormRequest
             'author_id' => ['nullable', 'integer', 'exists:authors,id'],
             'image' => ['nullable'], // Will be validated in withValidator
             'title' => ['required', 'string', 'max:255'],
+            'subtitle' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'tags' => ['nullable', 'string', 'max:500'],
             'meta_title' => ['nullable', 'string', 'max:255'],
