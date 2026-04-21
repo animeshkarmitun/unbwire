@@ -253,9 +253,10 @@
                     $('#change-featured-image').show();
                 }
 
-                // Load categories on page load if language is pre-selected
+                // Load categories and authors on page load if language is pre-selected
                 var selectedLanguage = '{{ $selectedLanguage->lang ?? "" }}';
-                var oldCategory = '{{ old("category") }}';
+                var oldCategory = '{{ old("category", $defaultCategory->id ?? "") }}';
+                var oldAuthor = '{{ old("author_id", $defaultAuthorId ?? "") }}';
                 var oldLanguage = '{{ old("language") }}';
                 
                 // Function to load categories for a given language
@@ -273,15 +274,25 @@
                             $('#category').html(
                                 `<option value="">---{{ __('Select') }}---</option>`);
 
-                            $.each(data, function(index, data) {
-                                var selected = (oldCategory && oldCategory == data.id) ? 'selected' : '';
+                            // Handle new JSON response format
+                            let categories = data.categories || data;
+                            let defaultId = data.default_id || null;
+                            let targetId = oldCategory || defaultId;
+
+                            $.each(categories, function(index, item) {
+                                var selected = (targetId && targetId == item.id) ? 'selected' : '';
                                 $('#category').append(
-                                    `<option value="${data.id}" ${selected}>${data.name}</option>`)
+                                    `<option value="${item.id}" ${selected}>${item.name}</option>`)
                             })
                             
                             // Reset subcategory when language changes
                             $('#subcategory').html('<option value="">--{{ __('Select') }}--</option>').prop('disabled', true);
                             
+                            // Trigger change to load subcategories if needed
+                            if (targetId) {
+                                $('#category').trigger('change');
+                            }
+
                             if (callback) callback();
                         },
                         error: function(error) {
@@ -289,31 +300,63 @@
                         }
                     });
                 }
-                
-                // Load categories on page load if language is pre-selected from URL
-                if (selectedLanguage) {
-                    // Language is set from URL, load categories immediately
-                    loadCategoriesForLanguage(selectedLanguage, function() {
-                        // If old category exists, select it
-                        if (oldCategory) {
-                            $('#category').val(oldCategory).trigger('change');
+
+                // Function to load authors for a given language
+                function loadAuthorsForLanguage(lang) {
+                    if (!lang) return;
+                    
+                    $.ajax({
+                        method: 'GET',
+                        url: "{{ route('admin.fetch-authors') }}",
+                        data: {
+                            lang: lang
+                        },
+                        success: function(data) {
+                            $('#author_id').html("");
+                            $('#author_id').html(
+                                `<option value="">--{{ __('Select') }}--</option>`);
+
+                            let authors = data.authors || [];
+                            let defaultId = data.default_id || null;
+                            let targetId = oldAuthor || defaultId;
+
+                            $.each(authors, function(index, item) {
+                                var designation = item.designation ? ' - ' + item.designation : '';
+                                var selected = (targetId && targetId == item.id) ? 'selected' : '';
+                                $('#author_id').append(
+                                    `<option value="${item.id}" ${selected}>${item.name}${designation}</option>`)
+                            });
+                            
+                            // Refresh Select2 if used
+                            if ($('#author_id').hasClass('select2-hidden-accessible')) {
+                                $('#author_id').trigger('change.select2');
+                            }
+                        },
+                        error: function(error) {
+                            console.error('Error loading authors:', error);
                         }
                     });
-                } else if (oldLanguage && oldCategory) {
-                    // Trigger category load for the selected language (from form validation error)
-                    loadCategoriesForLanguage(oldLanguage, function() {
-                        // Wait a bit for categories to load, then select the old category
-                        setTimeout(function() {
-                            $('#category').val(oldCategory).trigger('change');
-                        }, 500);
-                    });
+                }
+                
+                // Initial load
+                if (selectedLanguage) {
+                    loadCategoriesForLanguage(selectedLanguage);
+                    loadAuthorsForLanguage(selectedLanguage);
+                } else if (oldLanguage) {
+                    loadCategoriesForLanguage(oldLanguage);
+                    loadAuthorsForLanguage(oldLanguage);
                 }
 
                 // Only attach language change handler if language dropdown exists (not pre-selected)
                 if ($('#language-select').length > 0) {
                     $('#language-select').on('change', function() {
                         let lang = $(this).val();
+                        // Reset targeted IDs to null when user manually changes language
+                        // unless it's the initial load which we handled above
+                        oldCategory = null; 
+                        oldAuthor = null;
                         loadCategoriesForLanguage(lang);
+                        loadAuthorsForLanguage(lang);
                     });
                 }
 

@@ -12,10 +12,12 @@ class Author extends Model
         'designation',
         'photo',
         'status',
+        'is_default',
     ];
 
     protected $casts = [
         'status' => 'boolean',
+        'is_default' => 'boolean',
     ];
 
     /**

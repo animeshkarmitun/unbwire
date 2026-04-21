@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\UserSubscription;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
 
 class UserSubscriptionController extends Controller
 {
     public function __construct()
     {
         $this->middleware(['permission:subscription package index,admin'])->only(['index']);
-        $this->middleware(['permission:subscription package update,admin'])->only(['update', 'approve', 'updateExpiryDate', 'edit']);
+        $this->middleware(['permission:subscription package update,admin'])->only(['update', 'approve', 'updateExpiryDate', 'edit', 'updatePassword']);
+
         $this->middleware(['permission:subscription package delete,admin'])->only(['destroy']);
     }
 
@@ -104,7 +107,13 @@ class UserSubscriptionController extends Controller
             $user->name = $request->name;
             $user->email = $request->email;
             
+            // Update Password if provided
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+            
             // Handle boolean toggles (unchecked = false, so use boolean())
+
             $user->email_notifications_enabled = $request->boolean('email_notifications_enabled');
             $user->send_full_news_email = $request->boolean('send_full_news_email');
             
@@ -164,7 +173,32 @@ class UserSubscriptionController extends Controller
     }
 
     /**
+     * Update user password
+     */
+    public function updatePassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $subscription = UserSubscription::with('user')->findOrFail($id);
+        
+        if ($subscription->user) {
+            $user = $subscription->user;
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            toast(__('admin.Password updated successfully!'), 'success')->width('350');
+        } else {
+            toast(__('admin.User not found!'), 'error')->width('350');
+        }
+
+        return redirect()->back();
+    }
+
+    /**
      * Remove the specified subscription.
+
      */
     public function destroy(string $id)
     {

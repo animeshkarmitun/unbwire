@@ -24,7 +24,7 @@ return array (
   'Please fill in your email' => 'Please fill in your email',
   'Send Link' => 'Send Link',
   'Copyright' => 'Copyright',
-  'Unbnews 2025' => 'Unbnews 2025',
+  'unbnews 2025' => 'Unbnews 2025',
   'Login' => 'Login',
   'Password' => 'Password',
   'Forgot Password?' => 'Forgot Password?',

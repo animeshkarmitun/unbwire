@@ -91,6 +91,7 @@ class CategoryController extends Controller
             'status' => ['required', 'in:0,1'],
             'order' => ['nullable', 'integer', 'min:0'],
             'parent_id' => ['nullable', 'exists:categories,id'],
+            'is_default' => ['nullable', 'in:0,1'],
         ]);
         
         // Check language-specific permission
@@ -118,6 +119,12 @@ class CategoryController extends Controller
         $category->status = (bool) $request->status;
         $category->order = $request->order ?? 0;
         $category->parent_id = $request->parent_id;
+        $category->is_default = (bool) $request->is_default;
+        
+        if ($category->is_default) {
+            Category::where('language', $category->language)->update(['is_default' => false]);
+        }
+        
         $category->save();
 
         toast(__('admin.Created Successfully'), 'success')->width('350');
@@ -164,6 +171,7 @@ class CategoryController extends Controller
             'status' => ['required', 'in:0,1'],
             'order' => ['nullable', 'integer', 'min:0'],
             'parent_id' => ['nullable', 'exists:categories,id'],
+            'is_default' => ['nullable', 'in:0,1'],
         ]);
 
         // Prevent category from being its own parent or parent of its parent
@@ -188,6 +196,14 @@ class CategoryController extends Controller
         $category->status = (bool) $request->status;
         $category->order = $request->order ?? 0;
         $category->parent_id = $request->parent_id;
+        $category->is_default = (bool) $request->is_default;
+        
+        if ($category->is_default) {
+            Category::where('language', $category->language)
+                ->where('id', '!=', $category->id)
+                ->update(['is_default' => false]);
+        }
+        
         $category->save();
 
         toast(__('admin.Updated Successfully'), 'success')->width('350');

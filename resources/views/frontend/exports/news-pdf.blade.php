@@ -71,7 +71,7 @@
     </div>
 
     <div class="footer">
-        <p>Exported from {{ config('app.name') }} on {{ now()->format('F d, Y \a\t H:i') }}</p>
+        <p>Exported from {{ getSetting('site_name') }} on {{ now()->format('F d, Y \a\t H:i') }}</p>
         <p>URL: {{ url()->current() }}</p>
     </div>
 </body>

@@ -89,9 +89,6 @@ class User extends Authenticatable
         return $subscription ? $subscription->package : null;
     }
 
-    /**
-     * Check if user has access to a specific feature
-     */
     public function hasSubscriptionAccess(string $feature): bool
     {
         $package = $this->currentPackage();
@@ -102,6 +99,14 @@ class User extends Authenticatable
         }
 
         return $package->hasAccess($feature);
+    }
+
+    /**
+     * Check if user can access AP Photos
+     */
+    public function canAccessApPhoto(): bool
+    {
+        return $this->hasSubscriptionAccess('ap_photo');
     }
 
     /**

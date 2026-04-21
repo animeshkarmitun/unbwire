@@ -18,11 +18,13 @@ class Category extends Model
         'status',
         'order',
         'parent_id',
+        'is_default',
     ];
 
     protected $casts = [
         'show_at_nav' => 'boolean',
         'status' => 'boolean',
+        'is_default' => 'boolean',
     ];
 
     /**

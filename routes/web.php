@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\LanguageController;
+use App\Http\Controllers\Frontend\ApPhotoGalleryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -60,6 +61,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/password/update', [\App\Http\Controllers\Frontend\UserProfileController::class, 'updatePassword'])->name('user.profile.password.update');
     Route::post('/profile/package/change', [\App\Http\Controllers\Frontend\UserProfileController::class, 'changePackage'])->name('user.profile.package.change');
     
+    // Subscriber Dashboard Routes
+    Route::prefix('dashboard')->middleware('require.subscription')->group(function() {
+        Route::get('/', [\App\Http\Controllers\Frontend\UserDashboardController::class, 'index'])->name('user.dashboard');
+        Route::get('/news-list', [\App\Http\Controllers\Frontend\UserDashboardController::class, 'newsList'])->name('user.news-list');
+        Route::get('/news-list/export-zip', [\App\Http\Controllers\Frontend\UserDashboardController::class, 'exportZip'])->name('user.news-list.export-zip');
+    });
+    
     // Support Ticket Routes
     Route::prefix('support-tickets')->name('support-tickets.')->group(function() {
         Route::post('/{id}/reply', [\App\Http\Controllers\Frontend\SupportTicketController::class, 'addReply'])->name('reply');
@@ -75,6 +83,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/mark-all-read', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
         Route::get('/unread-count', [\App\Http\Controllers\Frontend\SubscriberNotificationController::class, 'getUnreadCount'])->name('unread-count');
     });
+
+    // AP Photo Gallery Routes
+    Route::get('/ap-photos', [ApPhotoGalleryController::class, 'index'])->name('ap-photo.index');
+    Route::get('/ap-photos/{id}', [ApPhotoGalleryController::class, 'show'])->name('ap-photo.show');
+
+    // Media Gallery Routes (UNB)
+    Route::get('/image-gallery', [\App\Http\Controllers\Frontend\GalleryController::class, 'images'])->name('image-gallery.index');
+    Route::get('/video-gallery', [\App\Http\Controllers\Frontend\GalleryController::class, 'videos'])->name('video-gallery.index');
 });
 
 require __DIR__.'/auth.php';

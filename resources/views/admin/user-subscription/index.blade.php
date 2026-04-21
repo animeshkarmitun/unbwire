@@ -78,12 +78,14 @@
                                 <tr class="{{ $subscription->status == 'pending' ? 'table-warning' : '' }}">
                                     <td>{{ $subscription->id }}</td>
                                     <td>
-                                        <strong>{{ $subscription->user->name }}</strong><br>
-                                        <small class="text-muted">{{ $subscription->user->email }}</small>
+                                        <strong>{{ $subscription->user?->name ?? 'N/A' }}</strong><br>
+                                        <small class="text-muted">{{ $subscription->user?->email ?? 'no-email' }}</small>
                                     </td>
                                     <td>
-                                        <strong>{{ $subscription->package->name }}</strong><br>
-                                        <small class="text-muted">{{ $subscription->package->currency }} {{ number_format($subscription->package->price, 2) }}/{{ $subscription->package->billing_period }}</small>
+                                        <strong>{{ $subscription->package?->name ?? 'Deleted Package' }}</strong><br>
+                                        @if($subscription->package)
+                                            <small class="text-muted">{{ $subscription->package->currency }} {{ number_format($subscription->package->price, 2) }}/{{ $subscription->package->billing_period }}</small>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($subscription->status == 'active')
@@ -159,11 +161,14 @@
                                                         </button>
                                                     </form>
                                                 @endif
-                                                <div class="dropdown-divider"></div>
                                                 <a href="#" class="dropdown-item" data-toggle="modal" data-target="#updateExpiryDateModal{{ $subscription->id }}">
                                                     <i class="fas fa-calendar-alt text-info"></i> Update Expiry Date
                                                 </a>
+                                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#changePasswordModal{{ $subscription->id }}">
+                                                    <i class="fas fa-key text-warning"></i> Change Password
+                                                </a>
                                                 <div class="dropdown-divider"></div>
+
                                                 <a href="{{ route('admin.user-subscription.destroy', $subscription->id) }}" 
                                                    class="dropdown-item text-danger delete-item">
                                                     <i class="fas fa-trash"></i> Delete
@@ -206,11 +211,11 @@
                         <div class="modal-body">
                             <div class="form-group">
                                 <label>User</label>
-                                <input type="text" class="form-control" value="{{ $subscription->user->name }} ({{ $subscription->user->email }})" readonly>
+                                <input type="text" class="form-control" value="{{ $subscription->user?->name ?? 'N/A' }} ({{ $subscription->user?->email ?? 'N/A' }})" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Package</label>
-                                <input type="text" class="form-control" value="{{ $subscription->package->name }}" readonly>
+                                <input type="text" class="form-control" value="{{ $subscription->package?->name ?? 'N/A' }}" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Current Expiry Date</label>
@@ -240,7 +245,57 @@
             </div>
         </div>
     @endforeach
+
+    <!-- Change Password Modals -->
+    @foreach($subscriptions as $subscription)
+        <div class="modal fade" id="changePasswordModal{{ $subscription->id }}" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel{{ $subscription->id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changePasswordModalLabel{{ $subscription->id }}">Change User Password</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{{ route('admin.user-subscription.update-password', $subscription->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>User</label>
+                                <input type="text" class="form-control" value="{{ $subscription->user?->name ?? 'N/A' }} ({{ $subscription->user?->email ?? 'N/A' }})" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="password{{ $subscription->id }}">New Password <span class="text-danger">*</span></label>
+                                <input type="password" 
+                                       class="form-control @error('password') is-invalid @enderror" 
+                                       id="password{{ $subscription->id }}" 
+                                       name="password" 
+                                       required>
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label for="password_confirmation{{ $subscription->id }}">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password_confirmation{{ $subscription->id }}" 
+                                       name="password_confirmation" 
+                                       required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection
+
 
 @push('scripts')
     <script>

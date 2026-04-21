@@ -2,18 +2,24 @@
     <!-- Popular news  header-->
     <div class="popular__news-header">
         <div class="container">
-            <div class="row no-gutters">
-                <div class="col-md-8 ">
-                    <div class="card__post-carousel">
+            <div class="row d-flex align-items-stretch">
+
+
+                <div class="col-md-8 pr-md-2 d-flex flex-column">
+
+
+                    <div class="card__post-carousel h-100">
+
                         @foreach ($heroSlider as $slider)
                         @if ($loop->index <= 4)
-                            <div class="item">
+                            <div class="item h-100">
                                 <!-- Post Article -->
-                                <div class="card__post">
-                                    <div class="card__post__body">
-                                        <a href="{{ route('news-details', $slider->slug) }}">
-                                            <img src="{{ asset($slider->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
+                                <div class="card__post h-100">
+                                    <div class="card__post__body h-100">
+                                        <a href="{{ route('news-details', $slider->slug) }}" class="h-100 d-block">
+                                            <img src="{{ asset($slider->image) }}" class="img-fluid h-100 w-100" style="object-fit: cover;" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                         </a>
+
                                         <div class="card__post__content bg__post-cover">
                                             <div class="card__post__category">
                                                 {{ $slider->category->name }}
@@ -49,17 +55,21 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="popular__news-right">
+                <div class="col-md-4 pl-md-2 d-flex flex-column">
+
+
+                    <div class="popular__news-right h-100 d-flex flex-column">
+
                         <!-- Post Article -->
                         @if(isset($popularNews) && $popularNews->count() > 0)
                             @foreach ($popularNews as $popularItem)
                             @if ($loop->index < 2)
-                            <div class="card__post ">
-                                <div class="card__post__body card__post__transition">
-                                    <a href="{{ route('news-details', $popularItem->slug) }}">
-                                        <img src="{{ asset($popularItem->image) }}" class="img-fluid" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
+                            <div class="card__post mb-3 flex-fill d-flex flex-column">
+                                <div class="card__post__body card__post__transition flex-fill">
+                                    <a href="{{ route('news-details', $popularItem->slug) }}" class="h-100 d-block">
+                                        <img src="{{ asset($popularItem->image) }}" class="img-fluid h-100 w-100" alt="" onerror="this.onerror=null; this.src='{{ asset('frontend/assets/images/placeholder.webp') }}';">
                                     </a>
+
                                     <div class="card__post__content bg__post-cover">
                                         <div class="card__post__category">
                                             {{ $popularItem->category->name }}
@@ -94,11 +104,12 @@
                         @else
                             @foreach ($heroSlider as $slider)
                             @if ($loop->index > 4 && $loop->index <= 6)
-                            <div class="card__post ">
-                                <div class="card__post__body card__post__transition">
-                                    <a href="{{ route('news-details', $slider->slug) }}">
-                                        <img src="{{ asset($slider->image) }}" class="img-fluid" alt="">
+                            <div class="card__post mb-3 flex-fill d-flex flex-column">
+                                <div class="card__post__body card__post__transition flex-fill">
+                                    <a href="{{ route('news-details', $slider->slug) }}" class="h-100 d-block">
+                                        <img src="{{ asset($slider->image) }}" class="img-fluid h-100 w-100" alt="">
                                     </a>
+
                                     <div class="card__post__content bg__post-cover">
                                         <div class="card__post__category">
                                             {{ $slider->category->name }}

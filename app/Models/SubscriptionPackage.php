@@ -26,6 +26,7 @@ class SubscriptionPackage extends Model
         'max_articles_per_day',
         'ad_free',
         'priority_support',
+        'access_ap_photo',
         'is_active',
         'sort_order',
     ];
@@ -40,6 +41,7 @@ class SubscriptionPackage extends Model
         'access_english' => 'boolean',
         'ad_free' => 'boolean',
         'priority_support' => 'boolean',
+        'access_ap_photo' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -81,6 +83,7 @@ class SubscriptionPackage extends Model
             'exclusive' => $this->access_exclusive,
             'bangla' => $this->access_bangla,
             'english' => $this->access_english,
+            'ap_photo' => $this->access_ap_photo,
             default => false,
         };
     }

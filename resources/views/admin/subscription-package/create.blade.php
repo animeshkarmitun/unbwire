@@ -148,6 +148,16 @@
                                 <small class="form-text text-muted">Enable to allow access to English content. If disabled, English content will be restricted.</small>
                             </div>
                         </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" name="access_ap_photo" value="1" class="custom-control-input" id="access_ap_photo" {{ old('access_ap_photo') ? 'checked' : '' }}>
+                                    <label class="custom-control-label" for="access_ap_photo">Access AP Photo</label>
+                                </div>
+                                <small class="form-text text-muted">Enable to allow access to AP Photo gallery.</small>
+                            </div>
+                        </div>
                     </div>
 
                     <hr>

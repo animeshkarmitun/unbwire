@@ -81,7 +81,12 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td><strong>{{ $author->name }}</strong></td>
+                                    <td>
+                                        <strong>{{ $author->name }}</strong>
+                                        @if($author->is_default)
+                                            <span class="badge badge-success ml-1" style="font-size: 10px; padding: 2px 5px;">{{ __('Default') }}</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <span class="badge badge-{{ $author->language == 'en' ? 'primary' : 'success' }}">
                                             {{ $author->language == 'en' ? 'English' : 'Bangla' }}

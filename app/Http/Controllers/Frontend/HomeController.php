@@ -327,14 +327,14 @@ class HomeController extends Controller
     {
         try {
             $pdf = PDF::loadView('frontend.exports.news-pdf', compact('news'));
-            $filename = Str::slug($news->title) . '.pdf';
+            $filename = Str::slug($news->title) . '-' . $news->created_at->format('Y-m-d') . '.pdf';
             return $pdf->download($filename);
         } catch (\Exception $e) {
             Log::error('PDF export failed: ' . $e->getMessage());
             // Fallback to simple PDF if package not available
             return response($this->generateSimplePdf($news), 200)
                 ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'attachment; filename="' . Str::slug($news->title) . '.pdf"');
+                ->header('Content-Disposition', 'attachment; filename="' . Str::slug($news->title) . '-' . $news->created_at->format('Y-m-d') . '.pdf"');
         }
     }
 
@@ -357,7 +357,7 @@ class HomeController extends Controller
                 $data[] = ['Tags', $news->tags->pluck('name')->implode(', ')];
             }
 
-            $filename = Str::slug($news->title) . '.' . $format;
+            $filename = Str::slug($news->title) . '-' . $news->created_at->format('Y-m-d') . '.' . $format;
             
             return Excel::download(new NewsExport($data, $news->title), $filename);
         } catch (\Exception $e) {
@@ -414,7 +414,7 @@ class HomeController extends Controller
             $article->appendChild($tags);
         }
 
-        $filename = Str::slug($news->title) . '.xml';
+        $filename = Str::slug($news->title) . '-' . $news->created_at->format('Y-m-d') . '.xml';
         
         return response($dom->saveXML(), 200)
             ->header('Content-Type', 'application/xml')
@@ -438,7 +438,7 @@ class HomeController extends Controller
             'meta_description' => $news->meta_description,
         ];
 
-        $filename = Str::slug($news->title) . '.json';
+        $filename = Str::slug($news->title) . '-' . $news->created_at->format('Y-m-d') . '.json';
         
         return response()->json($data, 200, [
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -461,7 +461,7 @@ class HomeController extends Controller
             $content .= "Tags: " . $news->tags->pluck('name')->implode(', ') . "\n";
         }
 
-        $filename = Str::slug($news->title) . '.txt';
+        $filename = Str::slug($news->title) . '-' . $news->created_at->format('Y-m-d') . '.txt';
         
         return response($content, 200)
             ->header('Content-Type', 'text/plain')

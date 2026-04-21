@@ -94,4 +94,5 @@ return array (
   'A new verification link has been sent to the email address you provided during registration.' => 'A new verification link has been sent to the email address you provided during registration.',
   'Resend Verification Email' => 'Resend Verification Email',
   'Log Out' => 'Log Out',
+  'My Dashboard' => 'My Dashboard',
 );

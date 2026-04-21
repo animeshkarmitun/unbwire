@@ -230,10 +230,26 @@ class DatabaseSeeder extends Seeder
             'image gallery create',
             'image gallery update',
             'image gallery delete',
-            'video gallery index',
-            'video gallery create',
-            'video gallery update',
-            'video gallery delete',
+            'video_gallery index',
+            'video_gallery create',
+            'video_gallery update',
+            'video_gallery delete',
+            // AP Photo permissions
+            'ap photo index',
+            'ap photo view',
+            'ap photo create',
+            'ap photo update',
+            'ap photo delete',
+            'ap photo category index',
+            'ap photo category view',
+            'ap photo category create',
+            'ap photo category update',
+            'ap photo category delete',
+            'ap photo tag index',
+            'ap photo tag view',
+            'ap photo tag create',
+            'ap photo tag update',
+            'ap photo tag delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -260,6 +276,8 @@ class DatabaseSeeder extends Seeder
                     $groupName = 'Access Management';
                 } elseif ($parts[1] === 'message') {
                     $groupName = 'Contact Message';
+                } elseif ($parts[0] === 'ap' && isset($parts[1]) && $parts[1] === 'photo') {
+                    $groupName = 'AP Photo';
                 }
             }
             

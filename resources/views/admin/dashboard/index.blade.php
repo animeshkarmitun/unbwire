@@ -6,6 +6,7 @@
         <h1>{{ __('admin.Dashboard') }}</h1>
     </div>
 
+    @if (canAccess(['news index']))
     <div class="mb-3">
         <h6 class="text-primary mb-2">My News Statistics</h6>
     </div>
@@ -75,6 +76,10 @@
         </div>
     </div>
 
+    </div>
+    @endif
+
+    @if (canAccess(['news index']))
     <div class="mb-3 mt-2">
         <h6 class="text-primary mb-2">Overall News Statistics</h6>
     </div>
@@ -140,6 +145,122 @@
             </div>
         </div>
     </div>
+    @endif
+    
+    @if (canAccess(['ap photo index']))
+    <div class="mb-3 mt-2">
+        <h6 class="text-primary mb-2">AP Photo Statistics</h6>
+    </div>
+    <div class="row">
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-primary">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Total AP Photos</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apTotalPhotos }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-info">
+                    <i class="fas fa-th-list"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Total Categories</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apTotalCategories }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-warning">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Total Tags</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apTotalTags }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-success">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Uploads Last 90 Days</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apPhotosLast90Days }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-success">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Uploads Last 30 Days</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apPhotosLast30Days }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-warning">
+                    <i class="fas fa-calendar-week"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Uploads Last 7 Days</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apPhotosLast7Days }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card card-statistic-1">
+                <div class="card-icon bg-info">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="card-wrap">
+                    <div class="card-header">
+                        <h4>Uploads Today</h4>
+                    </div>
+                    <div class="card-body">
+                        {{ $apPhotosToday }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     @if (canAccess(['access management index']))
     <div class="mb-3 mt-2">

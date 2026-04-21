@@ -99,6 +99,11 @@
                                             <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Profile') }}
                                         </a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('user.dashboard') }}" class="dropdown-item">
+                                            <i class="fas fa-tachometer-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.My Dashboard') }}
+                                        </a>
+                                    </li>
                                     <li role="separator" class="divider"></li>
                                     <li>
                                         <form method="POST" action="{{ route('logout') }}" style="display: inline;">
@@ -157,6 +162,12 @@
                                 </li>
                             @endif
                         @endforeach
+
+                        @if(auth()->check() && auth()->user()->canAccessApPhoto())
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('ap-photo.index') }}">AP Photo</a>
+                            </li>
+                        @endif
 
                         @if (count($categories) > 0)
                         <li class="nav-item dropdown">

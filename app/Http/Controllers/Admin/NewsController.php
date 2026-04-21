@@ -211,7 +211,35 @@ class NewsController extends Controller
             ->orderBy('order', 'asc')
             ->orderBy('name', 'asc')
             ->get();
-        return $categories;
+            
+        $defaultCategory = Category::where('language', $request->lang)
+            ->where('is_default', true)
+            ->first();
+            
+        return response()->json([
+            'categories' => $categories,
+            'default_id' => $defaultCategory ? $defaultCategory->id : null
+        ]);
+    }
+
+    /**
+     * Fetch authors depending on language
+     */
+    public function fetchAuthors(Request $request)
+    {
+        $authors = \App\Models\Author::active()
+            ->where('language', $request->lang)
+            ->orderBy('name')
+            ->get();
+            
+        $defaultAuthor = \App\Models\Author::where('language', $request->lang)
+            ->where('is_default', true)
+            ->first();
+            
+        return response()->json([
+            'authors' => $authors,
+            'default_id' => $defaultAuthor ? $defaultAuthor->id : null
+        ]);
     }
 
     /**
@@ -283,8 +311,22 @@ class NewsController extends Controller
             $authorQuery->where('language', $selectedLanguage->lang);
         }
         $authors = $authorQuery->orderBy('name')->get();
+
+        // Get default values for pre-selection
+        $defaultCategory = null;
+        $defaultAuthorId = null;
         
-        return view('admin.news.create', compact('languages', 'authors', 'selectedLanguage'));
+        if (isset($selectedLanguage)) {
+            $defaultCategory = Category::where('language', $selectedLanguage->lang)
+                ->where('is_default', true)
+                ->first();
+                
+            $defaultAuthorId = \App\Models\Author::where('language', $selectedLanguage->lang)
+                ->where('is_default', true)
+                ->value('id');
+        }
+        
+        return view('admin.news.create', compact('languages', 'authors', 'selectedLanguage', 'defaultCategory', 'defaultAuthorId'));
     }
 
     /**

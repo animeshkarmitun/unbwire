@@ -106,6 +106,7 @@ class AuthorController extends Controller
             'designation' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'string', 'max:500'],
             'status' => ['required', 'in:0,1'],
+            'is_default' => ['nullable', 'in:0,1'],
         ]);
         
         // Check language-specific permission
@@ -123,6 +124,12 @@ class AuthorController extends Controller
         $author->designation = $request->designation;
         $author->photo = $request->photo;
         $author->status = (bool) $request->status;
+        $author->is_default = (bool) $request->is_default;
+        
+        if ($author->is_default) {
+            Author::where('language', $author->language)->update(['is_default' => false]);
+        }
+        
         $author->save();
 
         toast(__('admin.Created Successfully'), 'success')->width('350');
@@ -160,6 +167,7 @@ class AuthorController extends Controller
             'designation' => ['nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'string', 'max:500'],
             'status' => ['required', 'in:0,1'],
+            'is_default' => ['nullable', 'in:0,1'],
         ]);
         
         // Check language-specific permission
@@ -176,6 +184,14 @@ class AuthorController extends Controller
         $author->designation = $request->designation;
         $author->photo = $request->photo;
         $author->status = (bool) $request->status;
+        $author->is_default = (bool) $request->is_default;
+        
+        if ($author->is_default) {
+            Author::where('language', $author->language)
+                ->where('id', '!=', $author->id)
+                ->update(['is_default' => false]);
+        }
+        
         $author->save();
 
         toast(__('admin.Updated Successfully'), 'success')->width('350');

@@ -51,6 +51,7 @@ class SubscriptionPackageController extends Controller
             'access_exclusive' => ['boolean'],
             'access_bangla' => ['boolean'],
             'access_english' => ['boolean'],
+            'access_ap_photo' => ['boolean'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
             'ad_free' => ['boolean'],
             'priority_support' => ['boolean'],
@@ -71,6 +72,7 @@ class SubscriptionPackageController extends Controller
         $package->access_exclusive = $request->boolean('access_exclusive');
         $package->access_bangla = $request->boolean('access_bangla');
         $package->access_english = $request->boolean('access_english');
+        $package->access_ap_photo = $request->boolean('access_ap_photo');
         $package->max_articles_per_day = $request->max_articles_per_day;
         $package->ad_free = $request->boolean('ad_free');
         $package->priority_support = $request->boolean('priority_support');
@@ -109,6 +111,7 @@ class SubscriptionPackageController extends Controller
             'access_exclusive' => ['boolean'],
             'access_bangla' => ['boolean'],
             'access_english' => ['boolean'],
+            'access_ap_photo' => ['boolean'],
             'max_articles_per_day' => ['nullable', 'integer', 'min:1'],
             'ad_free' => ['boolean'],
             'priority_support' => ['boolean'],
@@ -129,6 +132,7 @@ class SubscriptionPackageController extends Controller
         $package->access_exclusive = $request->boolean('access_exclusive');
         $package->access_bangla = $request->boolean('access_bangla');
         $package->access_english = $request->boolean('access_english');
+        $package->access_ap_photo = $request->boolean('access_ap_photo');
         $package->max_articles_per_day = $request->max_articles_per_day;
         $package->ad_free = $request->boolean('ad_free');
         $package->priority_support = $request->boolean('priority_support');

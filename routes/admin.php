@@ -29,6 +29,9 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ImageGalleryController;
 use App\Http\Controllers\Admin\VideoGalleryController;
 use App\Http\Controllers\Admin\SupportTicketController;
+use App\Http\Controllers\Admin\ApPhotoCategoryController;
+use App\Http\Controllers\Admin\ApPhotoTagController;
+use App\Http\Controllers\Admin\ApPhotoController;
 use App\Models\FooterGridOne;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +81,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     /** News Route */
     Route::get('fetch-news-category', [NewsController::class, 'fetchCategory'])->name('fetch-news-category');
     Route::get('fetch-news-subcategories', [NewsController::class, 'fetchSubcategories'])->name('fetch-news-subcategories');
+    Route::get('fetch-authors', [NewsController::class, 'fetchAuthors'])->name('fetch-authors');
     Route::get('toggle-news-status', [NewsController::class, 'toggleNewsStatus'])->name('toggle-news-status');
     Route::post('update-news-order-position', [NewsController::class, 'updateOrderPosition'])->name('update-news-order-position');
     Route::get('news-copy/{id}', [NewsController::class, 'copyNews'])->name('news-copy');
@@ -139,6 +143,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
     Route::put('user-subscription/{id}/expiry-date', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'updateExpiryDate'])->name('user-subscription.update-expiry-date');
     Route::get('user-subscription/{id}/approve', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'approve'])->name('user-subscription.approve');
     Route::delete('user-subscription/{id}', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'destroy'])->name('user-subscription.destroy');
+    Route::put('user-subscription/{id}/password', [\App\Http\Controllers\Admin\UserSubscriptionController::class, 'updatePassword'])->name('user-subscription.update-password');
+
 
     /** Social links Route */
     Route::resource('social-link', SocialLinkController::class);
@@ -265,6 +271,19 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['admin']],
         Route::get('/', [\App\Http\Controllers\Admin\EmailReportController::class, 'index'])->name('index');
         Route::get('/pending', [\App\Http\Controllers\Admin\EmailReportController::class, 'pending'])->name('pending');
     });
+
+    /** AP Photo Category Route */
+    Route::get('ap-photo-category/create/{lang?}', [ApPhotoCategoryController::class, 'create'])->name('ap-photo-category.create');
+    Route::resource('ap-photo-category', ApPhotoCategoryController::class)->except(['create']);
+
+    /** AP Photo Tag Route */
+    Route::resource('ap-photo-tag', ApPhotoTagController::class);
+
+    /** AP Photo Route */
+    Route::get('ap-photo/fetch-categories', [ApPhotoController::class, 'fetchCategories'])->name('ap-photo.fetch-categories');
+    Route::get('ap-photo/fetch-subcategories', [ApPhotoController::class, 'fetchSubCategories'])->name('ap-photo.fetch-subcategories');
+    Route::delete('ap-photo/delete-item/{id}', [ApPhotoController::class, 'deleteItem'])->name('ap-photo.delete-item');
+    Route::resource('ap-photo', ApPhotoController::class);
 
 });
 

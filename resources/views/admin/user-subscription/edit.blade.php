@@ -36,6 +36,25 @@
                 </div>
 
                 <div class="form-group row mb-4">
+                    <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">{{ __('New Password') }}</label>
+                    <div class="col-sm-12 col-md-7">
+                        <input type="password" name="password" class="form-control">
+                        <small class="text-muted">{{ __('Leave blank if you don\'t want to change the password') }}</small>
+                        @error('password')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="form-group row mb-4">
+                    <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">{{ __('Confirm Password') }}</label>
+                    <div class="col-sm-12 col-md-7">
+                        <input type="password" name="password_confirmation" class="form-control">
+                    </div>
+                </div>
+
+
+                <div class="form-group row mb-4">
                     <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">{{ __('Email Notifications') }}</label>
                     <div class="col-sm-12 col-md-7">
                         <div class="control-label">{{ __('System Emails') }}</div>

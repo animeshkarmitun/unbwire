@@ -7,6 +7,9 @@ use App\Models\Category;
 use App\Models\Language;
 use App\Models\News;
 use App\Models\SocialLink;
+use App\Models\ApPhoto;
+use App\Models\ApPhotoCategory;
+use App\Models\ApPhotoTag;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -22,7 +25,9 @@ class DashboardController extends Controller
         $todayStart = Carbon::today();
         $last7DaysStart = Carbon::today()->subDays(6);
         $last30DaysStart = Carbon::today()->subDays(29);
+        $last90DaysStart = Carbon::today()->subDays(89);
 
+        // News Statistics
         $userNewsBaseQuery = News::query()->where(function ($query) use ($adminId) {
             $query->where('auther_id', $adminId)
                 ->orWhere(function ($subQuery) use ($adminId) {
@@ -40,6 +45,15 @@ class DashboardController extends Controller
         $overallNewsLast7Days = News::whereDate('created_at', '>=', $last7DaysStart)->count();
         $overallNewsToday = News::whereDate('created_at', '>=', $todayStart)->count();
         $overallTotalNews = News::count();
+
+        // AP Photo Statistics
+        $apTotalPhotos = ApPhoto::count();
+        $apTotalCategories = ApPhotoCategory::count();
+        $apTotalTags = ApPhotoTag::count();
+        $apPhotosToday = ApPhoto::whereDate('created_at', '>=', $todayStart)->count();
+        $apPhotosLast7Days = ApPhoto::whereDate('created_at', '>=', $last7DaysStart)->count();
+        $apPhotosLast30Days = ApPhoto::whereDate('created_at', '>=', $last30DaysStart)->count();
+        $apPhotosLast90Days = ApPhoto::whereDate('created_at', '>=', $last90DaysStart)->count();
 
         $publishedNews = 0;
         $pendingNews = 0;
@@ -74,7 +88,14 @@ class DashboardController extends Controller
             'overallNewsLast30Days',
             'overallNewsLast7Days',
             'overallNewsToday',
-            'overallTotalNews'
+            'overallTotalNews',
+            'apTotalPhotos',
+            'apTotalCategories',
+            'apTotalTags',
+            'apPhotosToday',
+            'apPhotosLast7Days',
+            'apPhotosLast30Days',
+            'apPhotosLast90Days'
         ));
     }
 }

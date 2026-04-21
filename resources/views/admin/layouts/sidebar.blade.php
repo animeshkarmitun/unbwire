@@ -161,6 +161,31 @@
                         <span>{{ __('admin.Media Library') }}</span></a></li>
             @endif
 
+            @if (canAccess(['ap photo index', 'ap photo category index', 'ap photo tag index']))
+                <li class="dropdown {{ setSidebarActive(['admin.ap-photo.*', 'admin.ap-photo-category.*', 'admin.ap-photo-tag.*']) }}">
+                    <a href="#" class="nav-link has-dropdown"><i class="fas fa-camera"></i>
+                        <span>AP Photo</span></a>
+                    <ul class="dropdown-menu">
+                        @if (canAccess(['ap photo index']))
+                            <li class="{{ setSidebarActive(['admin.ap-photo.create']) }}"><a class="nav-link"
+                                    href="{{ route('admin.ap-photo.create') }}">Upload Photo</a></li>
+                        @endif
+                        @if (canAccess(['ap photo index']))
+                            <li class="{{ setSidebarActive(['admin.ap-photo.index']) }}"><a class="nav-link"
+                                    href="{{ route('admin.ap-photo.index') }}">Manage Photo</a></li>
+                        @endif
+                        @if (canAccess(['ap photo category index']))
+                            <li class="{{ setSidebarActive(['admin.ap-photo-category.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.ap-photo-category.index') }}">Manage Category</a></li>
+                        @endif
+                        @if (canAccess(['ap photo tag index']))
+                            <li class="{{ setSidebarActive(['admin.ap-photo-tag.*']) }}"><a class="nav-link"
+                                    href="{{ route('admin.ap-photo-tag.index') }}">Manage Tag</a></li>
+                        @endif
+                    </ul>
+                </li>
+            @endif
+
             @if (canAccess(['image gallery index', 'video gallery index']))
                 <li class="dropdown {{ setSidebarActive(['admin.image-gallery.*', 'admin.video-gallery.*']) }}">
                     <a href="javascript:void(0)" class="nav-link has-dropdown"><i class="fas fa-photo-video"></i>

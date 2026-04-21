@@ -89,6 +89,9 @@
                                                             <i class="fas fa-level-up-alt text-muted mr-1" style="transform: rotate(90deg);"></i>
                                                         @endif
                                                         {{ $category->name }}
+                                                        @if($category->is_default)
+                                                            <span class="badge badge-success ml-1">{{ __('Default') }}</span>
+                                                        @endif
                                                         @if($category->hasChildren())
                                                             <span class="badge badge-info ml-1">{{ $category->children->count() }} {{ __('subcategories') }}</span>
                                                         @endif

@@ -80,6 +80,14 @@
                             <p class="text-danger">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div class="form-group">
+                        <label class="custom-switch mt-2" style="padding-left: 0;">
+                            <input type="checkbox" name="is_default" value="1" class="custom-switch-input" {{ old('is_default', $category->is_default) == 1 ? 'checked' : '' }}>
+                            <span class="custom-switch-indicator"></span>
+                            <span class="custom-switch-description">{{ __('Set as Default') }}</span>
+                        </label>
+                        <small class="form-text text-muted">{{ __('If checked, this will be the default category for this language in news creation.') }}</small>
+                    </div>
                     <button type="submit" class="btn btn-primary">{{ __('admin.Update') }}</button>
                 </form>
             </div>
