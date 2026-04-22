@@ -1,7 +1,7 @@
 @foreach($photos as $item)
     <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100 border-0 shadow-sm photo-card transition-hover" style="border-radius: 12px; overflow: hidden;">
-            <a href="{{ route('ap-photo.show', $item->apPhoto->id) }}" class="text-decoration-none text-dark">
+            <a href="{{ route('ap-photo.show', $item->id) }}" class="text-decoration-none text-dark">
                 <div class="ratio ratio-4x3 overflow-hidden">
                     <img src="{{ asset($item->file_url) }}" 
                          class="card-img-top object-fit-cover" 

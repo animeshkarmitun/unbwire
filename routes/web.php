@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
     // AP Photo Gallery Routes
     Route::get('/ap-photos', [ApPhotoGalleryController::class, 'index'])->name('ap-photo.index');
     Route::get('/ap-photos/{id}', [ApPhotoGalleryController::class, 'show'])->name('ap-photo.show');
+    Route::get('/ap-photos/download/{itemId}/{format}', [ApPhotoGalleryController::class, 'download'])->name('ap-photo.download');
 
     // Media Gallery Routes (UNB)
     Route::get('/image-gallery', [\App\Http\Controllers\Frontend\GalleryController::class, 'images'])->name('image-gallery.index');

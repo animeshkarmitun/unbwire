@@ -22,30 +22,21 @@
             <div id="apPhotoCarousel" class="carousel slide bg-dark rounded overflow-hidden shadow-lg" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     @foreach($photo->items as $item)
-                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                        <div class="carousel-item {{ $item->id == $activeItem->id ? 'active' : '' }}" data-item-id="{{ $item->id }}">
                             <div class="d-flex align-items-center justify-content-center min-vh-50">
                                 <img src="{{ $item->file_url }}" class="d-block w-100 img-fluid" alt="{{ $photo->category->name }}">
                             </div>
                         </div>
                     @endforeach
                 </div>
-                @if($photo->items->count() > 1)
-                    <button class="carousel-control-prev" type="button" data-bs-target="#apPhotoCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#apPhotoCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                @endif
+                {{-- Removed carousel controls over image as requested --}}
             </div>
 
             <!-- Thumbnails -->
             <div class="row mt-3 g-2">
                 @foreach($photo->items as $item)
                     <div class="col-3 col-md-2">
-                        <div class="thumbnail-wrapper rounded overflow-hidden cursor-pointer {{ $loop->first ? 'active' : '' }}" 
+                        <div class="thumbnail-wrapper rounded overflow-hidden cursor-pointer {{ $item->id == $activeItem->id ? 'active' : '' }}" 
                              onclick="$('#apPhotoCarousel').carousel({{ $loop->index }})">
                             <img src="{{ $item->file_url }}" class="img-fluid w-100 h-100 object-fit-cover" alt="thumb">
                         </div>
@@ -86,10 +77,49 @@
                         </div>
                     @endif
 
-                    <div class="d-grid gap-2">
+                    <div class="d-grid gap-2 mb-4">
                         <a href="{{ route('ap-photo.index') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Back to Gallery
                         </a>
+                    </div>
+
+                    <!-- Navigation Between Photos -->
+                    <div class="d-flex justify-content-between gap-2 mb-4">
+                        @if($prev)
+                            <a href="{{ route('ap-photo.show', $prev->id) }}" class="btn btn-outline-primary flex-grow-1">
+                                <i class="fas fa-chevron-left me-1"></i> Prev Photo
+                            </a>
+                        @else
+                            <button class="btn btn-outline-secondary flex-grow-1" disabled>
+                                <i class="fas fa-chevron-left me-1"></i> Prev Photo
+                            </button>
+                        @endif
+
+                        @if($next)
+                            <a href="{{ route('ap-photo.show', $next->id) }}" class="btn btn-outline-primary flex-grow-1">
+                                Next Photo <i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        @else
+                            <button class="btn btn-outline-secondary flex-grow-1" disabled>
+                                Next Photo <i class="fas fa-chevron-right ms-1"></i>
+                            </button>
+                        @endif
+                    </div>
+
+                    <!-- Download Section -->
+                    <div class="btn-group d-grid mb-3">
+                        <a href="#" class="btn btn-success download-link" data-format="jpg" id="mainDownloadBtn">
+                            <i class="fas fa-download me-1"></i> Download JPG
+                        </a>
+                        <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right shadow-sm w-100">
+                            <li><a class="dropdown-item download-link" href="#" data-format="png"><i class="far fa-file-image me-2 text-info"></i> Download as PNG</a></li>
+                            <li><a class="dropdown-item download-link" href="#" data-format="webp"><i class="far fa-file-image me-2 text-success"></i> Download as WebP</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a class="dropdown-item download-link" href="#" data-format="pdf"><i class="far fa-file-pdf me-2 text-danger"></i> Download as PDF</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -119,4 +149,34 @@
         border-top: 4px solid var(--colorPrimary) !important;
     }
 </style>
+
+@push('content')
+<script>
+$(document).ready(function() {
+    function updateDownloadLinks() {
+        var activeItem = $('.carousel-item.active');
+        var activeItemId = activeItem.data('item-id');
+        
+        $('.download-link').each(function() {
+            var format = $(this).data('format');
+            var url = "{{ route('ap-photo.download', [':itemId', ':format']) }}";
+            url = url.replace(':itemId', activeItemId).replace(':format', format);
+            $(this).attr('href', url);
+        });
+    }
+
+    // Initialize links
+    updateDownloadLinks();
+
+    // Thumbnails active state sync
+    $('#apPhotoCarousel').on('slid.bs.carousel', function () {
+        updateDownloadLinks();
+        
+        var idx = $('.carousel-item.active').index();
+        $('.thumbnail-wrapper').removeClass('active');
+        $('.thumbnail-wrapper').eq(idx).addClass('active');
+    });
+});
+</script>
+@endpush
 @endsection
