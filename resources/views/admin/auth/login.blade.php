@@ -91,7 +91,7 @@
             </div>
 
             <div class="simple-footer">
-              {{ __('Copyright') }} &copy; {{ __('unbnews 2025') }}
+              {{ __('Copyright') }} &copy; {{ __('Unbnews 2026') }}
             </div>
           </div>
         </div>
