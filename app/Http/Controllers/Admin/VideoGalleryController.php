@@ -216,7 +216,7 @@ class VideoGalleryController extends Controller
 
         $request->validate([
             'source_type' => ['required', 'in:media,external'],
-            'media_id' => ['required_if:source_type,media', 'nullable', 'exists:media,id'],
+            'uploaded_file' => ['nullable', 'file', 'mimes:mp4,webm,ogg,mov', 'max:51200'],
             'video_url' => ['required_if:source_type,external', 'nullable', 'url'],
             'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -229,15 +229,15 @@ class VideoGalleryController extends Controller
         ]);
 
         if ($request->source_type === 'media') {
-            // From media library
-            if ($request->filled('media_id')) {
-                $media = Media::findOrFail($request->media_id);
-                if ($media->file_type !== 'video') {
-                    return redirect()->back()->withErrors(['media_id' => 'Selected media must be a video.']);
+            // Re-upload video
+            if ($request->hasFile('uploaded_file')) {
+                $media = $this->createMediaFromUpload($request->file('uploaded_file'), 'video');
+                if ($media) {
+                    $gallery->media_id = $media->id;
+                    $gallery->caption = $media->caption;
                 }
             }
             
-            $gallery->media_id = $request->media_id;
             $gallery->video_url = null;
             $gallery->video_platform = null;
             $gallery->video_id = null;
@@ -249,17 +249,11 @@ class VideoGalleryController extends Controller
             $gallery->video_url = $request->video_url;
             $gallery->video_platform = $videoInfo['platform'];
             $gallery->video_id = $videoInfo['video_id'];
+            $gallery->caption = null;
         }
 
         $gallery->title = $request->title;
         $gallery->description = $request->description;
-        // Caption is taken from media library for media sources, null for external
-        if ($request->source_type === 'media' && $request->filled('media_id') && $gallery->media_id != $request->media_id) {
-            $newMedia = Media::findOrFail($request->media_id);
-            $gallery->caption = $newMedia->caption;
-        } elseif ($request->source_type === 'external') {
-            $gallery->caption = null;
-        }
         $gallery->gallery_slug = $request->gallery_slug;
         $gallery->sort_order = $request->sort_order ?? $gallery->sort_order;
         $gallery->is_exclusive = $request->boolean('is_exclusive', $gallery->is_exclusive);

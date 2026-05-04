@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -27,75 +28,43 @@ class DashboardController extends Controller
         $last30DaysStart = Carbon::today()->subDays(29);
         $last90DaysStart = Carbon::today()->subDays(89);
 
-        // News Statistics
-        $userNewsBaseQuery = News::query()->where(function ($query) use ($adminId) {
-            $query->where('auther_id', $adminId)
-                ->orWhere(function ($subQuery) use ($adminId) {
-                    $subQuery->where('created_by', $adminId)
-                        ->where('created_by_type', 'admin');
-                });
+
+
+        $stats = Cache::remember('admin_dashboard_stats', 600, function () use ($last30DaysStart, $last7DaysStart, $todayStart, $last90DaysStart) {
+            $data = [];
+            $data['overallNewsLast30Days'] = News::whereDate('created_at', '>=', $last30DaysStart)->count();
+            $data['overallNewsLast7Days'] = News::whereDate('created_at', '>=', $last7DaysStart)->count();
+            $data['overallNewsToday'] = News::whereDate('created_at', '>=', $todayStart)->count();
+            $data['overallNewsLast90Days'] = News::whereDate('created_at', '>=', $last90DaysStart)->count();
+
+            // AP Photo Statistics
+            $data['apTotalPhotos'] = ApPhoto::count();
+            $data['apTotalCategories'] = ApPhotoCategory::count();
+            $data['apTotalTags'] = ApPhotoTag::count();
+            $data['apPhotosToday'] = ApPhoto::whereDate('created_at', '>=', $todayStart)->count();
+            $data['apPhotosLast7Days'] = ApPhoto::whereDate('created_at', '>=', $last7DaysStart)->count();
+            $data['apPhotosLast30Days'] = ApPhoto::whereDate('created_at', '>=', $last30DaysStart)->count();
+            $data['apPhotosLast90Days'] = ApPhoto::whereDate('created_at', '>=', $last90DaysStart)->count();
+
+            if (canAccess(['access management index'])) {
+                $data['pendingNews'] = News::where(['status' => 1, 'is_approved' => 0])->count();
+                $data['Categories'] = Category::count();
+                $data['languages'] = Language::count();
+                $data['roles'] = Role::count();
+                $data['permissions'] = Permission::count();
+                $data['socials'] = SocialLink::count();
+            } else {
+                $data['pendingNews'] = 0;
+                $data['Categories'] = 0;
+                $data['languages'] = 0;
+                $data['roles'] = 0;
+                $data['permissions'] = 0;
+                $data['socials'] = 0;
+            }
+
+            return $data;
         });
 
-        $userTotalNews = (clone $userNewsBaseQuery)->count();
-        $userTotalNewsLast30Days = (clone $userNewsBaseQuery)->whereDate('created_at', '>=', $last30DaysStart)->count();
-        $userTotalNewsLast7Days = (clone $userNewsBaseQuery)->whereDate('created_at', '>=', $last7DaysStart)->count();
-        $userTotalNewsToday = (clone $userNewsBaseQuery)->whereDate('created_at', '>=', $todayStart)->count();
-
-        $overallNewsLast30Days = News::whereDate('created_at', '>=', $last30DaysStart)->count();
-        $overallNewsLast7Days = News::whereDate('created_at', '>=', $last7DaysStart)->count();
-        $overallNewsToday = News::whereDate('created_at', '>=', $todayStart)->count();
-        $overallTotalNews = News::count();
-
-        // AP Photo Statistics
-        $apTotalPhotos = ApPhoto::count();
-        $apTotalCategories = ApPhotoCategory::count();
-        $apTotalTags = ApPhotoTag::count();
-        $apPhotosToday = ApPhoto::whereDate('created_at', '>=', $todayStart)->count();
-        $apPhotosLast7Days = ApPhoto::whereDate('created_at', '>=', $last7DaysStart)->count();
-        $apPhotosLast30Days = ApPhoto::whereDate('created_at', '>=', $last30DaysStart)->count();
-        $apPhotosLast90Days = ApPhoto::whereDate('created_at', '>=', $last90DaysStart)->count();
-
-        $publishedNews = 0;
-        $pendingNews = 0;
-        $Categories = 0;
-        $languages = 0;
-        $roles = 0;
-        $permissions = 0;
-        $socials = 0;
-
-        if (canAccess(['access management index'])) {
-            $publishedNews = News::where(['status' => 1, 'is_approved' => 1])->count();
-            $pendingNews = News::where(['status' => 1, 'is_approved' => 0])->count();
-            $Categories = Category::count();
-            $languages = Language::count();
-            $roles = Role::count();
-            $permissions = Permission::count();
-            $socials = SocialLink::count();
-        }
-
-        return view('admin.dashboard.index', compact(
-            'publishedNews',
-            'pendingNews',
-            'Categories',
-            'languages',
-            'roles',
-            'permissions',
-            'socials',
-            'userTotalNews',
-            'userTotalNewsLast30Days',
-            'userTotalNewsLast7Days',
-            'userTotalNewsToday',
-            'overallNewsLast30Days',
-            'overallNewsLast7Days',
-            'overallNewsToday',
-            'overallTotalNews',
-            'apTotalPhotos',
-            'apTotalCategories',
-            'apTotalTags',
-            'apPhotosToday',
-            'apPhotosLast7Days',
-            'apPhotosLast30Days',
-            'apPhotosLast90Days'
-        ));
+        return view('admin.dashboard.index', $stats);
     }
 }

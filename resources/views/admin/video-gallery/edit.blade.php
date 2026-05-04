@@ -12,7 +12,7 @@
         </div>
 
         <div class="card-body">
-            <form action="{{ route('admin.video-gallery.update', $gallery->id) }}" method="POST">
+            <form action="{{ route('admin.video-gallery.update', $gallery->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -25,7 +25,7 @@
                                {{ $gallery->isFromMediaLibrary() ? 'checked' : '' }} 
                                onchange="toggleSourceType()">
                         <label class="form-check-label" for="source_media">
-                            <i class="fas fa-database"></i> Media Library
+                            <i class="fas fa-upload"></i> Upload Video
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
@@ -41,33 +41,26 @@
 
                 <div class="row">
                     <div class="col-md-8">
-                        <!-- Media Library Selection -->
+                        <!-- Upload Section -->
                         <div id="mediaSourceSection" style="display: {{ $gallery->isFromMediaLibrary() ? 'block' : 'none' }};">
                             <div class="form-group">
-                                <label>Select Video from Media Library</label>
+                                <label>Re-upload Video (Optional)</label>
                                 @if($gallery->media)
                                     <div class="mb-3">
                                         <div class="d-flex align-items-center justify-content-center bg-light p-3" 
                                              style="border-radius: 4px;">
                                             <i class="fas fa-video fa-3x text-primary"></i>
                                         </div>
-                                        <p class="text-center mt-2"><strong>{{ $gallery->media->title }}</strong></p>
+                                        <p class="text-center mt-2"><strong>Current: {{ $gallery->media->title }}</strong></p>
                                     </div>
                                 @endif
-                                <div class="input-group">
-                                    <input type="hidden" name="media_id" id="selectedMediaId" value="{{ $gallery->media_id }}">
-                                    <input type="text" class="form-control" id="selectedMediaName" 
-                                           value="{{ $gallery->media ? $gallery->media->title : 'No video selected' }}" 
-                                           readonly>
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn btn-primary" 
-                                                data-toggle="modal" 
-                                                data-target="#mediaLibraryModal" 
-                                                data-type="video">
-                                            <i class="fas fa-video"></i> Select Video
-                                        </button>
-                                    </div>
-                                </div>
+                                <input type="file" name="uploaded_file" class="form-control" accept="video/*">
+                                <small class="form-text text-muted">
+                                    Leave unchanged to keep current video
+                                </small>
+                                @error('uploaded_file')
+                                    <div class="text-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -198,8 +191,7 @@
     </div>
 </section>
 
-<!-- Media Library Modal -->
-@include('admin.media-library.partials.media-modal')
+
 
 @push('scripts')
 <script>
@@ -214,28 +206,6 @@
             $('#externalSourceSection').show();
         }
     }
-
-    // Handle media selection from modal for edit
-    window.selectMediaForGallery = function(media) {
-        if (media.file_type !== 'video') {
-            Swal.fire('Error', 'Please select a video', 'error');
-            return;
-        }
-
-        $('#selectedMediaId').val(media.id);
-        $('#selectedMediaName').val(media.title || 'Selected Video');
-        $('#mediaLibraryModal').modal('hide');
-        
-        // Update preview
-        $('form').prepend(`
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                Video selected: <strong>${media.title || 'Untitled'}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        `);
-    };
 </script>
 @endpush
 @endsection

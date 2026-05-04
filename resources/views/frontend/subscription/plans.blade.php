@@ -58,10 +58,39 @@
                                         @endif
 
                                         <ul class="list-unstyled">
-                                            <li class="mb-2">
-                                                <i class="fas fa-check text-success"></i> 
-                                                <strong>News Articles</strong>
-                                            </li>
+                                            @if($package->access_news)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-check text-success"></i> 
+                                                    <strong>News Articles</strong>
+                                                </li>
+                                            @else
+                                                <li class="mb-2 text-muted">
+                                                    <i class="fas fa-times"></i> News Articles
+                                                </li>
+                                            @endif
+
+                                            @if($package->access_bangla)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-check text-success"></i> 
+                                                    <strong>Bangla News Access</strong>
+                                                </li>
+                                            @else
+                                                <li class="mb-2 text-muted">
+                                                    <i class="fas fa-times"></i> Bangla News Access
+                                                </li>
+                                            @endif
+
+                                            @if($package->access_english)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-check text-success"></i> 
+                                                    <strong>English News Access</strong>
+                                                </li>
+                                            @else
+                                                <li class="mb-2 text-muted">
+                                                    <i class="fas fa-times"></i> English News Access
+                                                </li>
+                                            @endif
+
                                             @if($package->access_images)
                                                 <li class="mb-2">
                                                     <i class="fas fa-check text-success"></i> 
@@ -90,6 +119,16 @@
                                             @else
                                                 <li class="mb-2 text-muted">
                                                     <i class="fas fa-times"></i> Exclusive Content
+                                                </li>
+                                            @endif
+                                            @if($package->access_ap_photo)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-check text-success"></i> 
+                                                    <strong>AP Photo Access</strong>
+                                                </li>
+                                            @else
+                                                <li class="mb-2 text-muted">
+                                                    <i class="fas fa-times"></i> AP Photo Access
                                                 </li>
                                             @endif
                                             @if($package->ad_free)

@@ -12,7 +12,7 @@
         </div>
 
         <div class="card-body">
-            <form action="{{ route('admin.image-gallery.update', $gallery->id) }}" method="POST">
+            <form action="{{ route('admin.image-gallery.update', $gallery->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -31,26 +31,16 @@
                             @endif
                         </div>
 
-                        <!-- Select New Image -->
+                        <!-- Change Image -->
                         <div class="form-group">
-                            <label>Change Image (Optional)</label>
-                            <div class="input-group">
-                                <input type="hidden" name="media_id" id="selectedMediaId" value="{{ $gallery->media_id }}">
-                                <input type="text" class="form-control" id="selectedMediaName" 
-                                       value="{{ $gallery->media ? $gallery->media->title : 'No image selected' }}" 
-                                       readonly>
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-primary" 
-                                            data-toggle="modal" 
-                                            data-target="#mediaLibraryModal" 
-                                            data-type="image">
-                                        <i class="fas fa-images"></i> Select Image
-                                    </button>
-                                </div>
-                            </div>
+                            <label>Re-upload Image (Optional)</label>
+                            <input type="file" name="uploaded_file" class="form-control" accept="image/*">
                             <small class="form-text text-muted">
                                 Leave unchanged to keep current image
                             </small>
+                            @error('uploaded_file')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <!-- Gallery Group -->
@@ -154,33 +144,8 @@
     </div>
 </section>
 
-<!-- Media Library Modal -->
-@include('admin.media-library.partials.media-modal')
 
-@push('scripts')
-<script>
-    // Handle media selection from modal for edit
-    window.selectMediaForGallery = function(media) {
-        if (media.file_type !== 'image') {
-            Swal.fire('Error', 'Please select an image', 'error');
-            return;
-        }
 
-        $('#selectedMediaId').val(media.id);
-        $('#selectedMediaName').val(media.title || 'Selected Image');
-        $('#mediaLibraryModal').modal('hide');
-        
-        // Update preview
-        $('form').prepend(`
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                Image selected: <strong>${media.title || 'Untitled'}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        `);
-    };
-</script>
-@endpush
+
 @endsection
 

@@ -17,28 +17,9 @@
 
                 <div class="row">
                     <div class="col-md-8">
-                        <!-- Media Selection -->
                         <div class="form-group">
-                            <label>Select Images from Media Library <span class="text-danger">*</span></label>
-                            <div class="border rounded p-3" style="min-height: 200px; background: #f8f9fa;">
-                                <div id="selectedMediaContainer" class="row">
-                                    <div class="col-12 text-center py-5">
-                                        <p class="text-muted">No images selected</p>
-                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mediaLibraryModal" data-type="image">
-                                            <i class="fas fa-images"></i> Select from Media Library
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="mediaIdsContainer"></div>
-                            @error('media_ids')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label>Or Upload Images (Multiple)</label>
-                            <input type="file" name="uploaded_files[]" class="form-control" multiple accept="image/*">
+                            <label>Upload Images (Multiple) <span class="text-danger">*</span></label>
+                            <input type="file" name="uploaded_files[]" class="form-control" multiple accept="image/*" required>
                             <small class="form-text text-muted">
                                 You can upload multiple image files directly here.
                             </small>
@@ -141,120 +122,22 @@
     </div>
 </section>
 
-<!-- Media Library Modal -->
-@include('admin.media-library.partials.media-modal')
+
 
 @push('scripts')
 <script>
-    (function waitForjQuery(callback) {
-        if (window.jQuery) {
-            callback(window.jQuery);
-        } else {
-            setTimeout(function() {
-                waitForjQuery(callback);
-            }, 100);
-        }
-    })(function($) {
     $(document).ready(function() {
-    let selectedMedia = [];
+        // Form validation
+        $('#galleryForm').on('submit', function(e) {
+            const uploadedFilesInput = $('input[name="uploaded_files[]"]')[0];
+            const uploadedFilesCount = uploadedFilesInput && uploadedFilesInput.files ? uploadedFilesInput.files.length : 0;
 
-    // Open media library modal for image selection
-    $('#mediaLibraryModal').on('show.bs.modal', function(e) {
-        const button = $(e.relatedTarget);
-        const type = button.data('type') || 'image';
-        
-        // Set filter to images only
-        $('#mediaTypeFilter').val('image').trigger('change');
-    });
-
-    // Handle media selection from modal
-    window.selectMediaForGallery = function(media) {
-        if (typeof jQuery === 'undefined') {
-            console.error('jQuery is not available');
-            return;
-        }
-        
-        if (media.file_type !== 'image') {
-            Swal.fire('Error', 'Please select an image', 'error');
-            return;
-        }
-
-        // Check if already selected
-        if (selectedMedia.find(m => m.id === media.id)) {
-            Swal.fire('Info', 'This image is already selected', 'info');
-            return;
-        }
-
-        selectedMedia.push(media);
-        updateSelectedMediaDisplay();
-        jQuery('#mediaLibraryModal').modal('hide');
-    };
-
-    function updateSelectedMediaDisplay() {
-        const container = $('#selectedMediaContainer');
-        const mediaIdsContainer = $('#mediaIdsContainer');
-
-        if (selectedMedia.length === 0) {
-            container.html(`
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted">No images selected</p>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mediaLibraryModal" data-type="image">
-                        <i class="fas fa-images"></i> Select from Media Library
-                    </button>
-                </div>
-            `);
-            mediaIdsContainer.empty();
-            return;
-        }
-
-        let html = '<div class="col-12 mb-3"><button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mediaLibraryModal" data-type="image"><i class="fas fa-plus"></i> Add More Images</button></div>';
-        
-        selectedMedia.forEach((media, index) => {
-            html += `
-                <div class="col-md-3 col-sm-4 col-6 mb-3" data-media-id="${media.id}">
-                    <div class="card">
-                        <img src="${media.file_url}" class="card-img-top" style="height: 150px; object-fit: cover;">
-                        <div class="card-body p-2">
-                            <p class="card-text small mb-1">${media.title || 'Untitled'}</p>
-                            <button type="button" class="btn btn-sm btn-danger btn-block remove-media" data-index="${index}">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
+            if (uploadedFilesCount === 0) {
+                e.preventDefault();
+                Swal.fire('Error', 'Please upload at least one image file.', 'error');
+                return false;
+            }
         });
-
-        container.html(html);
-        
-        // Update hidden inputs for media_ids array
-        mediaIdsContainer.empty();
-        selectedMedia.forEach((media) => {
-            mediaIdsContainer.append(`<input type="hidden" name="media_ids[]" value="${media.id}">`);
-        });
-    }
-
-    // Remove media from selection
-    $(document).on('click', '.remove-media', function() {
-        const index = $(this).data('index');
-        selectedMedia.splice(index, 1);
-        updateSelectedMediaDisplay();
-    });
-
-    // Form validation
-    $('#galleryForm').on('submit', function(e) {
-        const uploadedFilesInput = $('input[name="uploaded_files[]"]')[0];
-        const uploadedFilesCount = uploadedFilesInput && uploadedFilesInput.files ? uploadedFilesInput.files.length : 0;
-        const hasMediaLibrarySelection = selectedMedia.length > 0;
-        const hasDirectUpload = uploadedFilesCount > 0;
-
-        if (!hasMediaLibrarySelection && !hasDirectUpload) {
-            e.preventDefault();
-            Swal.fire('Error', 'Please select at least one image from media library or upload image files.', 'error');
-            return false;
-        }
-    });
-    });
     });
 </script>
 @endpush

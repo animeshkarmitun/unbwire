@@ -86,8 +86,8 @@
 
                         <ul class="topbar-link">
                             @if (!auth()->check())
-                            <li><a href="{{ route('login') }}">{{ __('frontend.Login') }}</a></li>
-                            <li><a href="{{ route('register') }}">{{ __('frontend.Register') }}</a></li>
+                            <li><a href="{{ route('login') }}">{{ __('Login') }}</a></li>
+                            <li><a href="{{ route('register') }}">{{ __('Register') }}</a></li>
                             @else
                             <li class="dropdown user-dropdown">
                                 <a href="javascript:void(0)" class="dropdown-toggle user-dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
@@ -96,12 +96,12 @@
                                 <ul class="dropdown-menu dropdown-menu-right user-dropdown-menu">
                                     <li>
                                         <a href="{{ route('user.profile') }}" class="dropdown-item">
-                                            <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Profile') }}
+                                            <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('Profile') }}
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('user.dashboard') }}" class="dropdown-item">
-                                            <i class="fas fa-tachometer-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.My Dashboard') }}
+                                            <i class="fas fa-tachometer-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('My Dashboard') }}
                                         </a>
                                     </li>
                                     <li role="separator" class="divider"></li>
@@ -109,7 +109,7 @@
                                         <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                                             @csrf
                                             <a href="javascript:void(0)" onclick="event.preventDefault(); this.closest('form').submit();" class="dropdown-item">
-                                                <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('frontend.Logout') }}
+                                                <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('Logout') }}
                                             </a>
                                         </form>
                                     </li>
@@ -163,15 +163,11 @@
                             @endif
                         @endforeach
 
-                        @if(auth()->check() && auth()->user()->canAccessApPhoto())
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('ap-photo.index') }}">AP Photo</a>
-                            </li>
-                        @endif
+
 
                         @if (count($categories) > 0)
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"> {{ __('frontend.More') }} </a>
+                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"> {{ __('More') }} </a>
                             <ul class="dropdown-menu animate fade-up">
                                 @foreach ($categories as $category)
                                     @if($category->children->count() > 0)
@@ -214,7 +210,7 @@
                                     <div class="row no-gutters mt-3">
                                         <div class="col">
                                             <input class="form-control border-secondary border-right-0 rounded-0"
-                                                type="search" value="" placeholder="{{ __('frontend.Search') }}"
+                                                type="search" value="" placeholder="{{ __('Search') }}"
                                                 id="example-search-input4" name="search">
                                         </div>
                                         <div class="col-auto">
@@ -244,7 +240,7 @@
                             <div class="row no-gutters">
                                 <div class="col">
                                     <input class="form-control border-secondary border-right-0 rounded-0" value=""
-                                        placeholder="{{ __('frontend.Search') }}" type="search" name="search">
+                                        placeholder="{{ __('Search') }}" type="search" name="search">
                                 </div>
                                 <div class="col-auto">
                                     <button type="submit" class="btn btn-outline-secondary border-left-0 rounded-0 rounded-right">
@@ -282,7 +278,7 @@
                             @if (count($categories) > 0)
                             <li class="nav-item">
                                 <a class="nav-link active dropdown-toggle  text-dark" href="#"
-                                    data-toggle="dropdown">{{ __('frontend.More') }} </a>
+                                    data-toggle="dropdown">{{ __('More') }} </a>
                                 <ul class="dropdown-menu dropdown-menu-left">
                                     @foreach ($categories as $category)
                                         @if($category->children->count() > 0)

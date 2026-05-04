@@ -11,6 +11,11 @@
                 <h4>Edit Photo Entry</h4>
             </div>
             <div class="card-body">
+                @if ($errors->any())
+                    @foreach ($errors->all() as $error)
+                        <div class="alert alert-danger">{{ $error }}</div>
+                    @endforeach
+                @endif
                 <form action="{{ route('admin.ap-photo.update', $photo->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')

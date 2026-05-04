@@ -177,7 +177,7 @@ class ImageGalleryController extends Controller
         $gallery = Gallery::images()->findOrFail($id);
 
         $request->validate([
-            'media_id' => ['nullable', 'exists:media,id'],
+            'uploaded_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,gif,webp,svg', 'max:10240'],
             'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'gallery_slug' => ['nullable', 'string', 'max:255'],
@@ -188,23 +188,17 @@ class ImageGalleryController extends Controller
             'category' => ['required', 'in:UNB,AP'],
         ]);
 
-        // If media_id is provided, validate it's an image
-        if ($request->filled('media_id')) {
-            $media = Media::findOrFail($request->media_id);
-            if ($media->file_type !== 'image') {
-                return redirect()->back()->withErrors(['media_id' => 'Selected media must be an image.']);
+        if ($request->hasFile('uploaded_file')) {
+            $media = $this->createMediaFromUpload($request->file('uploaded_file'), 'image');
+            if ($media) {
+                $gallery->media_id = $media->id;
+                $gallery->alt_text = $media->alt_text;
+                $gallery->caption = $media->caption;
             }
-            $gallery->media_id = $request->media_id;
         }
 
         $gallery->title = $request->title;
         $gallery->description = $request->description;
-        // Alt text and caption are taken from media library, update if media changed
-        if ($request->filled('media_id') && $gallery->media_id != $request->media_id) {
-            $newMedia = Media::findOrFail($request->media_id);
-            $gallery->alt_text = $newMedia->alt_text;
-            $gallery->caption = $newMedia->caption;
-        }
         $gallery->gallery_slug = $request->gallery_slug;
         $gallery->sort_order = $request->sort_order ?? $gallery->sort_order;
         $gallery->is_exclusive = $request->boolean('is_exclusive', $gallery->is_exclusive);

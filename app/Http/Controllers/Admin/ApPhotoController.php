@@ -47,7 +47,7 @@ class ApPhotoController extends Controller
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:ap_photo_tags,id'],
             'photos' => ['required', 'array'],
-            'photos.*' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:5120'], // 5MB max
+            'photos.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'], // 10MB max to be safe
         ]);
 
         $apPhoto = new ApPhoto();
@@ -56,6 +56,7 @@ class ApPhotoController extends Controller
         $apPhoto->sub_category_id = $request->sub_category_id;
         $apPhoto->user_id = auth()->guard('admin')->user()->id;
         $apPhoto->status = true;
+        $apPhoto->title = $request->description ? Str::limit($request->description, 50) : 'AP Photo ' . time();
         $apPhoto->save();
 
         // Handle Tags
@@ -92,6 +93,7 @@ class ApPhotoController extends Controller
             ->get();
             
         $subCategories = ApPhotoCategory::where('parent_id', $photo->category_id)->get();
+        $tags = ApPhotoTag::all();
 
         return view('admin.ap-photo.edit', compact('photo', 'tags', 'categories', 'subCategories'));
     }
@@ -107,7 +109,7 @@ class ApPhotoController extends Controller
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:ap_photo_tags,id'],
             'photos' => ['nullable', 'array'],
-            'photos.*' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
+            'photos.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'],
         ]);
 
         $apPhoto->description = $request->description;

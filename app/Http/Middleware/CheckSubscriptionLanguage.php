@@ -59,11 +59,16 @@ class CheckSubscriptionLanguage
             return $next($request);
         }
 
-        // Case D: No access to either (Both false) -> Redirect to plans
+        // Case D: No access to either news language (Both false) -> Redirect ONLY if no other access
         if (!$accessBangla && !$accessEnglish) {
+            // Check if package has access to other features like images, videos, or AP photos
+            if ($package->access_images || $package->access_videos || $package->access_ap_photo) {
+                return $next($request);
+            }
+
              // Only redirect if not already on the plans page to avoid loops
             if (!$request->routeIs('subscription.plans')) {
-                return redirect()->route('subscription.plans')->with('error', 'Your current package does not allow access to news content.');
+                return redirect()->route('subscription.plans')->with('error', 'Your current package does not allow access to news content. Please upgrade to access news.');
             }
         }
         

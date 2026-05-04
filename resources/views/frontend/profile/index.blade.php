@@ -11,7 +11,7 @@
                 <ul class="breadcrumbs bg-light mb-4">
                     <li class="breadcrumbs__item">
                         <a href="{{ url('/') }}" class="breadcrumbs__url">
-                            <i class="fa fa-home"></i> {{ __('frontend.Home') }}</a>
+                            <i class="fa fa-home"></i> {{ __('Home') }}</a>
                     </li>
                     <li class="breadcrumbs__item">
                         <a href="javascript:;" class="breadcrumbs__url">My Profile</a>
@@ -108,7 +108,20 @@
 
                                                 <h6>Features Included:</h6>
                                                 <ul class="list-unstyled">
-                                                    <li><i class="fas fa-check text-success"></i> News Articles</li>
+                                                    @if($pendingSubscription->package->access_news)
+                                                        <li><i class="fas fa-check text-success"></i> News Articles</li>
+                                                    @else
+                                                        <li class="text-muted"><i class="fas fa-times"></i> News Articles</li>
+                                                    @endif
+                                                    
+                                                    @if($pendingSubscription->package->access_bangla)
+                                                        <li><i class="fas fa-check text-success"></i> Bangla News Access</li>
+                                                    @endif
+
+                                                    @if($pendingSubscription->package->access_english)
+                                                        <li><i class="fas fa-check text-success"></i> English News Access</li>
+                                                    @endif
+
                                                     @if($pendingSubscription->package->access_images)
                                                         <li><i class="fas fa-check text-success"></i> High-Quality Images</li>
                                                     @endif
@@ -117,6 +130,9 @@
                                                     @endif
                                                     @if($pendingSubscription->package->access_exclusive)
                                                         <li><i class="fas fa-check text-success"></i> Exclusive Articles</li>
+                                                    @endif
+                                                    @if($pendingSubscription->package->access_ap_photo)
+                                                        <li><i class="fas fa-check text-success"></i> AP Photo Access</li>
                                                     @endif
                                                     @if($pendingSubscription->package->ad_free)
                                                         <li><i class="fas fa-check text-success"></i> Ad-Free Experience</li>
@@ -175,7 +191,20 @@
                                             <div class="col-md-6">
                                                 <h6>Features Included:</h6>
                                                 <ul class="list-unstyled">
-                                                    <li><i class="fas fa-check text-success"></i> News Articles</li>
+                                                    @if($activeSubscription->package->access_news)
+                                                        <li><i class="fas fa-check text-success"></i> News Articles</li>
+                                                    @else
+                                                        <li class="text-muted"><i class="fas fa-times"></i> News Articles</li>
+                                                    @endif
+
+                                                    @if($activeSubscription->package->access_bangla)
+                                                        <li><i class="fas fa-check text-success"></i> Bangla News Access</li>
+                                                    @endif
+
+                                                    @if($activeSubscription->package->access_english)
+                                                        <li><i class="fas fa-check text-success"></i> English News Access</li>
+                                                    @endif
+
                                                     @if($activeSubscription->package->access_images)
                                                         <li><i class="fas fa-check text-success"></i> High-Quality Images</li>
                                                     @endif
@@ -184,6 +213,9 @@
                                                     @endif
                                                     @if($activeSubscription->package->access_exclusive)
                                                         <li><i class="fas fa-check text-success"></i> Exclusive Articles</li>
+                                                    @endif
+                                                    @if($activeSubscription->package->access_ap_photo)
+                                                        <li><i class="fas fa-check text-success"></i> AP Photo Access</li>
                                                     @endif
                                                     @if($activeSubscription->package->ad_free)
                                                         <li><i class="fas fa-check text-success"></i> Ad-Free Experience</li>

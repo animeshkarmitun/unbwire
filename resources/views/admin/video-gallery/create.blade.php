@@ -22,7 +22,7 @@
                         <input class="form-check-input" type="radio" name="source_type" 
                                id="source_media" value="media" checked onchange="toggleSourceType()">
                         <label class="form-check-label" for="source_media">
-                            <i class="fas fa-database"></i> Media Library
+                            <i class="fas fa-upload"></i> Upload Video
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
@@ -36,31 +36,10 @@
 
                 <div class="row">
                     <div class="col-md-8">
-                        <!-- Media Library Selection -->
+                        <!-- Upload Section -->
                         <div id="mediaSourceSection">
                             <div class="form-group">
-                                <label>Select Videos from Media Library <span class="text-danger">*</span></label>
-                                <div class="border rounded p-3" style="min-height: 200px; background: #f8f9fa;">
-                                    <div id="selectedMediaContainer" class="row">
-                                        <div class="col-12 text-center py-5">
-                                            <p class="text-muted">No videos selected</p>
-                                            <button type="button" class="btn btn-primary" 
-                                                    data-toggle="modal" 
-                                                    data-target="#mediaLibraryModal" 
-                                                    data-type="video">
-                                                <i class="fas fa-video"></i> Select from Media Library
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="mediaIdsContainer"></div>
-                                @error('media_ids')
-                                    <div class="text-danger">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="form-group">
-                                <label>Or Upload Videos (Multiple)</label>
+                                <label>Upload Videos (Multiple) <span class="text-danger">*</span></label>
                                 <input type="file" name="uploaded_files[]" class="form-control" multiple accept="video/*">
                                 <small class="form-text text-muted">
                                     You can upload multiple video files directly here.
@@ -189,25 +168,22 @@
     </div>
 </section>
 
-<!-- Media Library Modal -->
-@include('admin.media-library.partials.media-modal')
+
 
 @push('scripts')
 <script>
-    let selectedMedia = [];
-
     function toggleSourceType() {
         const sourceType = $('input[name="source_type"]:checked').val();
         
         if (sourceType === 'media') {
             $('#mediaSourceSection').show();
             $('#externalSourceSection').hide();
-            $('input[name="media_ids[]"]').attr('required', true);
+            $('input[name="uploaded_files[]"]').attr('required', true);
             $('input[name="video_urls[]"]').removeAttr('required');
         } else {
             $('#mediaSourceSection').hide();
             $('#externalSourceSection').show();
-            $('input[name="media_ids[]"]').removeAttr('required');
+            $('input[name="uploaded_files[]"]').removeAttr('required');
             $('input[name="video_urls[]"]').attr('required', true);
         }
     }
@@ -237,95 +213,15 @@
         }
     });
 
-    // Open media library modal for video selection
-    $('#mediaLibraryModal').on('show.bs.modal', function(e) {
-        const button = $(e.relatedTarget);
-        const type = button.data('type') || 'video';
-        
-        // Set filter to videos only
-        $('#mediaTypeFilter').val('video').trigger('change');
-    });
-
-    // Handle media selection from modal
-    window.selectMediaForGallery = function(media) {
-        if (media.file_type !== 'video') {
-            Swal.fire('Error', 'Please select a video', 'error');
-            return;
-        }
-
-        // Check if already selected
-        if (selectedMedia.find(m => m.id === media.id)) {
-            Swal.fire('Info', 'This video is already selected', 'info');
-            return;
-        }
-
-        selectedMedia.push(media);
-        updateSelectedMediaDisplay();
-        $('#mediaLibraryModal').modal('hide');
-    };
-
-    function updateSelectedMediaDisplay() {
-        const container = $('#selectedMediaContainer');
-        const mediaIdsContainer = $('#mediaIdsContainer');
-
-        if (selectedMedia.length === 0) {
-            container.html(`
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted">No videos selected</p>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mediaLibraryModal" data-type="video">
-                        <i class="fas fa-video"></i> Select from Media Library
-                    </button>
-                </div>
-            `);
-            mediaIdsContainer.empty();
-            return;
-        }
-
-        let html = '<div class="col-12 mb-3"><button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mediaLibraryModal" data-type="video"><i class="fas fa-plus"></i> Add More Videos</button></div>';
-        
-        selectedMedia.forEach((media, index) => {
-            html += `
-                <div class="col-md-3 col-sm-4 col-6 mb-3" data-media-id="${media.id}">
-                    <div class="card">
-                        <div class="d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
-                            <i class="fas fa-video fa-3x text-primary"></i>
-                        </div>
-                        <div class="card-body p-2">
-                            <p class="card-text small mb-1">${media.title || 'Untitled'}</p>
-                            <button type="button" class="btn btn-sm btn-danger btn-block remove-media" data-index="${index}">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        container.html(html);
-        
-        // Update hidden inputs for media_ids array
-        mediaIdsContainer.empty();
-        selectedMedia.forEach((media) => {
-            mediaIdsContainer.append(`<input type="hidden" name="media_ids[]" value="${media.id}">`);
-        });
-    }
-
-    // Remove media from selection
-    $(document).on('click', '.remove-media', function() {
-        const index = $(this).data('index');
-        selectedMedia.splice(index, 1);
-        updateSelectedMediaDisplay();
-    });
-
     // Form validation
     $('#videoGalleryForm').on('submit', function(e) {
         const sourceType = $('input[name="source_type"]:checked').val();
         const uploadedFilesInput = $('input[name="uploaded_files[]"]')[0];
         const uploadedFilesCount = uploadedFilesInput && uploadedFilesInput.files ? uploadedFilesInput.files.length : 0;
         
-        if (sourceType === 'media' && selectedMedia.length === 0 && uploadedFilesCount === 0) {
+        if (sourceType === 'media' && uploadedFilesCount === 0) {
             e.preventDefault();
-            Swal.fire('Error', 'Please select at least one video from media library or upload video files.', 'error');
+            Swal.fire('Error', 'Please upload at least one video file.', 'error');
             return false;
         }
         
@@ -343,7 +239,9 @@
     });
 
     // Initialize
-    toggleSourceType();
+    $(document).ready(function() {
+        toggleSourceType();
+    });
 </script>
 @endpush
 @endsection
