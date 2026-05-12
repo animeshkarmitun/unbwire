@@ -26,9 +26,9 @@
 
                         <ul class="topbar-sosmed p-0">
                             @foreach ($socialLinks as $link)
-                            <li>
-                                <a href="{{ $link->url }}"><i class="{{ $link->icon }}"></i></a>
-                            </li>
+                                <li>
+                                    <a href="{{ $link->url }}"><i class="{{ $link->icon }}"></i></a>
+                                </li>
                             @endforeach
 
                         </ul>
@@ -42,17 +42,57 @@
                         @if(auth()->check())
                             @php
                                 $unreadCount = auth()->user()->unreadNotificationsCount();
+                                $hasApPhotoAccess = auth()->user()->hasSubscriptionAccess('ap_photo');
+                                $hasImageAccess = auth()->user()->hasSubscriptionAccess('images');
+                                $hasVideoAccess = auth()->user()->hasSubscriptionAccess('videos');
+                                $hasAnyMediaAccess = $hasApPhotoAccess || $hasImageAccess || $hasVideoAccess;
                             @endphp
-                            <div class="notification-icon-wrapper" style="margin-right: 15px; position: relative;">
-                                <a href="{{ route('notifications.index') }}" 
-                                   class="notification-link" 
-                                   title="{{ $unreadCount > 0 ? $unreadCount . ' unread notifications' : 'No new notifications' }}"
-                                   style="color: #333; font-size: 18px; text-decoration: none; position: relative; display: inline-block; transition: color 0.3s ease;"
-                                   onmouseover="this.style.color='#dc3545'" 
-                                   onmouseout="this.style.color='#333'">
+
+                            @if($hasAnyMediaAccess)
+                                <div class="dropdown media-access-dropdown"
+                                    style="margin-right: 20px; position: relative; display: flex; align-items: center;">
+                                    <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown"
+                                        style="color: #ffffffff; font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.3s ease; display: flex; align-items: center;"
+                                        onmouseover="this.style.color='#000000ff'" onmouseout="this.style.color='#ffffffff'">
+                                        Media Access
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right"
+                                        style="border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 8px; padding: 10px 0; margin-top: 10px;">
+                                        @if($hasApPhotoAccess)
+                                            <a class="dropdown-item" href="{{ route('ap-photo.index') }}"
+                                                style="padding: 8px 20px; font-size: 14px; transition: all 0.2s ease;">
+                                                <i class="fas fa-camera"
+                                                    style="margin-right: 10px; color: #dc3545; width: 16px;"></i> AP Photos
+                                            </a>
+                                        @endif
+                                        @if($hasImageAccess)
+                                            <a class="dropdown-item" href="{{ route('image-gallery.index') }}"
+                                                style="padding: 8px 20px; font-size: 14px; transition: all 0.2s ease;">
+                                                <i class="fas fa-image"
+                                                    style="margin-right: 10px; color: #dc3545; width: 16px;"></i> Image Gallery
+                                            </a>
+                                        @endif
+                                        @if($hasVideoAccess)
+                                            <a class="dropdown-item" href="{{ route('video-gallery.index') }}"
+                                                style="padding: 8px 20px; font-size: 14px; transition: all 0.2s ease;">
+                                                <i class="fas fa-video"
+                                                    style="margin-right: 10px; color: #dc3545; width: 16px;"></i> Video Gallery
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="notification-icon-wrapper"
+                                style="margin-right: 15px; position: relative; display: flex; align-items: center;">
+                                <a href="{{ route('notifications.index') }}" class="notification-link"
+                                    title="{{ $unreadCount > 0 ? $unreadCount . ' unread notifications' : 'No new notifications' }}"
+                                    style="color: #333; font-size: 18px; text-decoration: none; position: relative; display: inline-block; transition: color 0.3s ease;"
+                                    onmouseover="this.style.color='#dc3545'" onmouseout="this.style.color='#333'">
                                     <i class="fas fa-bell"></i>
                                     @if($unreadCount > 0)
-                                        <span class="notification-badge" style="position: absolute; top: -8px; right: -8px; background-color: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                                        <span class="notification-badge"
+                                            style="position: absolute; top: -8px; right: -8px; background-color: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
                                     @endif
                                 </a>
                             </div>
@@ -61,24 +101,26 @@
                             <select id="site-language">
                                 @foreach ($languages as $language)
                                     @php
-                                        $displayName = match($language->lang) {
+                                        $displayName = match ($language->lang) {
                                             'en' => 'English',
                                             'bn' => 'বাংলা',
                                             default => $language->name,
                                         };
-                                        
+
                                         // Check access permissions
                                         $canShow = true;
-                                        if(auth()->check()) {
+                                        if (auth()->check()) {
                                             $package = auth()->user()->currentPackage();
-                                            if($package) {
-                                                if($language->lang == 'en' && !$package->access_english) $canShow = false;
-                                                if(($language->lang == 'bn' || $language->lang == 'bangla') && !$package->access_bangla) $canShow = false;
+                                            if ($package) {
+                                                if ($language->lang == 'en' && !$package->access_english)
+                                                    $canShow = false;
+                                                if (($language->lang == 'bn' || $language->lang == 'bangla') && !$package->access_bangla)
+                                                    $canShow = false;
                                             }
                                         }
                                     @endphp
                                     @if($canShow)
-                                    <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $displayName }}</option>
+                                        <option value="{{ $language->lang }}" {{ getLangauge() === $language->lang ? 'selected' : '' }}>{{ $displayName }}</option>
                                     @endif
                                 @endforeach
                             </select>
@@ -86,35 +128,42 @@
 
                         <ul class="topbar-link">
                             @if (!auth()->check())
-                            <li><a href="{{ route('login') }}">{{ __('Login') }}</a></li>
-                            <li><a href="{{ route('register') }}">{{ __('Register') }}</a></li>
+                                <li><a href="{{ route('login') }}">{{ __('Login') }}</a></li>
+                                <li><a href="{{ route('register') }}">{{ __('Register') }}</a></li>
                             @else
-                            <li class="dropdown user-dropdown">
-                                <a href="javascript:void(0)" class="dropdown-toggle user-dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-user-circle"></i> <span class="user-name">{{ auth()->user()->name }}</span>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-right user-dropdown-menu">
-                                    <li>
-                                        <a href="{{ route('user.profile') }}" class="dropdown-item">
-                                            <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i> {{ __('Profile') }}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('user.dashboard') }}" class="dropdown-item">
-                                            <i class="fas fa-tachometer-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('My Dashboard') }}
-                                        </a>
-                                    </li>
-                                    <li role="separator" class="divider"></li>
-                                    <li>
-                                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                                            @csrf
-                                            <a href="javascript:void(0)" onclick="event.preventDefault(); this.closest('form').submit();" class="dropdown-item">
-                                                <i class="fas fa-sign-out-alt" style="margin-right: 8px; width: 16px;"></i> {{ __('Logout') }}
+                                <li class="dropdown user-dropdown">
+                                    <a href="javascript:void(0)" class="dropdown-toggle user-dropdown-toggle"
+                                        data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-user-circle"></i> <span
+                                            class="user-name">{{ auth()->user()->name }}</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-right user-dropdown-menu">
+                                        <li>
+                                            <a href="{{ route('user.profile') }}" class="dropdown-item">
+                                                <i class="fas fa-user" style="margin-right: 8px; width: 16px;"></i>
+                                                {{ __('Profile') }}
                                             </a>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('user.dashboard') }}" class="dropdown-item">
+                                                <i class="fas fa-tachometer-alt"
+                                                    style="margin-right: 8px; width: 16px;"></i> {{ __('My Dashboard') }}
+                                            </a>
+                                        </li>
+                                        <li role="separator" class="divider"></li>
+                                        <li>
+                                            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                                                @csrf
+                                                <a href="javascript:void(0)"
+                                                    onclick="event.preventDefault(); this.closest('form').submit();"
+                                                    class="dropdown-item">
+                                                    <i class="fas fa-sign-out-alt"
+                                                        style="margin-right: 8px; width: 16px;"></i> {{ __('Logout') }}
+                                                </a>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </li>
                             @endif
                         </ul>
                     </div>
@@ -146,19 +195,25 @@
                         @foreach ($FeaturedCategories as $category)
                             @if($category->children->count() > 0)
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button"
+                                        aria-haspopup="true" aria-expanded="false">
                                         {{ $category->name }}
                                     </a>
                                     <ul class="dropdown-menu animate fade-up">
-                                        <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
+                                        <li><a class="dropdown-item"
+                                                href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a>
+                                        </li>
                                         @foreach ($category->children as $child)
-                                            <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
+                                            <li><a class="dropdown-item"
+                                                    href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a>
+                                            </li>
                                         @endforeach
                                     </ul>
                                 </li>
                             @else
                                 <li class="nav-item">
-                                    <a class="nav-link active" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
+                                    <a class="nav-link active"
+                                        href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
                                 </li>
                             @endif
                         @endforeach
@@ -166,28 +221,35 @@
 
 
                         @if (count($categories) > 0)
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"> {{ __('More') }} </a>
-                            <ul class="dropdown-menu animate fade-up">
-                                @foreach ($categories as $category)
-                                    @if($category->children->count() > 0)
-                                        <li class="dropdown-submenu">
-                                            <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown">{{ $category->name }}</a>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
-                                                @foreach ($category->children as $child)
-                                                    <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
-                                                @endforeach
-                                            </ul>
-                                        </li>
-                                    @else
-                                        <li><a class="dropdown-item icon-arrow" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}
-                                            </a></li>
-                                    @endif
-                                @endforeach
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"> {{ __('More') }} </a>
+                                <ul class="dropdown-menu animate fade-up">
+                                    @foreach ($categories as $category)
+                                        @if($category->children->count() > 0)
+                                            <li class="dropdown-submenu">
+                                                <a class="dropdown-item dropdown-toggle" href="#"
+                                                    data-toggle="dropdown">{{ $category->name }}</a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item"
+                                                            href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a>
+                                                    </li>
+                                                    @foreach ($category->children as $child)
+                                                        <li><a class="dropdown-item"
+                                                                href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </li>
+                                        @else
+                                            <li><a class="dropdown-item icon-arrow"
+                                                    href="{{ route('news', ['category' => $category->slug]) }}">
+                                                    {{ $category->name }}
+                                                </a></li>
+                                        @endif
+                                    @endforeach
 
-                            </ul>
-                        </li>
+                                </ul>
+                            </li>
                         @endif
 
                     </ul>
@@ -214,7 +276,9 @@
                                                 id="example-search-input4" name="search">
                                         </div>
                                         <div class="col-auto">
-                                            <button type="submit" class="btn btn-outline-secondary border-left-0 rounded-0 rounded-right"><i class="fa fa-search"></i></button>
+                                            <button type="submit"
+                                                class="btn btn-outline-secondary border-left-0 rounded-0 rounded-right"><i
+                                                    class="fa fa-search"></i></button>
                                         </div>
                                     </div>
 
@@ -243,7 +307,8 @@
                                         placeholder="{{ __('Search') }}" type="search" name="search">
                                 </div>
                                 <div class="col-auto">
-                                    <button type="submit" class="btn btn-outline-secondary border-left-0 rounded-0 rounded-right">
+                                    <button type="submit"
+                                        class="btn btn-outline-secondary border-left-0 rounded-0 rounded-right">
                                         <i class="fa fa-search"></i>
                                     </button>
                                 </div>
@@ -260,44 +325,58 @@
                             @foreach ($FeaturedCategories as $category)
                                 @if($category->children->count() > 0)
                                     <li class="nav-item">
-                                        <a class="nav-link active dropdown-toggle text-dark" href="#" data-toggle="dropdown">{{ $category->name }}</a>
+                                        <a class="nav-link active dropdown-toggle text-dark" href="#"
+                                            data-toggle="dropdown">{{ $category->name }}</a>
                                         <ul class="dropdown-menu dropdown-menu-left">
-                                            <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
+                                            <li><a class="dropdown-item"
+                                                    href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a>
+                                            </li>
                                             @foreach ($category->children as $child)
-                                                <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
+                                                <li><a class="dropdown-item"
+                                                        href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a>
+                                                </li>
                                             @endforeach
                                         </ul>
                                     </li>
                                 @else
                                     <li class="nav-item">
-                                        <a class="nav-link active text-dark" href="{{ route('news', ['category' => $category->slug]) }}"> {{ $category->name }}</a>
+                                        <a class="nav-link active text-dark"
+                                            href="{{ route('news', ['category' => $category->slug]) }}">
+                                            {{ $category->name }}</a>
                                     </li>
                                 @endif
                             @endforeach
 
                             @if (count($categories) > 0)
-                            <li class="nav-item">
-                                <a class="nav-link active dropdown-toggle  text-dark" href="#"
-                                    data-toggle="dropdown">{{ __('More') }} </a>
-                                <ul class="dropdown-menu dropdown-menu-left">
-                                    @foreach ($categories as $category)
-                                        @if($category->children->count() > 0)
-                                            <li class="dropdown-submenu">
-                                                <a class="dropdown-item dropdown-toggle" href="#" data-toggle="dropdown">{{ $category->name }}</a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a></li>
-                                                    @foreach ($category->children as $child)
-                                                        <li><a class="dropdown-item" href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a></li>
-                                                    @endforeach
-                                                </ul>
-                                            </li>
-                                        @else
-                                            <li><a class="dropdown-item" href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a></li>
-                                        @endif
-                                    @endforeach
+                                <li class="nav-item">
+                                    <a class="nav-link active dropdown-toggle  text-dark" href="#"
+                                        data-toggle="dropdown">{{ __('More') }} </a>
+                                    <ul class="dropdown-menu dropdown-menu-left">
+                                        @foreach ($categories as $category)
+                                            @if($category->children->count() > 0)
+                                                <li class="dropdown-submenu">
+                                                    <a class="dropdown-item dropdown-toggle" href="#"
+                                                        data-toggle="dropdown">{{ $category->name }}</a>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item"
+                                                                href="{{ route('news', ['category' => $category->slug]) }}">{{ __('frontend.All') }}</a>
+                                                        </li>
+                                                        @foreach ($category->children as $child)
+                                                            <li><a class="dropdown-item"
+                                                                    href="{{ route('news', ['category' => $child->slug]) }}">{{ $child->name }}</a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </li>
+                                            @else
+                                                <li><a class="dropdown-item"
+                                                        href="{{ route('news', ['category' => $category->slug]) }}">{{ $category->name }}</a>
+                                                </li>
+                                            @endif
+                                        @endforeach
 
-                                </ul>
-                            </li>
+                                    </ul>
+                                </li>
                             @endif
 
                         </ul>
